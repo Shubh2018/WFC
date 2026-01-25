@@ -10,6 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Nodes
-  m_EditorClassIdentifier: Assembly-CSharp::Node
-  Prefab: {fileID: 0}
+  m_Name: Straight - 90
+  m_EditorClassIdentifier: Assembly-CSharp::NodeData
+  Prefab: {fileID: 9038098871726607102, guid: 7b4cdb393757a7ded8517a768799b47c, type: 3}
+  Angle: 90
+  Up:
+    compatibleNeighbors: []
+  Down:
+    compatibleNeighbors: []
+  Left:
+    compatibleNeighbors: []
+  Right:
+    compatibleNeighbors: []
