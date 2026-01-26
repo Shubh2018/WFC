@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class NodeData : ScriptableObject
 {
     public GameObject Prefab;
-    public float Angle;
 
     public Neighbor Up;
     public Neighbor Down;

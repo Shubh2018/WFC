@@ -81,7 +81,7 @@ public class WFC : MonoBehaviour
                 _grid[x, y] = potentialNodes[Random.Range(0, potentialNodes.Count)];
             }
 
-            GameObject node = Instantiate(_grid[x, y].Prefab, new Vector3Int(x, 0, y), Quaternion.Euler(new Vector3(0, _grid[x, y].Angle, 0)));
+            GameObject node = Instantiate(_grid[x, y].Prefab, new Vector3Int(x, 0, y), Quaternion.identity);
             _nodesToCollapse.RemoveAt(0);
         }
     }

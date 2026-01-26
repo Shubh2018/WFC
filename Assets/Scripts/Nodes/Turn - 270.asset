@@ -12,13 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
   m_Name: Turn - 270
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 1002172366184531238, guid: 6b20c5c47a3f44dca814d8cf3923ccda, type: 3}
-  Angle: 270
+  Prefab: {fileID: 1002172366184531238, guid: 71c36585a93d50948bced7a808d2022a, type: 3}
   Up:
-    compatibleNeighbors: []
+    compatibleNeighbors:
+    - {fileID: 11400000, guid: 80655209860605d9ea173d7ff7652954, type: 2}
+    - {fileID: 11400000, guid: 68c71b2f918b9f2de8843c3a03dbf8e4, type: 2}
+    - {fileID: 11400000, guid: 289f832650b436cc29c3daec8df5f76a, type: 2}
+    - {fileID: 11400000, guid: 25db1add562158059a2b01fea7a0610d, type: 2}
   Down:
-    compatibleNeighbors: []
+    compatibleNeighbors:
+    - {fileID: 11400000, guid: 4856128668a819e4c9fd0c5b0d5d7f71, type: 2}
+    - {fileID: 11400000, guid: fdcdec101e758ad959ca24f5faf76039, type: 2}
+    - {fileID: 11400000, guid: 289f832650b436cc29c3daec8df5f76a, type: 2}
+    - {fileID: 11400000, guid: 25db1add562158059a2b01fea7a0610d, type: 2}
   Left:
-    compatibleNeighbors: []
+    compatibleNeighbors:
+    - {fileID: 11400000, guid: 80655209860605d9ea173d7ff7652954, type: 2}
+    - {fileID: 11400000, guid: fdcdec101e758ad959ca24f5faf76039, type: 2}
+    - {fileID: 11400000, guid: a631165813e41dc02be50b1edaaccc70, type: 2}
+    - {fileID: 11400000, guid: 289f832650b436cc29c3daec8df5f76a, type: 2}
   Right:
-    compatibleNeighbors: []
+    compatibleNeighbors:
+    - {fileID: 11400000, guid: 4856128668a819e4c9fd0c5b0d5d7f71, type: 2}
+    - {fileID: 11400000, guid: 68c71b2f918b9f2de8843c3a03dbf8e4, type: 2}
+    - {fileID: 11400000, guid: a631165813e41dc02be50b1edaaccc70, type: 2}
+    - {fileID: 11400000, guid: 289f832650b436cc29c3daec8df5f76a, type: 2}

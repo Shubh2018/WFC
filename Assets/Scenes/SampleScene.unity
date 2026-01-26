@@ -461,8 +461,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50d1265cd12ea3f44be34bcd716bd072, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WFC
-  _width: 5
-  _height: 5
+  _width: 10
+  _height: 10
   _nodes:
   - {fileID: 11400000, guid: 4856128668a819e4c9fd0c5b0d5d7f71, type: 2}
   - {fileID: 11400000, guid: 80655209860605d9ea173d7ff7652954, type: 2}
