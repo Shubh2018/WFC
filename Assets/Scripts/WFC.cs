@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class WFC : MonoBehaviour
@@ -19,18 +20,18 @@ public class WFC : MonoBehaviour
         Vector2Int.left
     };
 
-    void Start()
+    private void Start()
     {
         _grid = new NodeData[_width, _height];
 
-        CollapseWorld();
+        StartCoroutine(CollapseWorld());
     }
 
-    private void CollapseWorld()
+    private IEnumerator CollapseWorld()
     {
         _nodesToCollapse.Clear();
 
-        _nodesToCollapse.Add(new Vector2Int(_width / 2, _height / 2));
+        _nodesToCollapse.Add(new Vector2Int(0, 0));
 
         while(_nodesToCollapse.Count > 0)
         {
@@ -60,7 +61,6 @@ public class WFC : MonoBehaviour
                             case 3: WhittleNodes(potentialNodes, neighborNode.Right.CompatibleNeighbors);
                                 break;
                         }
-
                     }
 
                     else
@@ -80,6 +80,8 @@ public class WFC : MonoBehaviour
             {
                 _grid[x, y] = potentialNodes[Random.Range(0, potentialNodes.Count)];
             }
+
+            yield return new WaitForSeconds(0.1f);
 
             GameObject node = Instantiate(_grid[x, y].Prefab, new Vector3Int(x, 0, y), Quaternion.identity);
             _nodesToCollapse.RemoveAt(0);
