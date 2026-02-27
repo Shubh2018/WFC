@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public static class PoissonDiskSampling
 {
-    public static List<Vector2> GeneratePoints(float width, float height, float r, int k)
+    public static List<Vector3> GeneratePoints(float width, float height, float r, int k)
     {
         float cellSize = r / Mathf.Sqrt(2);
 
@@ -18,16 +18,16 @@ public static class PoissonDiskSampling
         //         grid[i,j] = -1;
         // }
 
-        List<Vector2> samples = new List<Vector2>();
+        List<Vector3> samples = new List<Vector3>();
         List<int> active = new List<int>();
         
-        Vector2 point = new Vector2(width / 2, height / 2);
+        Vector3 point = new Vector3(width / 2, 0, height / 2);
         
         samples.Add(point);
         active.Add(0);
         
         int gx = Mathf.FloorToInt(point.x / cellSize);
-        int gy = Mathf.FloorToInt(point.y / cellSize);
+        int gy = Mathf.FloorToInt(point.z / cellSize);
         grid[gx, gy] = 0;
 
         while (active.Count > 0)
@@ -35,15 +35,15 @@ public static class PoissonDiskSampling
             int randomID = Random.Range(0, active.Count);
             int sampleIndex = active[randomID];
             
-            Vector2 center = samples[sampleIndex];
+            Vector3 center = samples[sampleIndex];
 
             bool found = false;
 
             for (int i = 0; i < k; i++)
             {
-                Vector2 candidate = GenerateRandomPointsAround(center, r);
+                Vector3 candidate = GenerateRandomPointsAround(center, r);
 
-                if (candidate.x < 0 || candidate.x >= width || candidate.y < 0 || candidate.y >= height)
+                if (candidate.x < 0 || candidate.x >= width || candidate.z < 0 || candidate.z >= height)
                     continue;
 
                 if (IsValid(candidate, r, cellSize, grid, samples, gridWidth, gridHeight))
@@ -54,7 +54,7 @@ public static class PoissonDiskSampling
                     active.Add(newIndex);
                     
                     int candidateGx = Mathf.FloorToInt(candidate.x / cellSize);
-                    int candidateGy = Mathf.FloorToInt(candidate.y / cellSize);
+                    int candidateGy = Mathf.FloorToInt(candidate.z / cellSize);
                     
                     grid[candidateGx, candidateGy] = newIndex;
 
@@ -74,22 +74,22 @@ public static class PoissonDiskSampling
         return samples;
     }
 
-    private static Vector2 GenerateRandomPointsAround(Vector2 center, float r)
+    private static Vector3 GenerateRandomPointsAround(Vector3 center, float r)
     {
         float radius = Random.Range(r, 2 * r);
         float angle = Random.Range(0, 2 * Mathf.PI);
         
         float x = center.x + radius * Mathf.Cos(angle);
-        float y = center.y + radius * Mathf.Sin(angle);
+        float y = center.z + radius * Mathf.Sin(angle);
         
-        return new Vector2(x, y);
+        return new Vector3(x, 0, y);
     }
 
-    private static bool IsValid(Vector2 candidate, float r, float cellSize, int[,] grid, List<Vector2> samples, float gridWidth,
+    private static bool IsValid(Vector3 candidate, float r, float cellSize, int[,] grid, List<Vector3> samples, float gridWidth,
         float gridHeight)
     {
         int gx = Mathf.FloorToInt(candidate.x / cellSize);
-        int gy = Mathf.FloorToInt(candidate.y / cellSize);
+        int gy = Mathf.FloorToInt(candidate.z / cellSize);
 
         for (int x = Mathf.Max(gx - 2, 0); x <= Mathf.Min(gx + 2, gridWidth - 1); x++)
         {
@@ -98,9 +98,9 @@ public static class PoissonDiskSampling
                 int sampleIndex = grid[x, y];
                 if (sampleIndex != -1)
                 {
-                    Vector2 point = samples[sampleIndex];
+                    Vector3 point = samples[sampleIndex];
 
-                    if (Vector2.Distance(candidate, point) <= r)
+                    if (Vector3.Distance(candidate, point) <= r)
                         return false;
                 }
             }
