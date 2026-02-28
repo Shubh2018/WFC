@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
+using Random = UnityEngine.Random;
 
 public class PoissonDiskSampling : MonoBehaviour
 {
@@ -14,6 +16,26 @@ public class PoissonDiskSampling : MonoBehaviour
 
     [SerializeField] private int _propCount = 5;
     [SerializeField] private List<GameObject> _propList;
+
+    private void Start()
+    {
+        Debug.Log(_dimensions);
+    }
+
+    public void GenerateSamplingPoints()
+    {
+        _samples.Clear();
+        
+        _samples = GeneratePoints(_dimensions.x, _dimensions.y, _distance, _attempts);
+    }
+    
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.white;
+
+        foreach (var sample in _samples)
+            Gizmos.DrawSphere(sample, _sphereSize);
+    }
     
     public List<Vector3> GeneratePoints(float width, float height, float r, int k)
     {

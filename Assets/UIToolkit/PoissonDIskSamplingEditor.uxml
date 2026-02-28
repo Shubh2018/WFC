@@ -1,3 +1,31 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
-    <ui:VisualElement style="flex-grow: 1;"/>
+    <ui:VisualElement style="flex-grow: 1;">
+        <ui:Vector2Field label="Dimensions" name="Dimensions" data-source-type="PoissonDiskSampling, Assembly-CSharp" data-source-path="_dimensions" focusable="true" binding-path="_dimensions">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="_dimensions" binding-mode="ToTargetOnce" data-source-type="PoissonDiskSampling, Assembly-CSharp"/>
+            </Bindings>
+        </ui:Vector2Field>
+        <ui:FloatField label="Distance" value="1" binding-path="_distance" name="Distance" data-source-type="PoissonDiskSampling, Assembly-CSharp" data-source-path="_distance">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="_distance" data-source-type="PoissonDiskSampling, Assembly-CSharp" binding-mode="ToTarget"/>
+            </Bindings>
+        </ui:FloatField>
+        <ui:IntegerField label="Attempts" value="30" binding-path="_attempts" name="Attempts" data-source-type="PoissonDiskSampling, Assembly-CSharp" data-source-path="_attempts">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="_attempts" binding-mode="ToTarget" data-source-type="PoissonDiskSampling, Assembly-CSharp"/>
+            </Bindings>
+        </ui:IntegerField>
+        <ui:FloatField label="Sphere Size" value="1" binding-path="_sphereSize" name="SphereSize" data-source-type="PoissonDiskSampling, Assembly-CSharp" data-source-path="_sphereSize">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="_sphereSize" binding-mode="ToTarget" data-source-type="PoissonDiskSampling, Assembly-CSharp"/>
+            </Bindings>
+        </ui:FloatField>
+        <ui:IntegerField label="Prop Count" value="30" binding-path="_propCount" name="PropCount" data-source-type="PoissonDiskSampling, Assembly-CSharp" data-source-path="_propCount">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="_propCount" data-source-type="PoissonDiskSampling, Assembly-CSharp" binding-mode="ToTarget"/>
+            </Bindings>
+        </ui:IntegerField>
+        <uie:PropertyField binding-path="_propList" label="Props" focusable="false" name="PropList"/>
+        <ui:Button data-source-type="PoissonDiskSampling, Assembly-CSharp" text="Generate Samples" name="GenerateSampleButtons"/>
+    </ui:VisualElement>
 </ui:UXML>
