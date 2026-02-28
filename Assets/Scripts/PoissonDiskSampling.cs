@@ -1,9 +1,21 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public static class PoissonDiskSampling
+public class PoissonDiskSampling : MonoBehaviour
 {
-    public static List<Vector3> GeneratePoints(float width, float height, float r, int k)
+    private List<Vector3> _samples = new List<Vector3>();
+    
+    [SerializeField] private Vector2 _dimensions = new Vector2(10, 10);
+
+    [SerializeField] private float _distance = 1.0f;
+    [SerializeField] private int _attempts = 30;
+
+    [SerializeField] private float _sphereSize = 1.0f;
+
+    [SerializeField] private int _propCount = 5;
+    [SerializeField] private List<GameObject> _propList;
+    
+    public List<Vector3> GeneratePoints(float width, float height, float r, int k)
     {
         float cellSize = r / Mathf.Sqrt(2);
 
@@ -74,7 +86,7 @@ public static class PoissonDiskSampling
         return samples;
     }
 
-    private static Vector3 GenerateRandomPointsAround(Vector3 center, float r)
+    private Vector3 GenerateRandomPointsAround(Vector3 center, float r)
     {
         float radius = Random.Range(r, 2 * r);
         float angle = Random.Range(0, 2 * Mathf.PI);
@@ -85,7 +97,7 @@ public static class PoissonDiskSampling
         return new Vector3(x, 0, y);
     }
 
-    private static bool IsValid(Vector3 candidate, float r, float cellSize, int[,] grid, List<Vector3> samples, float gridWidth,
+    private bool IsValid(Vector3 candidate, float r, float cellSize, int[,] grid, List<Vector3> samples, float gridWidth,
         float gridHeight)
     {
         int gx = Mathf.FloorToInt(candidate.x / cellSize);
