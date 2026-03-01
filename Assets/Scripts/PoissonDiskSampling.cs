@@ -10,7 +10,7 @@ public class PoissonDiskSampling : MonoBehaviour
     
     private List<GameObject> _props = new List<GameObject>();
     
-    [SerializeField] private Vector2 _dimensions = new Vector2(10, 10);
+    [SerializeField] private Vector3 _dimensions = new Vector3(10, 10, 10);
 
     [SerializeField] private float _distance = 1.0f;
     [SerializeField] private int _attempts = 30;
@@ -29,7 +29,7 @@ public class PoissonDiskSampling : MonoBehaviour
     {
         _samples.Clear();
         
-        _samples = GeneratePoints(_dimensions.x, _dimensions.y, _distance, _attempts);
+        _samples = GeneratePoints(_dimensions, _distance, _attempts);
 
         if (_props.Count > 0)
         {
@@ -45,8 +45,12 @@ public class PoissonDiskSampling : MonoBehaviour
         {
             int randomProp = Random.Range(0, _propList.Count - 1);
             int randomSample = Random.Range(0, _samples.Count - 1);
+
+            GameObject prop = Instantiate(_propList[randomProp], _samples[randomSample], Quaternion.identity);
+            prop.transform.SetParent(this.transform);
+            _props.Add(prop);
             
-            _props.Add(Instantiate(_propList[randomProp], _samples[randomSample], Quaternion.identity));
+            _samples.RemoveAt(randomSample);
         }
     }
 
@@ -70,14 +74,15 @@ public class PoissonDiskSampling : MonoBehaviour
             Gizmos.DrawSphere(sample, _sphereSize);
     }
     
-    public List<Vector3> GeneratePoints(float width, float height, float r, int k)
+    public List<Vector3> GeneratePoints(Vector3 dimensions, float r, int k)
     {
-        float cellSize = r / Mathf.Sqrt(2);
+        float cellSize = r / Mathf.Sqrt(3);
 
-        int gridWidth = Mathf.CeilToInt(width / cellSize);
-        int gridHeight = Mathf.CeilToInt(height / cellSize);
+        int gridLength = Mathf.CeilToInt(dimensions.x / cellSize);
+        int gridWidth = Mathf.CeilToInt(dimensions.y / cellSize);
+        int gridHeight = Mathf.CeilToInt(dimensions.z / cellSize);
 
-        int[,] grid = new int[gridWidth, gridHeight];
+        int[,,] grid = new int[gridLength, gridWidth, gridHeight];
 
         // for (int i = 0; i < gridWidth; i++)
         // {
@@ -88,14 +93,15 @@ public class PoissonDiskSampling : MonoBehaviour
         List<Vector3> samples = new List<Vector3>();
         List<int> active = new List<int>();
         
-        Vector3 point = new Vector3(width / 2, 0, height / 2);
+        Vector3 point = Vector3.zero;
         
         samples.Add(point);
         active.Add(0);
         
         int gx = Mathf.FloorToInt(point.x / cellSize);
-        int gy = Mathf.FloorToInt(point.z / cellSize);
-        grid[gx, gy] = 0;
+        int gy = Mathf.FloorToInt(point.y / cellSize);
+        int gz = Mathf.FloorToInt(point.z / cellSize);
+        grid[gx, gy, gz] = 0;
 
         while (active.Count > 0)
         {
@@ -110,20 +116,21 @@ public class PoissonDiskSampling : MonoBehaviour
             {
                 Vector3 candidate = GenerateRandomPointsAround(center, r);
 
-                if (candidate.x < 0 || candidate.x >= width || candidate.z < 0 || candidate.z >= height)
+                if (candidate.x < 0 || candidate.x >= dimensions.x || candidate.z < 0 || candidate.z >= dimensions.z || candidate.y < 0 || candidate.y >= dimensions.y)
                     continue;
 
-                if (IsValid(candidate, r, cellSize, grid, samples, gridWidth, gridHeight))
+                if (IsValid(candidate, r, cellSize, grid, samples, gridLength, gridWidth, gridHeight))
                 {
-                    samples.Add(candidate);
+                    samples.Add(candidate - (Vector3.right * (dimensions.x / 2)));
                     int newIndex = samples.Count - 1;
                     
                     active.Add(newIndex);
                     
                     int candidateGx = Mathf.FloorToInt(candidate.x / cellSize);
-                    int candidateGy = Mathf.FloorToInt(candidate.z / cellSize);
+                    int candidateGy = Mathf.FloorToInt(candidate.y / cellSize);
+                    int candidateGz = Mathf.FloorToInt(candidate.z / cellSize);
                     
-                    grid[candidateGx, candidateGy] = newIndex;
+                    grid[candidateGx, candidateGy, candidateGz] = newIndex;
 
                     found = true;
                     break;
@@ -144,31 +151,37 @@ public class PoissonDiskSampling : MonoBehaviour
     private Vector3 GenerateRandomPointsAround(Vector3 center, float r)
     {
         float radius = Random.Range(r, 2 * r);
-        float angle = Random.Range(0, 2 * Mathf.PI);
+        float azimuthalAngle = Random.Range(0, 2 * Mathf.PI);
+        float polarAngle = Random.Range(0, Mathf.PI);
         
-        float x = center.x + radius * Mathf.Cos(angle);
-        float y = center.z + radius * Mathf.Sin(angle);
+        float x = center.x + radius * Mathf.Sin(polarAngle) * Mathf.Cos(azimuthalAngle);
+        float y = center.y + radius * Mathf.Sin(polarAngle) * Mathf.Sin(azimuthalAngle);
+        float z = center.z + radius * Mathf.Cos(polarAngle);
         
-        return new Vector3(x, 0, y);
+        return new Vector3(x, y, z);
     }
 
-    private bool IsValid(Vector3 candidate, float r, float cellSize, int[,] grid, List<Vector3> samples, float gridWidth,
+    private bool IsValid(Vector3 candidate, float r, float cellSize, int[,,] grid, List<Vector3> samples, float gridLength, float gridWidth,
         float gridHeight)
     {
         int gx = Mathf.FloorToInt(candidate.x / cellSize);
-        int gy = Mathf.FloorToInt(candidate.z / cellSize);
+        int gy = Mathf.FloorToInt(candidate.y / cellSize);
+        int gz = Mathf.FloorToInt(candidate.z / cellSize);
 
-        for (int x = Mathf.Max(gx - 2, 0); x <= Mathf.Min(gx + 2, gridWidth - 1); x++)
+        for (int x = 0; x <= gridLength - 1; x++)
         {
-            for (int y = Mathf.Max(gy - 2, 0); y <= Mathf.Min(gy + 2, gridHeight - 1); y++)
+            for (int y = 0; y <= gridHeight - 1; y++)
             {
-                int sampleIndex = grid[x, y];
-                if (sampleIndex != -1)
+                for (int z = 0; z <= gridWidth - 1; z++)
                 {
-                    Vector3 point = samples[sampleIndex];
+                    int sampleIndex = grid[x, y, z];
+                    if (sampleIndex != -1)
+                    {
+                        Vector3 point = samples[sampleIndex];
 
-                    if (Vector3.Distance(candidate, point) <= r)
-                        return false;
+                        if (Vector3.Distance(candidate, point) <= r)
+                            return false;
+                    }
                 }
             }
         }
