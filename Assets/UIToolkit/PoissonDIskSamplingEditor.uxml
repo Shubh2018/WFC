@@ -15,17 +15,17 @@
                 <ui:DataBinding property="value" data-source-path="_attempts" binding-mode="ToTarget" data-source-type="PoissonDiskSampling, Assembly-CSharp"/>
             </Bindings>
         </ui:IntegerField>
-        <ui:FloatField label="Sphere Size" value="1" binding-path="_sphereSize" name="SphereSize" data-source-type="PoissonDiskSampling, Assembly-CSharp" data-source-path="_sphereSize">
-            <Bindings>
-                <ui:DataBinding property="value" data-source-path="_sphereSize" binding-mode="ToTarget" data-source-type="PoissonDiskSampling, Assembly-CSharp"/>
-            </Bindings>
-        </ui:FloatField>
+        <ui:Toggle label="Show Points" binding-path="_showPoints" name="ShowPoints" data-source-type="PoissonDiskSampling, Assembly-CSharp" data-source-path="_showPoints"/>
         <ui:IntegerField label="Prop Count" value="30" binding-path="_propCount" name="PropCount" data-source-type="PoissonDiskSampling, Assembly-CSharp" data-source-path="_propCount">
             <Bindings>
                 <ui:DataBinding property="value" data-source-path="_propCount" data-source-type="PoissonDiskSampling, Assembly-CSharp" binding-mode="ToTarget"/>
             </Bindings>
         </ui:IntegerField>
-        <uie:PropertyField binding-path="_propList" label="Props" focusable="false" name="PropList"/>
-        <ui:Button data-source-type="PoissonDiskSampling, Assembly-CSharp" text="Generate Samples" name="GenerateSampleButtons"/>
+        <uie:PropertyField binding-path="_propList" label="Props" focusable="false" name="PropList" data-source-type="PoissonDiskSampling, Assembly-CSharp" data-source-path="_propList"/>
+        <ui:VisualElement name="Buttons" style="flex-grow: 1; align-items: stretch; justify-content: center; flex-direction: row;">
+            <ui:Button data-source-type="PoissonDiskSampling, Assembly-CSharp" text="Generate Samples" name="GenerateSampleButtons"/>
+            <ui:Button data-source-type="PoissonDiskSampling, Assembly-CSharp" text="Clear Samples" name="ClearSamples"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="Buttons" style="flex-grow: 1; align-items: stretch; justify-content: center; flex-direction: row;"/>
     </ui:VisualElement>
 </ui:UXML>

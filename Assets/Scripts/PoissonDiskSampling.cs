@@ -6,13 +6,16 @@ using Random = UnityEngine.Random;
 public class PoissonDiskSampling : MonoBehaviour
 {
     private List<Vector3> _samples = new List<Vector3>();
+    private float _sphereSize = 0.25f;
+    
+    private List<GameObject> _props = new List<GameObject>();
     
     [SerializeField] private Vector2 _dimensions = new Vector2(10, 10);
 
     [SerializeField] private float _distance = 1.0f;
     [SerializeField] private int _attempts = 30;
 
-    [SerializeField] private float _sphereSize = 1.0f;
+    [SerializeField] private bool _showPoints = false;
 
     [SerializeField] private int _propCount = 5;
     [SerializeField] private List<GameObject> _propList;
@@ -27,10 +30,40 @@ public class PoissonDiskSampling : MonoBehaviour
         _samples.Clear();
         
         _samples = GeneratePoints(_dimensions.x, _dimensions.y, _distance, _attempts);
+
+        if (_props.Count > 0)
+        {
+            foreach (var prop in _props)
+            {
+                DestroyImmediate(prop);
+            }
+            
+            _props.Clear();
+        }
+
+        for (int i = 0; i < _propCount; i++)
+        {
+            int randomProp = Random.Range(0, _propList.Count - 1);
+            int randomSample = Random.Range(0, _samples.Count - 1);
+            
+            _props.Add(Instantiate(_propList[randomProp], _samples[randomSample], Quaternion.identity));
+        }
+    }
+
+    public void ClearSamples()
+    {
+        _samples.Clear();
+        
+        foreach(var prop in _props)
+            DestroyImmediate(prop);
+        
+        _props.Clear();
     }
     
     private void OnDrawGizmos()
     {
+        if (!_showPoints) return;
+        
         Gizmos.color = Color.white;
 
         foreach (var sample in _samples)
