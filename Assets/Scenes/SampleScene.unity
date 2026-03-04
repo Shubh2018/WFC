@@ -449,7 +449,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1623198092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -659,7 +659,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1957797391
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -674,9 +674,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WFC
   _width: 10
   _height: 10
+  _levels: 2
   _nodes:
   - {fileID: 11400000, guid: 80655209860605d9ea173d7ff7652954, type: 2}
   - {fileID: 11400000, guid: 4856128668a819e4c9fd0c5b0d5d7f71, type: 2}
+  - {fileID: 11400000, guid: 8da38d9ec7deab286a73601540f8ea48, type: 2}
   - {fileID: 11400000, guid: 68c71b2f918b9f2de8843c3a03dbf8e4, type: 2}
   - {fileID: 11400000, guid: fdcdec101e758ad959ca24f5faf76039, type: 2}
   - {fileID: 11400000, guid: a631165813e41dc02be50b1edaaccc70, type: 2}
@@ -714,7 +716,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2044114385
 MonoBehaviour:
   m_ObjectHideFlags: 0

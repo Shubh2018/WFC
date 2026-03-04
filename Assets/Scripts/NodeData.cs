@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class NodeData : ScriptableObject
 {
     public GameObject Prefab;
+    public NodeData TopsidePrefab;
 
     public Neighbor Up;
     public Neighbor Down;

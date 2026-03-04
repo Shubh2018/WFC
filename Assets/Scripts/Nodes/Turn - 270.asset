@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Turn - 270
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 1002172366184531238, guid: 71c36585a93d50948bced7a808d2022a, type: 3}
+  upward: 0
   Up:
     compatibleNeighbors:
     - {fileID: 11400000, guid: 80655209860605d9ea173d7ff7652954, type: 2}
