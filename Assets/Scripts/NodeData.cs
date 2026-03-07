@@ -1,22 +1,38 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+[System.Serializable]
+public class NodeFace
+{
+    public enum Name 
+    {
+        Grass,
+        Road
+    }
+
+    public enum Type
+    {
+        None,
+        Flipped,
+        Original
+    }
+
+    public Name name;
+    public bool symmetry;
+    public Type type;
+}
+
 [CreateAssetMenu(fileName = "Node", menuName = "WFC/Node")]
 public class NodeData : ScriptableObject
 {
     public GameObject Prefab;
-    public NodeData TopsidePrefab;
 
-    public Neighbor Up;
-    public Neighbor Down;
-    public Neighbor Left;
-    public Neighbor Right;
-}
+    [HideInInspector] public int ClockwiseRotationSteps;
 
-[System.Serializable]
-public class Neighbor
-{
-    [SerializeField] private List<NodeData> compatibleNeighbors = new List<NodeData>();
-
-    public List<NodeData> CompatibleNeighbors => compatibleNeighbors;
+    public NodeFace Up;
+    public NodeFace Down;
+    public NodeFace Left;
+    public NodeFace Right;
+    public NodeFace Front;
+    public NodeFace Back;
 }
