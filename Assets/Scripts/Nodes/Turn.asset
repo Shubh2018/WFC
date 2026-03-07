@@ -23,11 +23,11 @@ MonoBehaviour:
     symmetry: 0
     type: 0
   Left:
-    name: 0
+    name: 1
     symmetry: 1
     type: 0
   Right:
-    name: 1
+    name: 0
     symmetry: 1
     type: 0
   Front:

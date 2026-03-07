@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Linq;
+using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -9,9 +10,14 @@ public class WFC : MonoBehaviour
     [SerializeField] private int _width;
     [SerializeField] private int _height;
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
+    [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
     NodeData[,] _grid;
     List<Vector2Int> _nodesToCollapse = new List<Vector2Int>(); 
     List<GameObject> _tiles = new List<GameObject>();
+    double collapseExecutionTime = 0;
+
+    public int getTiles => _tiles.Count;
+    public double getCollapseTime => collapseExecutionTime;
 
     private Vector2Int[] offsets = new Vector2Int[]
     {
@@ -21,18 +27,20 @@ public class WFC : MonoBehaviour
         Vector2Int.left
     };
 
-    private void Start()
+    /*private void Start()
     {
         _grid = new NodeData[_width, _height];
 
         GenerateTiles();
 
         StartCoroutine(CollapseWorld());
-    }
+    }*/
 
     // Generate new tiles by creating new ones by rotating the current ones
     public void GenerateTiles()
     {
+        _nodesGenerated.Clear();
+
         int nodes = _nodes.Count;
 
         // Go through all created nodes and rotate those that need it
@@ -85,29 +93,50 @@ public class WFC : MonoBehaviour
                             break;            
                     }
 
-                    _nodes.Add(newNode);
-                    Debug.Log("Added node '" + newNode.name + "'");
+                    _nodesGenerated.Add(newNode);
+                    UnityEngine.Debug.Log("Added node '" + newNode.name + "'");
                 }
             }
         }
 
-        Debug.Log("Nodes Generated: " + (_nodes.Count - nodes));
+        UnityEngine.Debug.Log("Nodes Generated: " + (_nodesGenerated.Count));
+
+        // Debug Data
+        List<NodeData> potentialNodes = new List<NodeData>(_nodes);
+        potentialNodes.AddRange(_nodesGenerated);
+
+        string nodeNames = "";
+
+        for(int i = 0; i < potentialNodes.Count; i++)
+            nodeNames += $"\n| tile {i + 1}: {potentialNodes[i].name}";
+        
+        UnityEngine.Debug.Log("Total nodes used for future generation:" + nodeNames);
     }
 
-    public void ClearTiles() 
+    public void ClearTiles(bool clearAll = false) 
     {
         _nodesToCollapse.Clear();
+        if(clearAll) _nodesGenerated.Clear();
         
         foreach(var tile in _tiles)
             DestroyImmediate(tile);
         
         _tiles.Clear();
 
-        Debug.Log("Cleared Tiles...");
+        UnityEngine.Debug.Log("Cleared Tiles...");
     }
 
-    public IEnumerator CollapseWorld()
+    public void CollapseTiles()
     {
+        ClearTiles();
+
+        Stopwatch st = new Stopwatch();
+        st.Start();
+
+        UnityEngine.Debug.Log("Collapse Tiles...");
+
+        _grid = new NodeData[_width, _height];
+
         _nodesToCollapse.Clear();
         _nodesToCollapse.Add(new Vector2Int(0, 0));
 
@@ -117,6 +146,7 @@ public class WFC : MonoBehaviour
             int y = _nodesToCollapse[0].y;
 
             List<NodeData> potentialNodes = new List<NodeData>(_nodes);
+            potentialNodes.AddRange(_nodesGenerated);
 
             for(int i = 0; i < offsets.Length; i++)
             {
@@ -151,7 +181,7 @@ public class WFC : MonoBehaviour
             if(potentialNodes.Count < 1)
             {
                 _grid[x, y] = _nodes[0];
-                Debug.LogWarning($"Can't Collapse on {x}, {y}");
+                UnityEngine.Debug.LogWarning($"Can't Collapse on {x}, {y}");
             }
 
             else
@@ -159,22 +189,36 @@ public class WFC : MonoBehaviour
                 _grid[x, y] = potentialNodes[UnityEngine.Random.Range(0, potentialNodes.Count)];
             }
 
-            yield return new WaitForSeconds(0.1f);
+            //yield return new WaitForSeconds(0.1f);
 
             int rotationSteps = _grid[x, y].ClockwiseRotationSteps;
-            Quaternion rotation = Quaternion.Euler(0, rotationSteps * 90, 0);
 
-            GameObject node = Instantiate(_grid[x, y].Prefab, new Vector3(x, 0, y), rotation);
+            GameObject node = Instantiate(_grid[x, y].Prefab, GetRotPosVec(x, y, rotationSteps), Quaternion.Euler(0, rotationSteps * 90, 0));
+            node.name = _grid[x, y].name; // Rename the node so we know what type has been spawned
+            node.transform.parent = gameObject.transform; // Set this object as parent for editor readability
+
             _tiles.Add(node);
             _nodesToCollapse.RemoveAt(0);
         }
+
+        st.Stop();
+        collapseExecutionTime = st.ElapsedMilliseconds;
+
     }
 
-    /*private Vector3 GetRotPosVec(int posX, int posY, int rotationSteps) {
-        int x = Convert.ToInt32(rotationSteps == 3);
-        int y = Convert.ToInt32(rotationSteps == 1 || rotationSteps == 2);
-        return new Vector3(posX + x, 0, posY - y);
-    }*/
+    private Vector3 GetRotPosVec(int posX, int posY, int rotationSteps) {
+        switch(rotationSteps)
+        {
+            case 1:
+                return new Vector3(posX, 0, posY - 1);
+            case 2:
+                return new Vector3(posX - 1, 0, posY - 1);
+            case 3:
+                return new Vector3(posX - 1, 0, posY);
+            default:
+                return new Vector3(posX, 0, posY);
+        }
+    }
 
     private void WhittleNodes(List<NodeData> potentialNodes, NodeFace validType, string direction)
     {
