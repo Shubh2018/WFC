@@ -102,9 +102,11 @@ public class WFC : MonoBehaviour
             DestroyImmediate(tile);
         
         _tiles.Clear();
+
+        Debug.Log("Cleared Tiles...");
     }
 
-    private IEnumerator CollapseWorld()
+    public IEnumerator CollapseWorld()
     {
         _nodesToCollapse.Clear();
         _nodesToCollapse.Add(new Vector2Int(0, 0));
