@@ -24,10 +24,15 @@ public class WFC : MonoBehaviour
     {
         public Vector2Int pos;
         public List<NodeData> potentialNodes;
+        public List<Tile> neighbors;
+        public bool shouldBeUpdated;
 
-        public Tile(WFC parent, int x, int y)
+        public Tile(WFC parent, int x, int y, bool update = false)
         {
             pos = new Vector2Int(x, y);
+            neighbors = new List<Tile>();
+            shouldBeUpdated = update;
+
             potentialNodes = new List<NodeData>(parent._nodes);
             potentialNodes.AddRange(parent._nodesGenerated);
         }
@@ -142,6 +147,7 @@ public class WFC : MonoBehaviour
 
     public void CollapseTiles()
     {
+        StartCollapseLabel:
         ClearTiles();
 
         Stopwatch st = new Stopwatch();
@@ -152,7 +158,7 @@ public class WFC : MonoBehaviour
         _grid = new NodeData[_width, _height];
 
         _nodesToCollapse.Clear();
-        _nodesToCollapse.Add(new Tile(this, 0, 0));
+        _nodesToCollapse.Add(new Tile(this, 0, 0, true));
 
         while(_nodesToCollapse.Count > 0)
         {
@@ -168,6 +174,7 @@ public class WFC : MonoBehaviour
             {
                 _grid[tile.pos.x, tile.pos.y] = _nodes[0];
                 UnityEngine.Debug.LogWarning($"Can't Collapse on {tile.pos.x}, {tile.pos.y}");
+                goto StartCollapseLabel; // If the tile cannot be collapsed, start over
             }
 
             else
@@ -185,6 +192,8 @@ public class WFC : MonoBehaviour
 
     private void CheckNeighbors(Tile tile)
     {
+        if(!tile.shouldBeUpdated) return; // No neighbor has been collapsed, to no need to recheck
+
         for(int i = 0; i < offsets.Length; i++)
         {
             Vector2Int neighbor = new Vector2Int(tile.pos.x + offsets[i].x, tile.pos.y + offsets[i].y);
@@ -210,7 +219,12 @@ public class WFC : MonoBehaviour
 
                 else
                 {
-                    if(!_nodesToCollapse.Any(n => n.pos == neighbor)) _nodesToCollapse.Add(new Tile(this, neighbor.x, neighbor.y));
+                    if(!_nodesToCollapse.Any(n => n.pos == neighbor)) {
+                        Tile neighborTile = new Tile(this, neighbor.x, neighbor.y);
+
+                        _nodesToCollapse.Add(neighborTile);
+                        tile.neighbors.Add(neighborTile);
+                    }
                 }
             }
         }
@@ -235,6 +249,11 @@ public class WFC : MonoBehaviour
         NodeData node = _grid[x, y];
         int rotationSteps = node.ClockwiseRotationSteps;
 
+        // Make sure that this tile's neighbors get updated
+        foreach (Tile t in tile.neighbors)
+            t.shouldBeUpdated = true;
+
+        // Instantiate the tile
         GameObject obj = Instantiate(node.Prefab, GetRotPosVec(x, y, rotationSteps), Quaternion.Euler(0, rotationSteps * 90, 0));
         obj.name = node.name; // Rename the node so we know what type has been spawned
         obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
