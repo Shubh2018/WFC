@@ -13,24 +13,28 @@ MonoBehaviour:
   m_Name: Grass
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 2582079461782649853, guid: 7733c900466335c81872bc42db967718, type: 3}
-  TopsidePrefab: {fileID: 0}
+  ClockwiseRotationSteps: 0
   Up:
-    compatibleNeighbors:
-    - {fileID: 11400000, guid: 68c71b2f918b9f2de8843c3a03dbf8e4, type: 2}
-    - {fileID: 11400000, guid: 289f832650b436cc29c3daec8df5f76a, type: 2}
-    - {fileID: 11400000, guid: 25db1add562158059a2b01fea7a0610d, type: 2}
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
   Down:
-    compatibleNeighbors:
-    - {fileID: 11400000, guid: 68c71b2f918b9f2de8843c3a03dbf8e4, type: 2}
-    - {fileID: 11400000, guid: 8b7501464bd335a178bf070675802f69, type: 2}
-    - {fileID: 11400000, guid: a631165813e41dc02be50b1edaaccc70, type: 2}
+    name: 1
+    invariantRotation: 1
+    rotationIndex: 0
   Left:
-    compatibleNeighbors:
-    - {fileID: 11400000, guid: fdcdec101e758ad959ca24f5faf76039, type: 2}
-    - {fileID: 11400000, guid: a631165813e41dc02be50b1edaaccc70, type: 2}
-    - {fileID: 11400000, guid: 289f832650b436cc29c3daec8df5f76a, type: 2}
+    name: 0
+    symmetry: 1
+    type: 0
   Right:
-    compatibleNeighbors:
-    - {fileID: 11400000, guid: fdcdec101e758ad959ca24f5faf76039, type: 2}
-    - {fileID: 11400000, guid: 25db1add562158059a2b01fea7a0610d, type: 2}
-    - {fileID: 11400000, guid: 8b7501464bd335a178bf070675802f69, type: 2}
+    name: 0
+    symmetry: 1
+    type: 0
+  Front:
+    name: 0
+    symmetry: 1
+    type: 0
+  Back:
+    name: 0
+    symmetry: 1
+    type: 0

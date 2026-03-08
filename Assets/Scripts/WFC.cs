@@ -12,12 +12,26 @@ public class WFC : MonoBehaviour
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
     [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
     NodeData[,] _grid;
-    List<Vector2Int> _nodesToCollapse = new List<Vector2Int>(); 
+    List<Tile> _nodesToCollapse = new List<Tile>(); 
     List<GameObject> _tiles = new List<GameObject>();
     double collapseExecutionTime = 0;
 
     public int getTiles => _tiles.Count;
     public double getCollapseTime => collapseExecutionTime;
+
+    // Represents a tile that needs to be collapsed
+    private class Tile
+    {
+        public Vector2Int pos;
+        public List<NodeData> potentialNodes;
+
+        public Tile(WFC parent, int x, int y)
+        {
+            pos = new Vector2Int(x, y);
+            potentialNodes = new List<NodeData>(parent._nodes);
+            potentialNodes.AddRange(parent._nodesGenerated);
+        }
+    }
 
     private Vector2Int[] offsets = new Vector2Int[]
     {
@@ -27,14 +41,14 @@ public class WFC : MonoBehaviour
         Vector2Int.left
     };
 
-    /*private void Start()
-    {
-        _grid = new NodeData[_width, _height];
+    public void OnDrawGizmos() {
+        Gizmos.color = new Color(1.0f, 1.0f, 1.0f, 0.1f);
+        Gizmos.matrix = transform.localToWorldMatrix;
 
-        GenerateTiles();
-
-        StartCoroutine(CollapseWorld());
-    }*/
+        for (int i = 0; i < _width; i++)
+            for (int j = 0; j < _height; j++)
+                Gizmos.DrawWireCube(new Vector3(i - 0.5f, 0, j - 0.5f), Vector3.one);
+    }
 
     // Generate new tiles by creating new ones by rotating the current ones
     public void GenerateTiles()
@@ -47,13 +61,13 @@ public class WFC : MonoBehaviour
         for(int i = 0; i < nodes; i++) 
         {
             NodeData currNode = _nodes[i];
-            List<NodeFace.Name> currFaceNames = new List<NodeFace.Name>{ currNode.Back.name, currNode.Right.name, currNode.Front.name, currNode.Left.name };
+            List<NodeFaceHorizontal.Name> currFaceNames = new List<NodeFaceHorizontal.Name>{ currNode.Back.name, currNode.Right.name, currNode.Front.name, currNode.Left.name };
 
             // Only rotate nodes that are not symmetrical all the way around (like the crossroad)
-            if(currNode.Left.type != NodeFace.Type.None 
-            || currNode.Right.type != NodeFace.Type.None
-            || currNode.Front.type != NodeFace.Type.None
-            || currNode.Back.type != NodeFace.Type.None
+            if(currNode.Left.type != NodeFaceHorizontal.Type.None 
+            || currNode.Right.type != NodeFaceHorizontal.Type.None
+            || currNode.Front.type != NodeFaceHorizontal.Type.None
+            || currNode.Back.type != NodeFaceHorizontal.Type.None
             || currFaceNames.Distinct().Skip(1).Any()) 
             {
                 // Rotate object clockwise a maximum of three times
@@ -138,74 +152,98 @@ public class WFC : MonoBehaviour
         _grid = new NodeData[_width, _height];
 
         _nodesToCollapse.Clear();
-        _nodesToCollapse.Add(new Vector2Int(0, 0));
+        _nodesToCollapse.Add(new Tile(this, 0, 0));
 
         while(_nodesToCollapse.Count > 0)
         {
-            int x = _nodesToCollapse[0].x;
-            int y = _nodesToCollapse[0].y;
+            int tilesCount = _nodesToCollapse.Count;
 
-            List<NodeData> potentialNodes = new List<NodeData>(_nodes);
-            potentialNodes.AddRange(_nodesGenerated);
+            for (int i = 0; i < tilesCount; i++)
+                CheckNeighbors(_nodesToCollapse[i]);
+            
+            int tileChosenIndex = CheckEntropy(tilesCount);
+            Tile tile = _nodesToCollapse[tileChosenIndex];
 
-            for(int i = 0; i < offsets.Length; i++)
+            if(tile.potentialNodes.Count < 1)
             {
-                Vector2Int neighbor = new Vector2Int(x + offsets[i].x, y + offsets[i].y);
-
-                if(CheckGridValidity(neighbor))
-                {
-                    NodeData neighborNode = _grid[neighbor.x, neighbor.y];
-
-                    if(neighborNode)
-                    {
-                        switch (i)
-                        {
-                            case 0: WhittleNodes(potentialNodes, neighborNode.Back, "front");
-                                break;
-                            case 1: WhittleNodes(potentialNodes, neighborNode.Front, "back");
-                                break;
-                            case 2: WhittleNodes(potentialNodes, neighborNode.Left, "right");
-                                break;
-                            case 3: WhittleNodes(potentialNodes, neighborNode.Right, "left");
-                                break;
-                        }
-                    }
-
-                    else
-                    {
-                        if(!_nodesToCollapse.Contains(neighbor)) _nodesToCollapse.Add(neighbor);
-                    }
-                }
-            }
-
-            if(potentialNodes.Count < 1)
-            {
-                _grid[x, y] = _nodes[0];
-                UnityEngine.Debug.LogWarning($"Can't Collapse on {x}, {y}");
+                _grid[tile.pos.x, tile.pos.y] = _nodes[0];
+                UnityEngine.Debug.LogWarning($"Can't Collapse on {tile.pos.x}, {tile.pos.y}");
             }
 
             else
             {
-                _grid[x, y] = potentialNodes[UnityEngine.Random.Range(0, potentialNodes.Count)];
+                _grid[tile.pos.x, tile.pos.y] = tile.potentialNodes[UnityEngine.Random.Range(0, tile.potentialNodes.Count)];
             }
 
-            //yield return new WaitForSeconds(0.1f);
-
-            int rotationSteps = _grid[x, y].ClockwiseRotationSteps;
-
-            GameObject node = Instantiate(_grid[x, y].Prefab, GetRotPosVec(x, y, rotationSteps), Quaternion.Euler(0, rotationSteps * 90, 0));
-            node.name = _grid[x, y].name; // Rename the node so we know what type has been spawned
-            node.transform.parent = gameObject.transform; // Set this object as parent for editor readability
-
-            _tiles.Add(node);
-            _nodesToCollapse.RemoveAt(0);
+            CollapseTile(tile);
+            _nodesToCollapse.RemoveAt(tileChosenIndex);
         }
 
         st.Stop();
         collapseExecutionTime = st.ElapsedMilliseconds;
     }
 
-    private Vector3 GetRotPosVec(int posX, int posY, int rotationSteps) {
+    private void CheckNeighbors(Tile tile)
+    {
+        for(int i = 0; i < offsets.Length; i++)
+        {
+            Vector2Int neighbor = new Vector2Int(tile.pos.x + offsets[i].x, tile.pos.y + offsets[i].y);
+
+            if(CheckGridValidity(neighbor))
+            {
+                NodeData neighborNode = _grid[neighbor.x, neighbor.y];
+
+                if(neighborNode)
+                {
+                    switch (i)
+                    {
+                        case 0: WhittleNodes(tile.potentialNodes, neighborNode.Back, "front");
+                            break;
+                        case 1: WhittleNodes(tile.potentialNodes, neighborNode.Front, "back");
+                            break;
+                        case 2: WhittleNodes(tile.potentialNodes, neighborNode.Left, "right");
+                            break;
+                        case 3: WhittleNodes(tile.potentialNodes, neighborNode.Right, "left");
+                            break;
+                    }
+                }
+
+                else
+                {
+                    if(!_nodesToCollapse.Any(n => n.pos == neighbor)) _nodesToCollapse.Add(new Tile(this, neighbor.x, neighbor.y));
+                }
+            }
+        }
+    }
+
+    private int CheckEntropy(int tilesCount)
+    {
+        int idx = 0;
+
+        for (int i = 0; i < tilesCount; i++)
+            if (_nodesToCollapse[i].potentialNodes.Count < _nodesToCollapse[idx].potentialNodes.Count)
+                idx = i;
+        
+        return idx;
+    }
+
+    private void CollapseTile(Tile tile)
+    {
+        int x = tile.pos.x;
+        int y = tile.pos.y;
+
+        NodeData node = _grid[x, y];
+        int rotationSteps = node.ClockwiseRotationSteps;
+
+        GameObject obj = Instantiate(node.Prefab, GetRotPosVec(x, y, rotationSteps), Quaternion.Euler(0, rotationSteps * 90, 0));
+        obj.name = node.name; // Rename the node so we know what type has been spawned
+        obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
+
+        _tiles.Add(obj);
+    }
+
+    private Vector3 GetRotPosVec(int posX, int posY, int rotationSteps) 
+    {
         switch(rotationSteps)
         {
             case 1:
@@ -219,11 +257,11 @@ public class WFC : MonoBehaviour
         }
     }
 
-    private void WhittleNodes(List<NodeData> potentialNodes, NodeFace validType, string direction)
+    private void WhittleNodes(List<NodeData> potentialNodes, NodeFaceHorizontal validType, string direction)
     {
         for(int i = potentialNodes.Count - 1; i > -1; i--)
         {
-            NodeFace nodeType;
+            NodeFaceHorizontal nodeType;
 
             switch(direction) {
                 case "left":
@@ -240,8 +278,18 @@ public class WFC : MonoBehaviour
                     break;
             }
 
-            if(nodeType.name != validType.name)
-                potentialNodes.RemoveAt(i);
+            // Horizontal tile faces only fit together if:
+            // - The face names match and either:
+            // > they are both symmetrical
+            // > or one face is original and the other is flipped
+            if (nodeType.name == validType.name
+            && (nodeType.symmetry && validType.symmetry 
+            || (nodeType.type == NodeFaceHorizontal.Type.Flipped && validType.type == NodeFaceHorizontal.Type.Original 
+            || nodeType.type == NodeFaceHorizontal.Type.Original && validType.type == NodeFaceHorizontal.Type.Flipped)
+            ))
+                continue;
+
+            potentialNodes.RemoveAt(i);
         }
     }
 

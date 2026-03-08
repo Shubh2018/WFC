@@ -16,12 +16,12 @@ MonoBehaviour:
   ClockwiseRotationSteps: 0
   Up:
     name: 0
-    symmetry: 0
-    type: 0
+    invariantRotation: 1
+    rotationIndex: 0
   Down:
-    name: 0
-    symmetry: 0
-    type: 0
+    name: 1
+    invariantRotation: 1
+    rotationIndex: 0
   Left:
     name: 1
     symmetry: 1
