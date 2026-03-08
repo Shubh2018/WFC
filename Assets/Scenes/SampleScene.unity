@@ -679,6 +679,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4856128668a819e4c9fd0c5b0d5d7f71, type: 2}
   - {fileID: 11400000, guid: 68c71b2f918b9f2de8843c3a03dbf8e4, type: 2}
   - {fileID: 11400000, guid: a631165813e41dc02be50b1edaaccc70, type: 2}
+  - {fileID: 11400000, guid: 39f7b0427f8a2a00da876cc2a8245a44, type: 2}
   _nodesGenerated: []
 --- !u!4 &1957797392
 Transform:

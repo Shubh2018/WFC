@@ -56,7 +56,7 @@ public class WFC : MonoBehaviour
             || currNode.Back.type != NodeFace.Type.None
             || currFaceNames.Distinct().Skip(1).Any()) 
             {
-                // Rotate object clockwise three times
+                // Rotate object clockwise a maximum of three times
                 for(int j = 0; j < 3; j++)
                 {
                     // If the tile is symmetrical on two sides, ignore rotation and continue
@@ -74,10 +74,10 @@ public class WFC : MonoBehaviour
                     switch(j)
                     {
                         case 0: // 90 degrees
-                            newNode.Back = currNode.Left;
-                            newNode.Right = currNode.Back;
-                            newNode.Front = currNode.Right;
-                            newNode.Left = currNode.Front;
+                            newNode.Back = currNode.Right;
+                            newNode.Right = currNode.Front;
+                            newNode.Front = currNode.Left;
+                            newNode.Left = currNode.Back;
                             break;
                         case 1: // 180 degrees
                             newNode.Back = currNode.Front;
@@ -86,9 +86,9 @@ public class WFC : MonoBehaviour
                             newNode.Left = currNode.Right;
                             break;
                         case 2: // 270 degrees
-                            newNode.Back = currNode.Right;
-                            newNode.Right = currNode.Front;
-                            newNode.Front = currNode.Left;
+                            newNode.Back = currNode.Left;
+                            newNode.Right = currNode.Back;
+                            newNode.Front = currNode.Right;
                             newNode.Left = currNode.Front;
                             break;            
                     }
@@ -203,7 +203,6 @@ public class WFC : MonoBehaviour
 
         st.Stop();
         collapseExecutionTime = st.ElapsedMilliseconds;
-
     }
 
     private Vector3 GetRotPosVec(int posX, int posY, int rotationSteps) {
