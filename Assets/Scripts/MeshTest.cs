@@ -48,25 +48,6 @@ public class MeshTest : MonoBehaviour
 
             _barycentricCoordinates.Add(transform.TransformPoint(p));
         }
-
-        /*int i0 = _triangles[triIndex * 3 + 0];
-        int i1 = _triangles[triIndex * 3 + 1];
-        int i2 = _triangles[triIndex * 3 + 2];
-        
-        Vector3 v0 = _mesh.vertices[i0];
-        Vector3 v1 = _mesh.vertices[i1];
-        Vector3 v2 = _mesh.vertices[i2];
-
-        float u, v;
-
-        u = Random.value;
-        v = Random.value;
-
-        if (u + v > 1)
-        {
-            u = 1f - u;
-            v = 1f - v;
-        }*/
     }
 
     private void OnDrawGizmos()
@@ -74,6 +55,6 @@ public class MeshTest : MonoBehaviour
         Gizmos.color = Color.white;
         
         foreach(var coordinate in _barycentricCoordinates)
-            Gizmos.DrawSphere(coordinate, 0.01f);
+            Gizmos.DrawSphere(coordinate, 0.005f);
     }
 }
