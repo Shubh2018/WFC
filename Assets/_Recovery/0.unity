@@ -383,25 +383,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1 &559053672 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5420771689200864014, guid: 92c40761f3e57469fb1b347d4a54b659, type: 3}
-  m_PrefabInstance: {fileID: 1966772303}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &559053676
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 559053672}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e37b9ec458f026249b982b0d4b16ade6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MeshSampler
-  _radius: 0.5
-  _tries: 50
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -470,7 +451,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!135 &918314634
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -576,7 +557,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e37b9ec458f026249b982b0d4b16ade6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeshSampler
-  _radius: 0.06
+  _radius: 0.05
   _tries: 30
 --- !u!1 &1203920477
 GameObject:
@@ -1027,16 +1008,35 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4979922026216038440, guid: 92c40761f3e57469fb1b347d4a54b659, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5420771689200864014, guid: 92c40761f3e57469fb1b347d4a54b659, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 4979922026216038440, guid: 92c40761f3e57469fb1b347d4a54b659, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 559053676}
+      addedObject: {fileID: 1966772306}
   m_SourcePrefab: {fileID: 100100000, guid: 92c40761f3e57469fb1b347d4a54b659, type: 3}
+--- !u!1 &1966772304 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4979922026216038440, guid: 92c40761f3e57469fb1b347d4a54b659, type: 3}
+  m_PrefabInstance: {fileID: 1966772303}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1966772306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1966772304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e37b9ec458f026249b982b0d4b16ade6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeshSampler
+  _radius: 0.5
+  _tries: 30
 --- !u!1 &2044114384
 GameObject:
   m_ObjectHideFlags: 0
