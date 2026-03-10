@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Straight
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 9038098871726607102, guid: 7b4cdb393757a7ded8517a768799b47c, type: 3}
+  weight: 2
   ClockwiseRotationSteps: 0
   Up:
     name: 0

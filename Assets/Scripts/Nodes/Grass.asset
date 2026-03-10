@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Grass
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 2582079461782649853, guid: 7733c900466335c81872bc42db967718, type: 3}
+  weight: 0
   ClockwiseRotationSteps: 0
   Up:
     name: 0

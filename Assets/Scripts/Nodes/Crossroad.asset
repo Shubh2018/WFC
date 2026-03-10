@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Crossroad
   m_EditorClassIdentifier: Assembly-CSharp::Node
   Prefab: {fileID: 4979922026216038440, guid: 92c40761f3e57469fb1b347d4a54b659, type: 3}
+  weight: 1
   ClockwiseRotationSteps: 0
   Up:
     name: 0

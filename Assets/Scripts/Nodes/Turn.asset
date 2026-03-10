@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Turn
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 1002172366184531238, guid: 6b20c5c47a3f44dca814d8cf3923ccda, type: 3}
+  weight: 1
   ClockwiseRotationSteps: 0
   Up:
     name: 0

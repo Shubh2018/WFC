@@ -12,11 +12,10 @@ public class WFC : MonoBehaviour
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
     [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
     NodeData[,] _grid;
-    List<Tile> _nodesToCollapse = new List<Tile>(); 
-    List<GameObject> _tiles = new List<GameObject>();
+    List<Tile> _nodesToCollapse = new List<Tile>();
     double collapseExecutionTime = 0;
 
-    public int getTiles => _tiles.Count;
+    public int getTiles => transform.childCount;
     public double getCollapseTime => collapseExecutionTime;
 
     // Represents a tile that needs to be collapsed
@@ -88,6 +87,7 @@ public class WFC : MonoBehaviour
 
                     newNode.name = currNode.name + "_" + ((j + 1) * 90);
                     newNode.Prefab = currNode.Prefab;
+                    newNode.Weight = currNode.Weight;
                     newNode.ClockwiseRotationSteps = j + 1;
                     
                     switch(j)
@@ -113,12 +113,12 @@ public class WFC : MonoBehaviour
                     }
 
                     _nodesGenerated.Add(newNode);
-                    UnityEngine.Debug.Log("Added node '" + newNode.name + "'");
+                    UnityEngine.Debug.Log($"Added node '{newNode.name}'");
                 }
             }
         }
 
-        UnityEngine.Debug.Log("Nodes Generated: " + (_nodesGenerated.Count));
+        UnityEngine.Debug.Log($"Nodes Generated: {(_nodesGenerated.Count)}");
 
         // Debug Data
         List<NodeData> potentialNodes = new List<NodeData>(_nodes);
@@ -129,18 +129,16 @@ public class WFC : MonoBehaviour
         for(int i = 0; i < potentialNodes.Count; i++)
             nodeNames += $"\n| tile {i + 1}: {potentialNodes[i].name}";
         
-        UnityEngine.Debug.Log("Total nodes used for future generation:" + nodeNames);
+        UnityEngine.Debug.Log($"Total nodes used for future generation: {nodeNames}");
     }
 
     public void ClearTiles(bool clearAll = false) 
     {
         _nodesToCollapse.Clear();
         if(clearAll) _nodesGenerated.Clear();
-        
-        foreach(var tile in _tiles)
-            DestroyImmediate(tile);
-        
-        _tiles.Clear();
+
+        while (transform.childCount > 0) 
+            DestroyImmediate(transform.GetChild(0).gameObject);
 
         UnityEngine.Debug.Log("Cleared Tiles...");
     }
@@ -179,7 +177,11 @@ public class WFC : MonoBehaviour
 
             else
             {
-                _grid[tile.pos.x, tile.pos.y] = tile.potentialNodes[UnityEngine.Random.Range(0, tile.potentialNodes.Count)];
+                // Choose a tile based on weight
+                double[] nodeWeights = CalculateNodesWeights(tile.potentialNodes);
+                int chosenTileIdx = ChooseWeightedTile(nodeWeights, new System.Random());
+
+                _grid[tile.pos.x, tile.pos.y] = tile.potentialNodes[chosenTileIdx];
             }
 
             CollapseTile(tile);
@@ -190,9 +192,42 @@ public class WFC : MonoBehaviour
         collapseExecutionTime = st.ElapsedMilliseconds;
     }
 
+    private double[] CalculateNodesWeights(List<NodeData> nodes) {
+        double[] weights = new double[nodes.Count];
+        double totalWeight = nodes.Sum(n => n.Weight);
+
+        int i = 0;
+        nodes.ForEach(n => weights[i++] = (n.Weight / totalWeight));
+
+        foreach (NodeData node in nodes)
+            UnityEngine.Debug.Log($"weight: {node.Weight}");
+        
+        UnityEngine.Debug.Log($"calculated weights: {string.Join(", ", weights)}");
+
+        return weights;
+    }
+
+    private int ChooseWeightedTile(double[] weight, System.Random rng) {
+        double total = 0;
+        double amount = rng.NextDouble();
+
+        for(int a = 0; a < weight.Length; a++){
+            total += weight[a];
+
+            UnityEngine.Debug.Log($"choose weight, total: {total}, rng: {amount}");
+            
+            if(amount <= total){
+                UnityEngine.Debug.Log($"tile chosen: {a}");
+                return a;
+            }
+        }
+
+        return 0;
+    }
+
     private void CheckNeighbors(Tile tile)
     {
-        if(!tile.shouldBeUpdated) return; // No neighbor has been collapsed, to no need to recheck
+        if(!tile.shouldBeUpdated) return; // No neighbor has been collapsed for this tile, to no need to recheck its options
 
         for(int i = 0; i < offsets.Length; i++)
         {
@@ -236,7 +271,7 @@ public class WFC : MonoBehaviour
 
         for (int i = 0; i < tilesCount; i++)
             if (_nodesToCollapse[i].potentialNodes.Count < _nodesToCollapse[idx].potentialNodes.Count)
-                idx = i;
+                idx = i; // Choose the tile with the least amount of options
         
         return idx;
     }
@@ -249,7 +284,7 @@ public class WFC : MonoBehaviour
         NodeData node = _grid[x, y];
         int rotationSteps = node.ClockwiseRotationSteps;
 
-        // Make sure that this tile's neighbors get updated
+        // Make sure that this tile's neighbors get marked to get updated
         foreach (Tile t in tile.neighbors)
             t.shouldBeUpdated = true;
 
@@ -257,8 +292,6 @@ public class WFC : MonoBehaviour
         GameObject obj = Instantiate(node.Prefab, GetRotPosVec(x, y, rotationSteps), Quaternion.Euler(0, rotationSteps * 90, 0));
         obj.name = node.name; // Rename the node so we know what type has been spawned
         obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
-
-        _tiles.Add(obj);
     }
 
     private Vector3 GetRotPosVec(int posX, int posY, int rotationSteps) 
