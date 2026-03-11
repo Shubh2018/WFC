@@ -40,7 +40,6 @@ public class NodeData : ScriptableObject
 {
     public GameObject Prefab;
     public int Weight;
-
     [HideInInspector] public int ClockwiseRotationSteps; // Set automatically as the tile is rotated
 
     public NodeFaceVertical Up;

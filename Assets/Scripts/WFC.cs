@@ -8,12 +8,19 @@ using System.Collections.Generic;
 public class WFC : MonoBehaviour
 {
     [SerializeField] private int _width;
+    [SerializeField] private int _length;
     [SerializeField] private int _height;
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
     [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
-    NodeData[,] _grid;
+    NodeData[,,] _grid;
     List<Tile> _nodesToCollapse = new List<Tile>();
+    public bool pauseGeneration = false;
     double collapseExecutionTime = 0;
+    public float collapseWaitTime = 1.0f;
+    Vector3Int activeCollapsningTile;
+    IEnumerator collapseTilesRoutine;
+    bool doneCollapse = false;
+
 
     public int getTiles => transform.childCount;
     public double getCollapseTime => collapseExecutionTime;
@@ -21,14 +28,14 @@ public class WFC : MonoBehaviour
     // Represents a tile that needs to be collapsed
     private class Tile
     {
-        public Vector2Int pos;
+        public Vector3Int pos;
         public List<NodeData> potentialNodes;
         public List<Tile> neighbors;
         public bool shouldBeUpdated;
 
-        public Tile(WFC parent, int x, int y, bool update = false)
+        public Tile(WFC parent, Vector3Int coord, bool update = false)
         {
-            pos = new Vector2Int(x, y);
+            pos = coord;
             neighbors = new List<Tile>();
             shouldBeUpdated = update;
 
@@ -37,21 +44,39 @@ public class WFC : MonoBehaviour
         }
     }
 
-    private Vector2Int[] offsets = new Vector2Int[]
+    private Vector3Int[] offsets = new Vector3Int[]
     {
-        Vector2Int.up,
-        Vector2Int.down,
-        Vector2Int.right,
-        Vector2Int.left
+        Vector3Int.forward,
+        Vector3Int.back,
+        Vector3Int.left,
+        Vector3Int.right,
+        Vector3Int.up,
+        Vector3Int.down
     };
+
+    public void StartCollapse(Action doneFuncHook) 
+    {
+        collapseTilesRoutine = CollapseTiles(doneFuncHook);
+        StartCoroutine(collapseTilesRoutine);
+    }
+    public void StopCollapse() 
+    {
+        doneCollapse = true;
+        StopCoroutine(collapseTilesRoutine);
+    }
 
     public void OnDrawGizmos() {
         Gizmos.color = new Color(1.0f, 1.0f, 1.0f, 0.1f);
         Gizmos.matrix = transform.localToWorldMatrix;
 
         for (int i = 0; i < _width; i++)
-            for (int j = 0; j < _height; j++)
-                Gizmos.DrawWireCube(new Vector3(i - 0.5f, 0, j - 0.5f), Vector3.one);
+            for (int k = 0; k < _height; k++)
+                for (int j = 0; j < _length; j++)
+                    Gizmos.DrawWireCube(new Vector3(i - 0.5f, k + 0.5f, j - 0.5f), Vector3.one);
+        
+        if (doneCollapse) return;
+        Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
+        Gizmos.DrawWireCube(activeCollapsningTile - new Vector3(0.5f, -0.5f, 0.5f), Vector3.one);
     }
 
     // Generate new tiles by creating new ones by rotating the current ones
@@ -89,22 +114,28 @@ public class WFC : MonoBehaviour
                     newNode.Prefab = currNode.Prefab;
                     newNode.Weight = currNode.Weight;
                     newNode.ClockwiseRotationSteps = j + 1;
+
+                    newNode.Up = currNode.Up;
+                    newNode.Down = currNode.Down;
                     
                     switch(j)
                     {
                         case 0: // 90 degrees
+                            RotateNodeVerticalFaces(new NodeFaceVertical[]{ newNode.Up, newNode.Down }, 1);
                             newNode.Back = currNode.Right;
                             newNode.Right = currNode.Front;
                             newNode.Front = currNode.Left;
                             newNode.Left = currNode.Back;
                             break;
                         case 1: // 180 degrees
+                            RotateNodeVerticalFaces(new NodeFaceVertical[]{ newNode.Up, newNode.Down }, 2);
                             newNode.Back = currNode.Front;
                             newNode.Right = currNode.Left;
                             newNode.Front = currNode.Back;
                             newNode.Left = currNode.Right;
                             break;
                         case 2: // 270 degrees
+                            RotateNodeVerticalFaces(new NodeFaceVertical[]{ newNode.Up, newNode.Down }, 3);
                             newNode.Back = currNode.Left;
                             newNode.Right = currNode.Back;
                             newNode.Front = currNode.Right;
@@ -132,6 +163,13 @@ public class WFC : MonoBehaviour
         UnityEngine.Debug.Log($"Total nodes used for future generation: {nodeNames}");
     }
 
+    private void RotateNodeVerticalFaces(NodeFaceVertical[] faces, int rotationAmount)
+    {
+        foreach (NodeFaceVertical face in faces)
+            if(!face.invariantRotation)
+                face.rotationIndex = rotationAmount;
+    }
+
     public void ClearTiles(bool clearAll = false) 
     {
         _nodesToCollapse.Clear();
@@ -143,7 +181,7 @@ public class WFC : MonoBehaviour
         UnityEngine.Debug.Log("Cleared Tiles...");
     }
 
-    public void CollapseTiles()
+    public IEnumerator CollapseTiles(Action doneFuncHook)
     {
         StartCollapseLabel:
         ClearTiles();
@@ -153,13 +191,17 @@ public class WFC : MonoBehaviour
 
         UnityEngine.Debug.Log("Collapse Tiles...");
 
-        _grid = new NodeData[_width, _height];
+        doneCollapse = false;
+        _grid = new NodeData[_width, _height, _length];
 
         _nodesToCollapse.Clear();
-        _nodesToCollapse.Add(new Tile(this, 0, 0, true));
+        _nodesToCollapse.Add(new Tile(this, Vector3Int.zero, true));
 
         while(_nodesToCollapse.Count > 0)
         {
+            // Either pause or stop generation based on value
+            yield return new WaitUntil(() => !pauseGeneration);
+
             int tilesCount = _nodesToCollapse.Count;
 
             for (int i = 0; i < tilesCount; i++)
@@ -170,8 +212,8 @@ public class WFC : MonoBehaviour
 
             if(tile.potentialNodes.Count < 1)
             {
-                _grid[tile.pos.x, tile.pos.y] = _nodes[0];
-                UnityEngine.Debug.LogWarning($"Can't Collapse on {tile.pos.x}, {tile.pos.y}");
+                _grid[tile.pos.x, tile.pos.y, tile.pos.z] = _nodes[0];
+                UnityEngine.Debug.LogWarning($"Can't Collapse on {tile.pos.x}, {tile.pos.y}, {tile.pos.z}");
                 goto StartCollapseLabel; // If the tile cannot be collapsed, start over
             }
 
@@ -181,8 +223,12 @@ public class WFC : MonoBehaviour
                 double[] nodeWeights = CalculateNodesWeights(tile.potentialNodes);
                 int chosenTileIdx = ChooseWeightedTile(nodeWeights, new System.Random());
 
-                _grid[tile.pos.x, tile.pos.y] = tile.potentialNodes[chosenTileIdx];
+                _grid[tile.pos.x, tile.pos.y, tile.pos.z] = tile.potentialNodes[chosenTileIdx];
             }
+
+            activeCollapsningTile = tile.pos;
+
+            yield return new WaitForSeconds(collapseWaitTime);
 
             CollapseTile(tile);
             _nodesToCollapse.RemoveAt(tileChosenIndex);
@@ -190,6 +236,8 @@ public class WFC : MonoBehaviour
 
         st.Stop();
         collapseExecutionTime = st.ElapsedMilliseconds;
+        doneCollapse = true;
+        doneFuncHook();
     }
 
     private double[] CalculateNodesWeights(List<NodeData> nodes) {
@@ -199,10 +247,10 @@ public class WFC : MonoBehaviour
         int i = 0;
         nodes.ForEach(n => weights[i++] = (n.Weight / totalWeight));
 
-        foreach (NodeData node in nodes)
+        /*foreach (NodeData node in nodes)
             UnityEngine.Debug.Log($"weight: {node.Weight}");
         
-        UnityEngine.Debug.Log($"calculated weights: {string.Join(", ", weights)}");
+        UnityEngine.Debug.Log($"calculated weights: {string.Join(", ", weights)}");*/
 
         return weights;
     }
@@ -214,10 +262,10 @@ public class WFC : MonoBehaviour
         for(int a = 0; a < weight.Length; a++){
             total += weight[a];
 
-            UnityEngine.Debug.Log($"choose weight, total: {total}, rng: {amount}");
+            //UnityEngine.Debug.Log($"choose weight, total: {total}, rng: {amount}");
             
             if(amount <= total){
-                UnityEngine.Debug.Log($"tile chosen: {a}");
+                //UnityEngine.Debug.Log($"tile chosen: {a}");
                 return a;
             }
         }
@@ -231,11 +279,13 @@ public class WFC : MonoBehaviour
 
         for(int i = 0; i < offsets.Length; i++)
         {
-            Vector2Int neighbor = new Vector2Int(tile.pos.x + offsets[i].x, tile.pos.y + offsets[i].y);
+            Vector3Int neighbor = new Vector3Int(tile.pos.x + offsets[i].x, tile.pos.y + offsets[i].y, tile.pos.z + offsets[i].z);
+
+            //UnityEngine.Debug.Log($"Checking neighbor ({offsets[i].x}, {offsets[i].y}, {offsets[i].z})");
 
             if(CheckGridValidity(neighbor))
             {
-                NodeData neighborNode = _grid[neighbor.x, neighbor.y];
+                NodeData neighborNode = _grid[neighbor.x, neighbor.y, neighbor.z];
 
                 if(neighborNode)
                 {
@@ -255,7 +305,7 @@ public class WFC : MonoBehaviour
                 else
                 {
                     if(!_nodesToCollapse.Any(n => n.pos == neighbor)) {
-                        Tile neighborTile = new Tile(this, neighbor.x, neighbor.y);
+                        Tile neighborTile = new Tile(this, neighbor);
 
                         _nodesToCollapse.Add(neighborTile);
                         tile.neighbors.Add(neighborTile);
@@ -278,36 +328,27 @@ public class WFC : MonoBehaviour
 
     private void CollapseTile(Tile tile)
     {
-        int x = tile.pos.x;
-        int y = tile.pos.y;
-
-        NodeData node = _grid[x, y];
+        NodeData node = _grid[tile.pos.x, tile.pos.y, tile.pos.z];
         int rotationSteps = node.ClockwiseRotationSteps;
 
         // Make sure that this tile's neighbors get marked to get updated
         foreach (Tile t in tile.neighbors)
             t.shouldBeUpdated = true;
+        
+        //UnityEngine.Debug.Log($"collapsing tile ({tile.pos.x}, {tile.pos.y}, {tile.pos.z})");
 
         // Instantiate the tile
-        GameObject obj = Instantiate(node.Prefab, GetRotPosVec(x, y, rotationSteps), Quaternion.Euler(0, rotationSteps * 90, 0));
+        GameObject obj = Instantiate(node.Prefab, GetRotPosVec(tile.pos, rotationSteps), Quaternion.Euler(0, rotationSteps * 90, 0));
         obj.name = node.name; // Rename the node so we know what type has been spawned
         obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
     }
 
-    private Vector3 GetRotPosVec(int posX, int posY, int rotationSteps) 
-    {
-        switch(rotationSteps)
-        {
-            case 1:
-                return new Vector3(posX, 0, posY - 1);
-            case 2:
-                return new Vector3(posX - 1, 0, posY - 1);
-            case 3:
-                return new Vector3(posX - 1, 0, posY);
-            default:
-                return new Vector3(posX, 0, posY);
-        }
-    }
+    private Vector3 GetRotPosVec(Vector3Int pos, int rotationSteps) => pos - rotationSteps switch {
+        1 => new Vector3(0, 0, 1),
+        2 => new Vector3(1, 0, 1),
+        3 => new Vector3(1, 0, 0),
+        _ => Vector3Int.zero
+    };
 
     private void WhittleNodes(List<NodeData> potentialNodes, NodeFaceHorizontal validType, string direction)
     {
@@ -345,8 +386,8 @@ public class WFC : MonoBehaviour
         }
     }
 
-    private bool CheckGridValidity(Vector2Int pos)
-    {
-        return (pos.x > -1 && pos.x < _width && pos.y > -1 && pos.y < _height);
-    }
+    private bool CheckGridValidity(Vector3Int pos) =>
+           pos.x > -1 && pos.x < _width 
+        && pos.y > -1 && pos.y < _height 
+        && pos.z > -1 && pos.z < _length;
 }
