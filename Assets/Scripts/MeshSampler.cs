@@ -1,171 +1,162 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor.Build.Pipeline.Tasks;
+using Random = UnityEngine.Random;
 
 public class MeshSampler : MonoBehaviour
 {
-    private Mesh _mesh;
+    [SerializeField] private Mesh _mesh;
+    [SerializeField] private float _radius;
+    [SerializeField] private int _tries = 30;
 
-    private List<Triangle> _triangles = new List<Triangle>();
-    private List<Vector3> _pool = new List<Vector3>();
-    
+    private int[] _triangles;
+    private Vector3[] _vertices;
+
     private List<Vector3> _samples = new List<Vector3>();
 
-    private int _pointsCount = 30;
-    [SerializeField] private float _radius = 0.5f;
-    [SerializeField] private int _tries = 20;
-    
-    private int maxLoops = 1000;
+    private int safety = 10000;
 
-    void Awake()
+    private void Awake()
     {
         _mesh = GetComponent<MeshFilter>().sharedMesh;
     }
 
-    void Start()
+    private void Start()
     {
-        ComputeMeshData();
-        // SamplePoints();
-        
-        _samples = Sample(_radius);
+        _vertices = _mesh.vertices;
+        _triangles = _mesh.triangles;
+
+        _samples = SampleMesh(_vertices, _triangles, _radius, _tries);
     }
 
-    void OnDrawGizmos()
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.white;
 
-        foreach(var sample in _samples)
-        {
-            Gizmos.DrawSphere(sample, 0.005f);
-        }
+        foreach (var sample in _samples)
+            Gizmos.DrawSphere(sample, 0.01f);
     }
 
-    private void ComputeMeshData()
+    private List<Vector3> SampleMesh(Vector3[] vertices, int[] triangles, float radius, int tries)
     {
-        int[] triangles = _mesh.triangles;
-        Vector3[] vertices = _mesh.vertices;
+        List<Vector3> samples = new List<Vector3>();
+        List<int> active = new List<int>();
 
-        int triCount = triangles.Length / 3;
+        (float[] area, float[] cdf, float totalArea) = BuildTriangleAreaCDF(vertices, triangles);
+        (Vector3 min, Vector3 max) = BuildBoundingBox(vertices);
 
-        for(int i = 0; i < triCount; i++)
+        (Vector3[,,] grid, float cellSize, int gx, int gy, int gz) = InitializeGrid(min, max, radius);
+
+        int triangleIndex = SampleTriangleIndexFromCDF(cdf);
+
+        int i0 = triangles[triangleIndex * 3 + 0];
+        int i1 = triangles[triangleIndex * 3 + 1];
+        int i2 = triangles[triangleIndex * 3 + 2];
+
+        Vector3 p = SamplePointInTriangle(vertices[i0], vertices[i1], vertices[i2]);
+        InsertSampleToGrid(p, grid, min, cellSize);
+
+        samples.Add(p);
+        active.Add(0);
+
+        int tryCount = 0;
+
+        while (active.Count > 0 && tryCount < safety)
+        {
+            tryCount += 1;
+
+            int activeIndex = Random.Range(0, active.Count);
+            int index = active[activeIndex];
+
+            Vector3 s = samples[index];
+
+            bool accepted = false;
+
+            for (int i = 0; i < _tries; i++)
+            {
+                int triIndex = SampleTriangleIndexFromCDF(cdf);
+
+                i0 = triangles[triIndex * 3 + 0];
+                i1 = triangles[triIndex * 3 + 1];
+                i2 = triangles[triIndex * 3 + 2];
+
+                Vector3 candidate = SamplePointInTriangle(vertices[i0], vertices[i1], vertices[i2]);
+
+                if (IsValid(candidate, radius, grid, min, cellSize, gx, gy, gz))
+                {
+                    InsertSampleToGrid(candidate, grid, min, cellSize);
+
+                    samples.Add(candidate);
+                    int newIndex = samples.Count - 1;
+
+                    active.Add(newIndex);
+                    accepted = true;
+                }
+            }
+
+            if (!accepted)
+            {
+                (active[activeIndex], active[^1]) = (active[^1], active[activeIndex]);
+                active.Remove(active.Count - 1);
+            }
+        }
+
+        return samples;
+    }
+
+    private (float[], float[], float) BuildTriangleAreaCDF(Vector3[] vertices, int[] triangles)
+    {
+        int count = triangles.Length / 3;
+
+        float[] area = new float[count];
+        float[] cdf = new float[count];
+
+        float totalArea = 0;
+
+        for (int i = 0; i < count; i++)
         {
             int i0 = triangles[i * 3 + 0];
             int i1 = triangles[i * 3 + 1];
             int i2 = triangles[i * 3 + 2];
 
-            Triangle triangle = new Triangle
-            {
-                i0 = i0,
-                i1 = i1,
-                i2 = i2,
+            Vector3 v0 = vertices[i0];
+            Vector3 v1 = vertices[i1];
+            Vector3 v2 = vertices[i2];
 
-                v0 = vertices[i0],
-                v1 = vertices[i1],
-                v2 = vertices[i2],
-                
-                samples = new List<Vector3>(),
-            };
+            area[i] = Vector3.Cross((v1 - v0), (v2 - v0)).magnitude * 0.5f;
 
-            _triangles.Add(triangle);
+            totalArea += area[i];
+            cdf[i] = totalArea;
         }
+
+        for (int i = 0; i < count; i++)
+            cdf[i] = cdf[i] / totalArea;
+
+        return (area, cdf, totalArea);
     }
 
-    private void SamplePoints()
+    private int SampleTriangleIndexFromCDF(float[] cdf)
     {
-        foreach(var triangle in _triangles)
+        float rand = Random.value;
+
+        int low = 0;
+        int high = cdf.Length - 1;
+
+        while (low < high)
         {
-            for(int i = 0; i < _pointsCount; i++)
-            {
-                Vector3 barycentricCoordinate = transform.TransformPoint(GenerateBarycentricCoordinate(triangle));
-                
-                if(!triangle.samples.Contains(barycentricCoordinate))
-                    triangle.samples.Add(barycentricCoordinate);   
-            }
+            int mid = (low + high) / 2;
+
+            if (cdf[mid] >= rand)
+                high = mid;
+            else
+                low = mid + 1;
         }
+
+        return low;
     }
 
-    private List<Vector3> Sample(float radius)
-    {
-        List<Vector3> samples = new List<Vector3>();
-        
-        foreach (var triangle in _triangles)
-        {
-            // Triangle triangle = _triangles[Random.Range(0, _triangles.Count)];
-        
-            // List<Vector3> pool = triangle.samples;
-            List<int> active = new List<int>();
-             
-            Vector3 point = GenerateBarycentricCoordinate(triangle);
-            
-            samples.Add(point);
-            active.Add(0);
-
-            int currentLoop = 0;
-            
-            while (active.Count > 0 && currentLoop < maxLoops)
-            {
-                currentLoop++;
-                
-                int randomIndex = Random.Range(0, active.Count);
-                int index = active[randomIndex];
-                
-                Vector3 center = samples[index];
-                
-                bool found = false;
-
-                for (int i = 0; i < _tries; i++)
-                {
-                    Vector3 candidate = GenerateBarycentricCoordinate(triangle);
-
-                    //if (candidate == Vector3.zero) continue;
-
-                    if (IsValid(candidate, center, radius))
-                    {
-                        samples.Add(candidate);
-                        
-                        int newIndex = samples.Count - 1;
-                        active.Add(newIndex);
-
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    (active[randomIndex], active[^1]) = (active[^1], active[randomIndex]);
-                
-                    active.RemoveAt(active.Count - 1);
-                }
-            }
-        }
-        
-        return samples;
-    }
-    
-    private bool IsValid(Vector3 candidate, Vector3 centre, float r)
-    {
-        if (Vector3.Distance(candidate, centre) <= r)
-            return false;
-
-        return true;
-    }
-    
-    private Vector3 FindRandomPointsAround(Triangle triangle, Vector3 center, float r)
-    {
-        float radius = Random.Range(r, 2 * r);
-        float azimuthalAngle = Random.Range(0, 2 * Mathf.PI);
-        float polarAngle = Random.Range(0, Mathf.PI);
-
-        foreach (var sample in triangle.samples)
-        {
-            if (Vector3.Distance(center, sample) <= radius)
-                return sample;
-        }
-        
-        return Vector3.zero;
-    }
-
-    private Vector3 GenerateBarycentricCoordinate(Triangle triangle)
+    private Vector3 SamplePointInTriangle(Vector3 v0, Vector3 v1, Vector3 v2)
     {
         float u = Random.value;
         float v = Random.value;
@@ -176,17 +167,81 @@ public class MeshSampler : MonoBehaviour
             v = 1 - v;
         }
 
-        Vector3 barycentricCoordinate = triangle.v0 + u * (triangle.v1 - triangle.v0) + v * (triangle.v2 - triangle.v0);
-
-        return transform.TransformPoint(barycentricCoordinate);
+        Vector3 p = v0 + u * (v1 - v0) + v * (v2 - v0);
+        return p;
     }
-}
 
-[System.Serializable]
-struct Triangle
-{
-    public Vector3 v0, v1, v2;
-    public int i0, i1, i2;
+    private (Vector3, Vector3) BuildBoundingBox(Vector3[] vertices)
+    {
+        Vector3 min = Vector3.positiveInfinity;
+        Vector3 max = Vector3.negativeInfinity;
 
-    public List<Vector3> samples;
+        foreach (var v in vertices)
+        {
+            min.x = Mathf.Min(min.x, v.x);
+            min.y = Mathf.Min(min.y, v.y);
+            min.z = Mathf.Min(min.z, v.z);
+
+            max.x = Mathf.Max(max.x, v.x);
+            max.y = Mathf.Max(max.y, v.y);
+            max.z = Mathf.Max(max.z, v.z);
+        }
+
+        return (min, max);
+    }
+
+    private (Vector3[,,], float, int, int, int) InitializeGrid(Vector3 min, Vector3 max, float radius)
+    {
+        float cellSize = radius / Mathf.Sqrt(3);
+
+        int gridX = Mathf.FloorToInt((max.x - min.x) / cellSize) + 1;
+        int gridY = Mathf.FloorToInt((max.y - min.y) / cellSize) + 1;
+        int gridZ = Mathf.FloorToInt((max.z - min.z) / cellSize) + 1;
+
+        Vector3[,,] grid = new Vector3[gridX, gridY, gridZ];
+        return (grid, cellSize, gridX, gridY, gridZ);
+    }
+
+    private Vector3Int PointToGrid(Vector3 p, Vector3 min, float cellSize)
+    {
+        int gx = Mathf.FloorToInt((p.x - min.x) / cellSize);
+        int gy = Mathf.FloorToInt((p.y - min.y) / cellSize);
+        int gz = Mathf.FloorToInt((p.z - min.z) / cellSize);
+
+        return new Vector3Int(gx, gy, gz);
+    }
+
+    private bool IsValid(Vector3 point, float radius, Vector3[,,] grid, Vector3 min, float cellSize, int gridX,
+        int gridY, int gridZ)
+    {
+        Vector3Int g = PointToGrid(point, min, cellSize);
+
+        for (int x = g.x - 2; x <= g.x + 2; x++)
+        {
+            if (x < 0 || x >= gridX) continue;
+
+            for (int y = g.y - 2; y <= g.y + 2; y++)
+            {
+                if (y < 0 || y >= gridY) continue;
+
+                for (int z = g.z - 2; z <= g.z + 2; z++)
+                {
+                    if (z < 0 || z >= gridZ) continue;
+
+                    Vector3 q = grid[x, y, z];
+
+                    if (Vector3.Distance(q, point) < radius)
+                        return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void InsertSampleToGrid(Vector3 point, Vector3[,,] grid, Vector3 min, float cellSize)
+    {
+        Vector3Int g = PointToGrid(point, min, cellSize);
+        grid[g.x, g.y, g.z] = point;
+    }
 }
