@@ -48,8 +48,8 @@ public class WFC : MonoBehaviour
     {
         Vector3Int.forward,
         Vector3Int.back,
-        Vector3Int.left,
         Vector3Int.right,
+        Vector3Int.left,
         Vector3Int.up,
         Vector3Int.down
     };
@@ -59,10 +59,11 @@ public class WFC : MonoBehaviour
         collapseTilesRoutine = CollapseTiles(doneFuncHook);
         StartCoroutine(collapseTilesRoutine);
     }
+
     public void StopCollapse() 
     {
         doneCollapse = true;
-        StopCoroutine(collapseTilesRoutine);
+        if (collapseTilesRoutine != null) StopCoroutine(collapseTilesRoutine);
     }
 
     public void OnDrawGizmos() {
@@ -74,9 +75,11 @@ public class WFC : MonoBehaviour
                 for (int j = 0; j < _length; j++)
                     Gizmos.DrawWireCube(new Vector3(i - 0.5f, k + 0.5f, j - 0.5f), Vector3.one);
         
-        if (doneCollapse) return;
-        Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
-        Gizmos.DrawWireCube(activeCollapsningTile - new Vector3(0.5f, -0.5f, 0.5f), Vector3.one);
+        if (!doneCollapse)
+        {
+            Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
+            Gizmos.DrawWireCube(activeCollapsningTile - new Vector3(0.5f, -0.5f, 0.5f), Vector3.one);
+        }
     }
 
     // Generate new tiles by creating new ones by rotating the current ones
@@ -108,7 +111,7 @@ public class WFC : MonoBehaviour
                         continue;
 
                     // Setup new tile data
-                    NodeData newNode = new NodeData();
+                    NodeData newNode = ScriptableObject.CreateInstance<NodeData>();
 
                     newNode.name = currNode.name + "_" + ((j + 1) * 90);
                     newNode.Prefab = currNode.Prefab;
@@ -144,12 +147,12 @@ public class WFC : MonoBehaviour
                     }
 
                     _nodesGenerated.Add(newNode);
-                    UnityEngine.Debug.Log($"Added node '{newNode.name}'");
+                    //UnityEngine.Debug.Log($"Added node '{newNode.name}'");
                 }
             }
         }
 
-        UnityEngine.Debug.Log($"Nodes Generated: {(_nodesGenerated.Count)}");
+        /*UnityEngine.Debug.Log($"Nodes Generated: {(_nodesGenerated.Count)}");
 
         // Debug Data
         List<NodeData> potentialNodes = new List<NodeData>(_nodes);
@@ -160,7 +163,7 @@ public class WFC : MonoBehaviour
         for(int i = 0; i < potentialNodes.Count; i++)
             nodeNames += $"\n| tile {i + 1}: {potentialNodes[i].name}";
         
-        UnityEngine.Debug.Log($"Total nodes used for future generation: {nodeNames}");
+        UnityEngine.Debug.Log($"Total nodes used for future generation: {nodeNames}");*/
     }
 
     private void RotateNodeVerticalFaces(NodeFaceVertical[] faces, int rotationAmount)
@@ -226,6 +229,9 @@ public class WFC : MonoBehaviour
                 _grid[tile.pos.x, tile.pos.y, tile.pos.z] = tile.potentialNodes[chosenTileIdx];
             }
 
+            UnityEngine.Debug.Log($"chosen tile: ({tile.pos.x}, {tile.pos.y}, {tile.pos.z}), chosen node: {_grid[tile.pos.x, tile.pos.y, tile.pos.z].name}");
+            UnityEngine.Debug.Log($"potential nodes: {string.Join(", ", tile.potentialNodes.Select(n => n.name))}");
+
             activeCollapsningTile = tile.pos;
 
             yield return new WaitForSeconds(collapseWaitTime);
@@ -275,13 +281,13 @@ public class WFC : MonoBehaviour
 
     private void CheckNeighbors(Tile tile)
     {
-        if(!tile.shouldBeUpdated) return; // No neighbor has been collapsed for this tile, to no need to recheck its options
+        if(!tile.shouldBeUpdated) return; // No neighbor has been collapsed for this tile, so no need to recheck its options
 
-        for(int i = 0; i < offsets.Length; i++)
+        for(int i = 0; i < offsets.Length - 2; i++)
         {
             Vector3Int neighbor = new Vector3Int(tile.pos.x + offsets[i].x, tile.pos.y + offsets[i].y, tile.pos.z + offsets[i].z);
 
-            //UnityEngine.Debug.Log($"Checking neighbor ({offsets[i].x}, {offsets[i].y}, {offsets[i].z})");
+            //UnityEngine.Debug.Log($"Checking neighbor ({neighbor.x}, {neighbor.y}, {neighbor.z}), valid: {CheckGridValidity(neighbor)}");
 
             if(CheckGridValidity(neighbor))
             {
@@ -320,7 +326,7 @@ public class WFC : MonoBehaviour
         int idx = 0;
 
         for (int i = 0; i < tilesCount; i++)
-            if (_nodesToCollapse[i].potentialNodes.Count < _nodesToCollapse[idx].potentialNodes.Count)
+            if (_nodesToCollapse[i].potentialNodes.Count < _nodesToCollapse[idx].potentialNodes.Count) 
                 idx = i; // Choose the tile with the least amount of options
         
         return idx;
