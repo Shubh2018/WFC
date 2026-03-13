@@ -3,10 +3,12 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor.Build.Pipeline.Tasks;
 using Random = UnityEngine.Random;
+using TMPro.EditorUtilities;
 
 public class MeshSampler : MonoBehaviour
 {
-    [SerializeField] private Mesh _mesh;
+    private Mesh _mesh;
+
     [SerializeField] private float _radius;
     [SerializeField] private int _tries = 30;
 
@@ -17,17 +19,21 @@ public class MeshSampler : MonoBehaviour
 
     private int safety = 10000;
 
-    private void Awake()
+    public Mesh Mesh => _mesh;
+
+    public void Generate()
     {
         _mesh = GetComponent<MeshFilter>().sharedMesh;
-    }
 
-    private void Start()
-    {
         _vertices = _mesh.vertices;
         _triangles = _mesh.triangles;
 
         _samples = SampleMesh(_vertices, _triangles, _radius, _tries);
+    }
+
+    public void Clear()
+    {
+        _samples.Clear();
     }
 
     private void OnDrawGizmos()

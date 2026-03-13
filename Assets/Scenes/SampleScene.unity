@@ -400,7 +400,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e37b9ec458f026249b982b0d4b16ade6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeshSampler
-  _mesh: {fileID: 0}
   _radius: 0.1
   _tries: 30
 --- !u!1 &832575517
@@ -577,7 +576,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e37b9ec458f026249b982b0d4b16ade6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeshSampler
-  _mesh: {fileID: 0}
   _radius: 0
   _tries: 30
 --- !u!1 &1203920477
