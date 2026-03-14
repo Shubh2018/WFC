@@ -14,10 +14,19 @@ public class MeshSampleEditor : Editor
 
     private HashSet<int> triangleIndex = new HashSet<int>();
 
+    private Vector3 normal = Vector3.zero;
+
+    private List<Triangle> triangleList;
+
     private void OnEnable()
     {
         _meshSampler = (MeshSampler)target;
         mesh = _meshSampler.Mesh;
+
+        _meshSampler.PopulateTriangles();
+        triangleList = new List<Triangle>(_meshSampler.TriList);
+
+        Debug.Log($"{triangleList.Count}");
         
         SceneView.duringSceneGui += OnSceneGUI_Custom;
     }
@@ -44,7 +53,7 @@ public class MeshSampleEditor : Editor
 
     void OnSceneGUI_Custom(SceneView sceneView)
     {
-        //TODO : On selecting the triangle, calculate normal and go through all other vertices and calculate the normal of the triangles they make.
+        //TODO: On selecting the triangle, calculate normal and go through all other vertices and calculate the normal of the triangles they make.
         //TODO: Add it to the list and paint the selection for each of the triangle.
         
         if (mesh == null) return;
@@ -90,7 +99,7 @@ public class MeshSampleEditor : Editor
         
         var t = _meshSampler.transform;
         
-        Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
+        Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
         Handles.color = new Color(1, 0.6f, 0, 0.4f);
 
         foreach (var index in triangleIndex)
@@ -102,8 +111,24 @@ public class MeshSampleEditor : Editor
             Vector3 v0 = t.TransformPoint(vertices[i0]);
             Vector3 v1 = t.TransformPoint(vertices[i1]);
             Vector3 v2 = t.TransformPoint(vertices[i2]);
-            
-            Handles.DrawAAConvexPolygon(new Vector3[] {v0, v1, v2});
+
+            normal = Vector3.Cross((v1 - v0), (v2 - v0)).normalized;   
+
+            //Handles.DrawAAConvexPolygon(new Vector3[] {v0, v1, v2});         
+        }
+
+        for (int i = 0; i < triangleList.Count; i++)
+        {
+            if (Vector3.Dot(triangleList[i].meshNormal, normal) == 0)
+            {
+                triangleList.RemoveAt(i);
+                Debug.Log($"{triangleList.Count}");
+            }
+        }
+
+        foreach (var triangle in triangleList)
+        {
+            Handles.DrawAAConvexPolygon(new Vector3[] {triangle.v0, triangle.v1, triangle.v2});
         }
     }
 

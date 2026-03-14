@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor.Build.Pipeline.Tasks;
 using Random = UnityEngine.Random;
 using TMPro.EditorUtilities;
+using System.Linq;
 
 public class MeshSampler : MonoBehaviour
 {
@@ -21,12 +22,59 @@ public class MeshSampler : MonoBehaviour
 
     public Mesh Mesh => _mesh;
 
+    private List<Triangle> triList = new List<Triangle>();
+    public List<Triangle> TriList => triList;
+
+    public void PopulateTriangles()
+    {
+        for(int i = 0; i < _triangles.Length / 3; i++)
+        {
+            int i0 = _triangles[i * 3 + 0];
+            int i1 = _triangles[i * 3 + 1];
+            int i2 = _triangles[i * 3 + 2];
+
+            Vector3 v0 = _vertices[i0];
+            Vector3 v1 = _vertices[i1];
+            Vector3 v2 = _vertices[i2];
+
+            Vector3 triNormal = Vector3.Cross((v1 - v0), (v2 - v0)).normalized;
+
+            Triangle triangle = new Triangle()
+            {
+                v0 = v0,
+                v1 = v1,
+                v2 = v2,
+
+                i0 = i0,
+                i1 = i1,
+                i2 = i2,
+
+                meshNormal = triNormal
+            };
+
+            triList.Add(triangle);
+        }
+    }
+
     public void Generate()
     {
         _mesh = GetComponent<MeshFilter>().sharedMesh;
 
         _vertices = _mesh.vertices;
         _triangles = _mesh.triangles;
+
+        for(int i = 0; i < _triangles.Length / 3; i++)
+        {
+            int i0 = _triangles[i * 3 + 0];
+            int i1 = _triangles[i * 3 + 1];
+            int i2 = _triangles[i * 3 + 2];
+
+            Vector3 v0 = _vertices[i0];
+            Vector3 v1 = _vertices[i1];
+            Vector3 v2 = _vertices[i2];
+
+            Vector3 triNormal = Vector3.Cross((v1 - v0), (v2 - v0)).normalized;
+        }
 
         _samples = SampleMesh(_vertices, _triangles, _radius, _tries);
     }
@@ -251,3 +299,10 @@ public class MeshSampler : MonoBehaviour
         grid[g.x, g.y, g.z] = point;
     }
 }
+
+public struct Triangle
+{
+    public Vector3 v0, v1, v2;
+    public int i0, i1, i2;
+    public Vector3 meshNormal;
+};
