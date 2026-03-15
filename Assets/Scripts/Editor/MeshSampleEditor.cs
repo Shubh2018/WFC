@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -14,26 +13,17 @@ public class MeshSampleEditor : Editor
 
     private HashSet<int> triangleIndex = new HashSet<int>();
 
-    private Vector3 normal = Vector3.zero;
-
-    private List<Triangle> triangleList;
-
     private void OnEnable()
     {
         _meshSampler = (MeshSampler)target;
-        mesh = _meshSampler.Mesh;
-
-        _meshSampler.PopulateTriangles();
-        triangleList = new List<Triangle>(_meshSampler.TriList);
-
-        Debug.Log($"{triangleList.Count}");
+        // mesh = _meshSampler.Mesh;
         
-        SceneView.duringSceneGui += OnSceneGUI_Custom;
+        // SceneView.duringSceneGui += OnSceneGUI_Custom;
     }
 
     private void OnDisable()
     {
-        SceneView.duringSceneGui -= OnSceneGUI_Custom;
+        // SceneView.duringSceneGui -= OnSceneGUI_Custom;
     }
 
     public override VisualElement CreateInspectorGUI()
@@ -61,21 +51,21 @@ public class MeshSampleEditor : Editor
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
         
         Event e = Event.current;
-
+        
         if (e.type == EventType.MouseDown && e.button == 0 && !e.alt)
         {
             Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
-
+        
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 if (hit.collider.TryGetComponent<MeshFilter>(out var filter))
                 {
                     int triIndex = hit.triangleIndex;
                     
-                    if(!e.control && !e.shift)
+                    if (!e.control && !e.shift)
                         triangleIndex.Clear();
                     
-                    if(triangleIndex.Contains(triIndex))
+                    if (triangleIndex.Contains(triIndex))
                         triangleIndex.Remove(triIndex);
                     else
                         triangleIndex.Add(triIndex);
@@ -85,7 +75,7 @@ public class MeshSampleEditor : Editor
                 }
             }
         }
-
+        
         DrawSelectedFaces();
     }
 
@@ -112,23 +102,9 @@ public class MeshSampleEditor : Editor
             Vector3 v1 = t.TransformPoint(vertices[i1]);
             Vector3 v2 = t.TransformPoint(vertices[i2]);
 
-            normal = Vector3.Cross((v1 - v0), (v2 - v0)).normalized;   
+            //normal = Vector3.Cross((v1 - v0), (v2 - v0)).normalized;   
 
             //Handles.DrawAAConvexPolygon(new Vector3[] {v0, v1, v2});         
-        }
-
-        for (int i = 0; i < triangleList.Count; i++)
-        {
-            if (Vector3.Dot(triangleList[i].meshNormal, normal) == 0)
-            {
-                triangleList.RemoveAt(i);
-                Debug.Log($"{triangleList.Count}");
-            }
-        }
-
-        foreach (var triangle in triangleList)
-        {
-            Handles.DrawAAConvexPolygon(new Vector3[] {triangle.v0, triangle.v1, triangle.v2});
         }
     }
 

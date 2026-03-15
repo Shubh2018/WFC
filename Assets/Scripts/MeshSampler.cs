@@ -1,82 +1,67 @@
-using System;
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEditor.Build.Pipeline.Tasks;
 using Random = UnityEngine.Random;
-using TMPro.EditorUtilities;
-using System.Linq;
+
+public enum SurfaceType
+{
+    Floor, Wall, Ceiling
+};
 
 public class MeshSampler : MonoBehaviour
 {
-    private Mesh _mesh;
+    private MeshFilter[] _meshFilter;
+    
+    private Mesh[] _mesh;
 
     [SerializeField] private float _radius;
     [SerializeField] private int _tries = 30;
 
-    private int[] _triangles;
-    private Vector3[] _vertices;
+    private Dictionary<Mesh, int[]> _triangles;
+    private Dictionary<Mesh, Vector3[]> _vertices;
+
+    private (Mesh mesh, int[] triangles, Vector3[] vertices)[] _meshData;
 
     private List<Vector3> _samples = new List<Vector3>();
 
     private int safety = 10000;
 
-    public Mesh Mesh => _mesh;
-
-    private List<Triangle> triList = new List<Triangle>();
-    public List<Triangle> TriList => triList;
-
-    public void PopulateTriangles()
-    {
-        for(int i = 0; i < _triangles.Length / 3; i++)
-        {
-            int i0 = _triangles[i * 3 + 0];
-            int i1 = _triangles[i * 3 + 1];
-            int i2 = _triangles[i * 3 + 2];
-
-            Vector3 v0 = _vertices[i0];
-            Vector3 v1 = _vertices[i1];
-            Vector3 v2 = _vertices[i2];
-
-            Vector3 triNormal = Vector3.Cross((v1 - v0), (v2 - v0)).normalized;
-
-            Triangle triangle = new Triangle()
-            {
-                v0 = v0,
-                v1 = v1,
-                v2 = v2,
-
-                i0 = i0,
-                i1 = i1,
-                i2 = i2,
-
-                meshNormal = triNormal
-            };
-
-            triList.Add(triangle);
-        }
-    }
+    // public Mesh Mesh => _mesh;
 
     public void Generate()
     {
-        _mesh = GetComponent<MeshFilter>().sharedMesh;
+        _meshFilter = GetComponentsInChildren<MeshFilter>();
+        _mesh = new Mesh[_meshFilter.Length];
+        
+        CombineInstance[] instances = new CombineInstance[_meshFilter.Length];
 
-        _vertices = _mesh.vertices;
-        _triangles = _mesh.triangles;
-
-        for(int i = 0; i < _triangles.Length / 3; i++)
+        for (int i = 0; i < _meshFilter.Length; i++)
         {
-            int i0 = _triangles[i * 3 + 0];
-            int i1 = _triangles[i * 3 + 1];
-            int i2 = _triangles[i * 3 + 2];
-
-            Vector3 v0 = _vertices[i0];
-            Vector3 v1 = _vertices[i1];
-            Vector3 v2 = _vertices[i2];
-
-            Vector3 triNormal = Vector3.Cross((v1 - v0), (v2 - v0)).normalized;
+            instances[i] = new CombineInstance()
+            {
+                mesh = _meshFilter[i].sharedMesh,
+                transform = _meshFilter[i].transform.localToWorldMatrix,
+            };
         }
+        
+        _meshData = new (Mesh, int[], Vector3[])[_meshFilter.Length];
+        
+        Mesh combinedMesh = new Mesh();
+        combinedMesh.CombineMeshes(instances);
+        //GetComponent<MeshFilter>().sharedMesh = combinedMesh;
+        
+        _samples.Clear();
 
-        _samples = SampleMesh(_vertices, _triangles, _radius, _tries);
+        // for (int i = 0; i < _meshFilter.Length; i++)
+        // {
+        //     Mesh mesh =  _meshFilter[i].sharedMesh;
+        //     _meshData[i] = (mesh, mesh.triangles, mesh.vertices);
+        //     // _mesh[i] = _meshFilter[i].GetComponent<MeshFilter>().sharedMesh;
+        //     // _vertices.Add(_mesh[i], _mesh[i].vertices);
+        //     // _triangles.Add(_mesh[i], _mesh[i].triangles);
+        // }
+        
+        // Mesh filter = this.GetComponent<MeshFilter>().sharedMesh;
+        _samples = SampleMesh(combinedMesh.vertices, combinedMesh.triangles, _radius, _tries);
     }
 
     public void Clear()
@@ -299,10 +284,3 @@ public class MeshSampler : MonoBehaviour
         grid[g.x, g.y, g.z] = point;
     }
 }
-
-public struct Triangle
-{
-    public Vector3 v0, v1, v2;
-    public int i0, i1, i2;
-    public Vector3 meshNormal;
-};
