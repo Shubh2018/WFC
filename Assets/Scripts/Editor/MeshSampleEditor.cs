@@ -101,10 +101,6 @@ public class MeshSampleEditor : Editor
             Vector3 v0 = t.TransformPoint(vertices[i0]);
             Vector3 v1 = t.TransformPoint(vertices[i1]);
             Vector3 v2 = t.TransformPoint(vertices[i2]);
-
-            //normal = Vector3.Cross((v1 - v0), (v2 - v0)).normalized;   
-
-            //Handles.DrawAAConvexPolygon(new Vector3[] {v0, v1, v2});         
         }
     }
 

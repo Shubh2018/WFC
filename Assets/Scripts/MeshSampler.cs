@@ -10,8 +10,6 @@ public enum SurfaceType
 public class MeshSampler : MonoBehaviour
 {
     private MeshFilter[] _meshFilter;
-    
-    private Mesh[] _mesh;
 
     [SerializeField] private float _radius;
     [SerializeField] private int _tries = 30;
@@ -19,62 +17,72 @@ public class MeshSampler : MonoBehaviour
     private Dictionary<Mesh, int[]> _triangles;
     private Dictionary<Mesh, Vector3[]> _vertices;
 
-    private (Mesh mesh, int[] triangles, Vector3[] vertices)[] _meshData;
-
     private List<Vector3> _samples = new List<Vector3>();
 
     private int safety = 10000;
-
-    // public Mesh Mesh => _mesh;
+    private Material[] _meshMaterials;
 
     public void Generate()
     {
         _meshFilter = GetComponentsInChildren<MeshFilter>();
-        _mesh = new Mesh[_meshFilter.Length];
+        _meshMaterials = new Material[_meshFilter.Length];
         
         CombineInstance[] instances = new CombineInstance[_meshFilter.Length];
 
         for (int i = 0; i < _meshFilter.Length; i++)
         {
+            MeshRenderer renderer = _meshFilter[i].GetComponent<MeshRenderer>();
+            
             instances[i] = new CombineInstance()
             {
                 mesh = _meshFilter[i].sharedMesh,
                 transform = _meshFilter[i].transform.localToWorldMatrix,
             };
+            
+            _meshFilter[i].gameObject.SetActive(false);
+            _meshMaterials[i] = renderer.sharedMaterial;
         }
         
-        _meshData = new (Mesh, int[], Vector3[])[_meshFilter.Length];
-        
-        Mesh combinedMesh = new Mesh();
+        Mesh combinedMesh = new Mesh
+        {
+            name = this.gameObject.name
+        };
         combinedMesh.CombineMeshes(instances);
-        //GetComponent<MeshFilter>().sharedMesh = combinedMesh;
+
+        this.gameObject.AddComponent<MeshFilter>().sharedMesh = combinedMesh;
+        this.gameObject.AddComponent<MeshRenderer>().sharedMaterial = _meshMaterials[0];
+        this.gameObject.AddComponent<MeshCollider>();
         
         _samples.Clear();
-
-        // for (int i = 0; i < _meshFilter.Length; i++)
-        // {
-        //     Mesh mesh =  _meshFilter[i].sharedMesh;
-        //     _meshData[i] = (mesh, mesh.triangles, mesh.vertices);
-        //     // _mesh[i] = _meshFilter[i].GetComponent<MeshFilter>().sharedMesh;
-        //     // _vertices.Add(_mesh[i], _mesh[i].vertices);
-        //     // _triangles.Add(_mesh[i], _mesh[i].triangles);
-        // }
-        
-        // Mesh filter = this.GetComponent<MeshFilter>().sharedMesh;
         _samples = SampleMesh(combinedMesh.vertices, combinedMesh.triangles, _radius, _tries);
     }
 
     public void Clear()
     {
+        DestroyImmediate(this.gameObject.GetComponent<MeshFilter>());
+        DestroyImmediate(this.gameObject.GetComponent<MeshCollider>());
+        DestroyImmediate(this.gameObject.GetComponent<MeshRenderer>());
+        
+        foreach(var filter in _meshFilter)
+            filter.gameObject.SetActive(true);
+        
         _samples.Clear();
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.white;
+        this.gameObject.TryGetComponent<MeshCollider>(out var meshCollider);
 
+        if (meshCollider)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireCube(meshCollider.bounds.center, meshCollider.bounds.size); 
+        }
+        
+        Gizmos.color = Color.white;
+        
         foreach (var sample in _samples)
-            Gizmos.DrawSphere(sample, 0.01f);
+            Gizmos.DrawSphere(sample, 0.1f);
     }
 
     private List<Vector3> SampleMesh(Vector3[] vertices, int[] triangles, float radius, int tries)
