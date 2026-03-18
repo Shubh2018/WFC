@@ -22,6 +22,10 @@ public class MeshSampler : MonoBehaviour
     private int safety = 10000;
     private Material[] _meshMaterials;
 
+    private MeshCollider _collider;
+    
+    private List<Sample> _samplePoints = new List<Sample>();
+
     public void Generate()
     {
         _meshFilter = GetComponentsInChildren<MeshFilter>();
@@ -51,22 +55,38 @@ public class MeshSampler : MonoBehaviour
 
         this.gameObject.AddComponent<MeshFilter>().sharedMesh = combinedMesh;
         this.gameObject.AddComponent<MeshRenderer>().sharedMaterial = _meshMaterials[0];
-        this.gameObject.AddComponent<MeshCollider>();
+        _collider = this.gameObject.AddComponent<MeshCollider>();
+        
+        this.gameObject.layer = LayerMask.NameToLayer("Level");
         
         _samples.Clear();
         _samples = SampleMesh(combinedMesh.vertices, combinedMesh.triangles, _radius, _tries);
+
+        for (int i = _samplePoints.Count - 1; i >= 0; i--)
+        {
+            if (IsInside(_samplePoints[i], _collider, 10000))
+            {
+                Debug.Log($"{i}: Removed");
+                _samplePoints.RemoveAt(i);
+            }
+        }
     }
 
     public void Clear()
     {
-        DestroyImmediate(this.gameObject.GetComponent<MeshFilter>());
-        DestroyImmediate(this.gameObject.GetComponent<MeshCollider>());
-        DestroyImmediate(this.gameObject.GetComponent<MeshRenderer>());
+        this.gameObject.layer = LayerMask.NameToLayer("Default");
+        
+        if (gameObject.TryGetComponent<MeshFilter>(out var meshFilter))
+            DestroyImmediate(meshFilter);
+        if(_collider)
+            DestroyImmediate(_collider);
+        if(gameObject.TryGetComponent<MeshRenderer>(out var renderer))
+            DestroyImmediate(renderer);
         
         foreach(var filter in _meshFilter)
             filter.gameObject.SetActive(true);
         
-        _samples.Clear();
+        _samplePoints.Clear();
     }
 
     private void OnDrawGizmos()
@@ -81,8 +101,8 @@ public class MeshSampler : MonoBehaviour
         
         Gizmos.color = Color.white;
         
-        foreach (var sample in _samples)
-            Gizmos.DrawSphere(sample, 0.1f);
+        foreach (var samplePoint in _samplePoints)
+            Gizmos.DrawSphere(samplePoint.sample, 0.1f);
     }
 
     private List<Vector3> SampleMesh(Vector3[] vertices, int[] triangles, float radius, int tries)
@@ -106,6 +126,14 @@ public class MeshSampler : MonoBehaviour
 
         samples.Add(p);
         active.Add(0);
+
+        Sample sample = new Sample()
+        {
+            sample = p,
+            triangleNormal = Vector3.Cross(vertices[i2] - vertices[i1], vertices[i2] - vertices[i0]).normalized,
+        };
+        
+        _samplePoints.Add(sample);
 
         int tryCount = 0;
 
@@ -139,6 +167,14 @@ public class MeshSampler : MonoBehaviour
 
                     active.Add(newIndex);
                     accepted = true;
+                    
+                    sample = new Sample()
+                    {
+                        sample = candidate,
+                        triangleNormal = Vector3.Cross(vertices[i2] - vertices[i1], vertices[i2] - vertices[i0]).normalized,
+                    };
+                    
+                    _samplePoints.Add(sample);
                 }
             }
 
@@ -291,4 +327,53 @@ public class MeshSampler : MonoBehaviour
         Vector3Int g = PointToGrid(point, min, cellSize);
         grid[g.x, g.y, g.z] = point;
     }
+
+    private bool IsInside(Sample pInterior, MeshCollider collider, int maxSteps = 64)
+    {
+        Vector3 normal = pInterior.triangleNormal;
+        int hits = 0;
+        float remaining = 10000f;
+        float epsilon = 0.0001f;
+        Vector3 origin = pInterior.sample;
+
+        bool isInside = false;
+
+        for (int i = 0; i < maxSteps && remaining > 0; i++)
+        {
+            origin = origin - normal * epsilon;
+            int levelMask = 1 << collider.gameObject.layer;
+            float radius = 0.02f;
+            
+            var colliders = Physics.OverlapSphere(origin, radius, levelMask);
+            
+            isInside = (colliders.Length > 0);
+
+            if (!isInside)
+                break;
+        }
+        
+        return isInside;
+        
+        // for(int i = 0; i < maxSteps && remaining > 0.0f; i++)
+        // {
+        //     if (Physics.Raycast(origin, dir, out RaycastHit hit, remaining, 1 << collider.gameObject.layer))
+        //     {
+        //         hits++;
+        //         float advance = hit.distance + epsilon;
+        //         remaining -= advance;
+        //         origin = origin - dir * epsilon;
+        //     }
+        //
+        //     else
+        //         break;
+        // }
+        
+        // return (hits % 2) == 1;
+    }
+}
+
+public struct Sample
+{
+    public Vector3 sample;
+    public Vector3 triangleNormal;
 }
