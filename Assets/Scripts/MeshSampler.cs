@@ -25,9 +25,13 @@ public class MeshSampler : MonoBehaviour
     private MeshCollider _collider;
     
     private List<Sample> _samplePoints = new List<Sample>();
+    private List<Sample> _pointsInside = new List<Sample>();
 
     public void Generate()
     {
+        if(_samplePoints.Count > 0)
+            Clear();
+            
         _meshFilter = GetComponentsInChildren<MeshFilter>();
         _meshMaterials = new Material[_meshFilter.Length];
         
@@ -62,12 +66,17 @@ public class MeshSampler : MonoBehaviour
         _samples.Clear();
         _samples = SampleMesh(combinedMesh.vertices, combinedMesh.triangles, _radius, _tries);
 
-        for (int i = _samplePoints.Count - 1; i >= 0; i--)
+        foreach(var s in _samplePoints)
         {
-            if (IsInside(_samplePoints[i], _collider, 10000))
+            Vector3 p = s.sample;
+            Vector3 n = s.triangleNormal;
+
+            float epsilon = 1f;
+            Vector3 pInterior = p - n * epsilon;
+
+            if (IsInside(pInterior, _collider, 10000))
             {
-                Debug.Log($"{i}: Removed");
-                _samplePoints.RemoveAt(i);
+                _pointsInside.Add(s);
             }
         }
     }
@@ -87,6 +96,7 @@ public class MeshSampler : MonoBehaviour
             filter.gameObject.SetActive(true);
         
         _samplePoints.Clear();
+        _pointsInside.Clear();
     }
 
     private void OnDrawGizmos()
@@ -101,7 +111,7 @@ public class MeshSampler : MonoBehaviour
         
         Gizmos.color = Color.white;
         
-        foreach (var samplePoint in _samplePoints)
+        foreach (var samplePoint in _pointsInside)
             Gizmos.DrawSphere(samplePoint.sample, 0.1f);
     }
 
@@ -130,7 +140,7 @@ public class MeshSampler : MonoBehaviour
         Sample sample = new Sample()
         {
             sample = p,
-            triangleNormal = Vector3.Cross(vertices[i2] - vertices[i1], vertices[i2] - vertices[i0]).normalized,
+            triangleNormal = Vector3.Cross(vertices[i2] - vertices[i0], vertices[i2] - vertices[i0]).normalized,
         };
         
         _samplePoints.Add(sample);
@@ -171,7 +181,7 @@ public class MeshSampler : MonoBehaviour
                     sample = new Sample()
                     {
                         sample = candidate,
-                        triangleNormal = Vector3.Cross(vertices[i2] - vertices[i1], vertices[i2] - vertices[i0]).normalized,
+                        triangleNormal = Vector3.Cross(vertices[i2] - vertices[i0], vertices[i2] - vertices[i0]).normalized,
                     };
                     
                     _samplePoints.Add(sample);
@@ -328,47 +338,32 @@ public class MeshSampler : MonoBehaviour
         grid[g.x, g.y, g.z] = point;
     }
 
-    private bool IsInside(Sample pInterior, MeshCollider collider, int maxSteps = 64)
+    private bool IsInside(Vector3 pInterior, MeshCollider collider, int maxSteps = 64)
     {
-        Vector3 normal = pInterior.triangleNormal;
+        Vector3 dir = Vector3.right;
         int hits = 0;
         float remaining = 10000f;
-        float epsilon = 0.0001f;
-        Vector3 origin = pInterior.sample;
-
-        bool isInside = false;
-
-        for (int i = 0; i < maxSteps && remaining > 0; i++)
+        float epsilon = 0.01f;
+        Vector3 origin = pInterior;
+        
+        for(int i = 0; i < maxSteps && remaining > 0.0f; i++)
         {
-            origin = origin - normal * epsilon;
-            int levelMask = 1 << collider.gameObject.layer;
-            float radius = 0.02f;
-            
-            var colliders = Physics.OverlapSphere(origin, radius, levelMask);
-            
-            isInside = (colliders.Length > 0);
+            bool hit = Physics.Raycast(origin, dir, out RaycastHit col, remaining, 1 << collider.gameObject.layer);
 
-            if (!isInside)
+            if (hit)
+            {
+                hits++;
+
+                float advance = col.distance + epsilon;
+                remaining -= advance;
+                origin = origin + dir * advance;
+            }
+
+            else
                 break;
         }
         
-        return isInside;
-        
-        // for(int i = 0; i < maxSteps && remaining > 0.0f; i++)
-        // {
-        //     if (Physics.Raycast(origin, dir, out RaycastHit hit, remaining, 1 << collider.gameObject.layer))
-        //     {
-        //         hits++;
-        //         float advance = hit.distance + epsilon;
-        //         remaining -= advance;
-        //         origin = origin - dir * epsilon;
-        //     }
-        //
-        //     else
-        //         break;
-        // }
-        
-        // return (hits % 2) == 1;
+        return (hits % 2) == 1;
     }
 }
 
