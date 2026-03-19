@@ -89,8 +89,8 @@ public class MeshSampler : MonoBehaviour
             DestroyImmediate(meshFilter);
         if(_collider)
             DestroyImmediate(_collider);
-        if(gameObject.TryGetComponent<MeshRenderer>(out var renderer))
-            DestroyImmediate(renderer);
+        if(gameObject.TryGetComponent<MeshRenderer>(out var meshRenderer))
+            DestroyImmediate(meshRenderer);
         
         foreach(var filter in _meshFilter)
             filter.gameObject.SetActive(true);
@@ -101,7 +101,7 @@ public class MeshSampler : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        this.gameObject.TryGetComponent<MeshCollider>(out var meshCollider);
+        gameObject.TryGetComponent<MeshCollider>(out var meshCollider);
 
         if (meshCollider)
         {
@@ -110,9 +110,12 @@ public class MeshSampler : MonoBehaviour
         }
         
         Gizmos.color = Color.white;
-        
+
         foreach (var samplePoint in _pointsInside)
+        {
             Gizmos.DrawSphere(samplePoint.sample, 0.1f);
+            Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * 1.0f);
+        }
     }
 
     private List<Vector3> SampleMesh(Vector3[] vertices, int[] triangles, float radius, int tries)
@@ -140,7 +143,7 @@ public class MeshSampler : MonoBehaviour
         Sample sample = new Sample()
         {
             sample = p,
-            triangleNormal = Vector3.Cross(vertices[i2] - vertices[i0], vertices[i2] - vertices[i0]).normalized,
+            triangleNormal = Vector3.Cross(vertices[i1] - vertices[i0], vertices[i2] - vertices[i0]).normalized,
         };
         
         _samplePoints.Add(sample);
@@ -181,7 +184,7 @@ public class MeshSampler : MonoBehaviour
                     sample = new Sample()
                     {
                         sample = candidate,
-                        triangleNormal = Vector3.Cross(vertices[i2] - vertices[i0], vertices[i2] - vertices[i0]).normalized,
+                        triangleNormal = Vector3.Cross(vertices[i1] - vertices[i0], vertices[i2] - vertices[i0]).normalized,
                     };
                     
                     _samplePoints.Add(sample);
@@ -356,14 +359,14 @@ public class MeshSampler : MonoBehaviour
 
                 float advance = col.distance + epsilon;
                 remaining -= advance;
-                origin = origin + dir * advance;
+                origin += dir * advance;
             }
 
             else
                 break;
         }
-        
-        return (hits % 2) == 1;
+
+        return (hits % 2) == 0;
     }
 }
 
