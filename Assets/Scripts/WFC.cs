@@ -147,23 +147,9 @@ public class WFC : MonoBehaviour
                     }
 
                     _nodesGenerated.Add(newNode);
-                    //UnityEngine.Debug.Log($"Added node '{newNode.name}'");
                 }
             }
         }
-
-        /*UnityEngine.Debug.Log($"Nodes Generated: {(_nodesGenerated.Count)}");
-
-        // Debug Data
-        List<NodeData> potentialNodes = new List<NodeData>(_nodes);
-        potentialNodes.AddRange(_nodesGenerated);
-
-        string nodeNames = "";
-
-        for(int i = 0; i < potentialNodes.Count; i++)
-            nodeNames += $"\n| tile {i + 1}: {potentialNodes[i].name}";
-        
-        UnityEngine.Debug.Log($"Total nodes used for future generation: {nodeNames}");*/
     }
 
     private void RotateNodeVerticalFaces(NodeFaceVertical[] faces, int rotationAmount)
@@ -253,11 +239,6 @@ public class WFC : MonoBehaviour
         int i = 0;
         nodes.ForEach(n => weights[i++] = (n.Weight / totalWeight));
 
-        /*foreach (NodeData node in nodes)
-            UnityEngine.Debug.Log($"weight: {node.Weight}");
-        
-        UnityEngine.Debug.Log($"calculated weights: {string.Join(", ", weights)}");*/
-
         return weights;
     }
 
@@ -267,13 +248,8 @@ public class WFC : MonoBehaviour
 
         for(int a = 0; a < weight.Length; a++){
             total += weight[a];
-
-            //UnityEngine.Debug.Log($"choose weight, total: {total}, rng: {amount}");
             
-            if(amount <= total){
-                //UnityEngine.Debug.Log($"tile chosen: {a}");
-                return a;
-            }
+            if(amount <= total) return a;
         }
 
         return 0;
@@ -286,8 +262,6 @@ public class WFC : MonoBehaviour
         for(int i = 0; i < offsets.Length - 2; i++)
         {
             Vector3Int neighbor = new Vector3Int(tile.pos.x + offsets[i].x, tile.pos.y + offsets[i].y, tile.pos.z + offsets[i].z);
-
-            //UnityEngine.Debug.Log($"Checking neighbor ({neighbor.x}, {neighbor.y}, {neighbor.z}), valid: {CheckGridValidity(neighbor)}");
 
             if(CheckGridValidity(neighbor))
             {
@@ -340,11 +314,9 @@ public class WFC : MonoBehaviour
         // Make sure that this tile's neighbors get marked to get updated
         foreach (Tile t in tile.neighbors)
             t.shouldBeUpdated = true;
-        
-        //UnityEngine.Debug.Log($"collapsing tile ({tile.pos.x}, {tile.pos.y}, {tile.pos.z})");
 
         // Instantiate the tile
-        GameObject obj = Instantiate(node.Prefab, GetRotPosVec(tile.pos, rotationSteps), Quaternion.Euler(0, rotationSteps * 90, 0));
+        GameObject obj = Instantiate(node.Prefab, GetRotPosVec(tile.pos, rotationSteps) + transform.position, Quaternion.Euler(0, rotationSteps * 90, 0));
         obj.name = node.name; // Rename the node so we know what type has been spawned
         obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
     }
