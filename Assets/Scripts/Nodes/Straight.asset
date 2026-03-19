@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Grass
+  m_Name: Straight
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 2582079461782649853, guid: 7733c900466335c81872bc42db967718, type: 3}
+  Prefab: {fileID: 9038098871726607102, guid: 7b4cdb393757a7ded8517a768799b47c, type: 3}
   Weight: 1
   ClockwiseRotationSteps: 0
   Up:
@@ -24,11 +24,11 @@ MonoBehaviour:
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
   Right:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
   Front:

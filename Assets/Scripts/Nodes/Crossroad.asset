@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Grass
-  m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 2582079461782649853, guid: 7733c900466335c81872bc42db967718, type: 3}
+  m_Name: Crossroad
+  m_EditorClassIdentifier: Assembly-CSharp::Node
+  Prefab: {fileID: 4979922026216038440, guid: 92c40761f3e57469fb1b347d4a54b659, type: 3}
   Weight: 1
   ClockwiseRotationSteps: 0
   Up:
@@ -24,18 +24,18 @@ MonoBehaviour:
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
   Right:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
   Front:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
   Back:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
