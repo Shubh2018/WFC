@@ -5,10 +5,13 @@ public class NodeFace
 {
     public enum Name 
     {
-        Air,
-        Solid,
-        Grass,
-        Road
+        Ceilling,
+        Floor,
+        Wall,
+        Path,
+        StaircaseEnd,
+        StaircaseTop,
+        PathOpen
     }
 
     public Name name;
@@ -40,6 +43,7 @@ public class NodeData : ScriptableObject
 {
     public GameObject Prefab;
     public int Weight;
+    public bool IgnoreSelf;
     [HideInInspector] public int ClockwiseRotationSteps; // Set automatically as the tile is rotated
 
     public NodeFaceVertical Up;

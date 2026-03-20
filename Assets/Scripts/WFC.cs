@@ -73,12 +73,12 @@ public class WFC : MonoBehaviour
         for (int i = 0; i < _width; i++)
             for (int k = 0; k < _height; k++)
                 for (int j = 0; j < _length; j++)
-                    Gizmos.DrawWireCube(new Vector3(i - 0.5f, k + 0.5f, j - 0.5f), Vector3.one);
+                    Gizmos.DrawWireCube(new Vector3(i, k + 0.5f, j), Vector3.one);
         
         if (!doneCollapse)
         {
             Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
-            Gizmos.DrawWireCube(activeCollapsningTile - new Vector3(0.5f, -0.5f, 0.5f), Vector3.one);
+            Gizmos.DrawWireCube(activeCollapsningTile - new Vector3(0.0f, -0.5f, 0.0f), Vector3.one);
         }
     }
 
@@ -95,19 +95,20 @@ public class WFC : MonoBehaviour
             NodeData currNode = _nodes[i];
             List<NodeFaceHorizontal.Name> currFaceNames = new List<NodeFaceHorizontal.Name>{ currNode.Back.name, currNode.Right.name, currNode.Front.name, currNode.Left.name };
 
-            // Only rotate nodes that are not symmetrical all the way around (like the crossroad)
+            // Only rotate nodes with a positive weight that are not symmetrical all the way around (like the crossroad)
             if(currNode.Left.type != NodeFaceHorizontal.Type.None 
             || currNode.Right.type != NodeFaceHorizontal.Type.None
             || currNode.Front.type != NodeFaceHorizontal.Type.None
             || currNode.Back.type != NodeFaceHorizontal.Type.None
-            || currFaceNames.Distinct().Skip(1).Any()) 
+            || currFaceNames.Distinct().Skip(1).Any()
+            && currNode.Weight > 0) 
             {
                 // Rotate object clockwise a maximum of three times
                 for(int j = 0; j < 3; j++)
                 {
                     // If the tile is symmetrical on two sides, ignore rotation and continue
-                    if(j == 1 && currNode.Right.name == currNode.Left.name
-                    || j == 2 && currNode.Back.name == currNode.Front.name)
+                    if(j == 1 && currNode.Right.name == currNode.Left.name && currNode.Back.name == currNode.Front.name
+                    || j == 2 && currNode.Back.name == currNode.Front.name && currNode.Right.name == currNode.Left.name)
                         continue;
 
                     // Setup new tile data
@@ -172,7 +173,7 @@ public class WFC : MonoBehaviour
 
     public IEnumerator CollapseTiles(Action doneFuncHook)
     {
-        StartCollapseLabel:
+        //StartCollapseLabel:
         ClearTiles();
 
         Stopwatch st = new Stopwatch();
@@ -203,7 +204,9 @@ public class WFC : MonoBehaviour
             {
                 _grid[tile.pos.x, tile.pos.y, tile.pos.z] = _nodes[0];
                 UnityEngine.Debug.LogWarning($"Can't Collapse on {tile.pos.x}, {tile.pos.y}, {tile.pos.z}");
-                goto StartCollapseLabel; // If the tile cannot be collapsed, start over
+
+                activeCollapsningTile = tile.pos;
+                goto doneCollapseLabel;
             }
 
             else
@@ -215,8 +218,8 @@ public class WFC : MonoBehaviour
                 _grid[tile.pos.x, tile.pos.y, tile.pos.z] = tile.potentialNodes[chosenTileIdx];
             }
 
-            UnityEngine.Debug.Log($"chosen tile: ({tile.pos.x}, {tile.pos.y}, {tile.pos.z}), chosen node: {_grid[tile.pos.x, tile.pos.y, tile.pos.z].name}");
-            UnityEngine.Debug.Log($"potential nodes: {string.Join(", ", tile.potentialNodes.Select(n => n.name))}");
+            //UnityEngine.Debug.Log($"chosen tile: ({tile.pos.x}, {tile.pos.y}, {tile.pos.z}), chosen node: {_grid[tile.pos.x, tile.pos.y, tile.pos.z].name}");
+            //UnityEngine.Debug.Log($"potential nodes: {string.Join(", ", tile.potentialNodes.Select(n => n.name))}");
 
             activeCollapsningTile = tile.pos;
 
@@ -226,9 +229,12 @@ public class WFC : MonoBehaviour
             _nodesToCollapse.RemoveAt(tileChosenIndex);
         }
 
+        doneCollapse = true;
+
+        doneCollapseLabel:
+
         st.Stop();
         collapseExecutionTime = st.ElapsedMilliseconds;
-        doneCollapse = true;
         doneFuncHook();
     }
 
@@ -315,8 +321,11 @@ public class WFC : MonoBehaviour
         foreach (Tile t in tile.neighbors)
             t.shouldBeUpdated = true;
 
+        // If this is a helper tile, it cannot be instantiated so return instead
+        if (node.Prefab == null) return;
+
         // Instantiate the tile
-        GameObject obj = Instantiate(node.Prefab, GetRotPosVec(tile.pos, rotationSteps) + transform.position, Quaternion.Euler(0, rotationSteps * 90, 0));
+        GameObject obj = Instantiate(node.Prefab, tile.pos + transform.position, Quaternion.Euler(0, rotationSteps * 90, 0));
         obj.name = node.name; // Rename the node so we know what type has been spawned
         obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
     }
