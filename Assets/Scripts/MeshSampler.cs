@@ -23,6 +23,7 @@ public class MeshSampler : MonoBehaviour
     private Material[] _meshMaterials;
 
     private MeshCollider _collider;
+    private Mesh _combinedMesh;
     
     private List<Sample> _samplePoints = new List<Sample>();
     private List<Sample> _pointsInside = new List<Sample>();
@@ -33,7 +34,6 @@ public class MeshSampler : MonoBehaviour
             Clear();
             
         _meshFilter = GetComponentsInChildren<MeshFilter>();
-        _meshMaterials = new Material[_meshFilter.Length];
         
         CombineInstance[] instances = new CombineInstance[_meshFilter.Length];
 
@@ -47,25 +47,28 @@ public class MeshSampler : MonoBehaviour
                 transform = _meshFilter[i].transform.localToWorldMatrix,
             };
             
-            _meshFilter[i].gameObject.SetActive(false);
-            _meshMaterials[i] = renderer.sharedMaterial;
+            // _meshFilter[i].gameObject.SetActive(false);
+            _meshMaterials = new Material[renderer.sharedMaterials.Length];
+            _meshMaterials = renderer.sharedMaterials;
         }
         
-        Mesh combinedMesh = new Mesh
+        _combinedMesh = new Mesh
         {
-            name = this.gameObject.name
+            name = gameObject.name
         };
-        combinedMesh.CombineMeshes(instances);
+        _combinedMesh.CombineMeshes(instances);
 
-        this.gameObject.AddComponent<MeshFilter>().sharedMesh = combinedMesh;
-        this.gameObject.AddComponent<MeshRenderer>().sharedMaterial = _meshMaterials[0];
-        _collider = this.gameObject.AddComponent<MeshCollider>();
+        // gameObject.AddComponent<MeshFilter>().sharedMesh = _combinedMesh;
+        // gameObject.AddComponent<MeshRenderer>().sharedMaterials = _meshMaterials;
+        _collider = gameObject.AddComponent<MeshCollider>();
         
-        this.gameObject.layer = LayerMask.NameToLayer("Level");
+        gameObject.layer = LayerMask.NameToLayer("Level");
         
         _samples.Clear();
-        _samples = SampleMesh(combinedMesh.vertices, combinedMesh.triangles, _radius, _tries);
 
+        _samples = SampleMesh(_combinedMesh, _radius, _tries);
+        Debug.Log($"{_samplePoints.Count}");
+        
         foreach(var s in _samplePoints)
         {
             Vector3 p = s.sample;
@@ -74,16 +77,18 @@ public class MeshSampler : MonoBehaviour
             float epsilon = 1f;
             Vector3 pInterior = p - n * epsilon;
 
-            if (IsInside(pInterior, _collider, 10000))
+            if (IsInside(pInterior, _collider, 256))
             {
                 _pointsInside.Add(s);
             }
         }
+        
+        Debug.Log($"{_pointsInside.Count}");
     }
 
     public void Clear()
     {
-        this.gameObject.layer = LayerMask.NameToLayer("Default");
+        gameObject.layer = LayerMask.NameToLayer("Default");
         
         if (gameObject.TryGetComponent<MeshFilter>(out var meshFilter))
             DestroyImmediate(meshFilter);
@@ -92,11 +97,12 @@ public class MeshSampler : MonoBehaviour
         if(gameObject.TryGetComponent<MeshRenderer>(out var meshRenderer))
             DestroyImmediate(meshRenderer);
         
-        foreach(var filter in _meshFilter)
-            filter.gameObject.SetActive(true);
+        // foreach(var filter in _meshFilter)
+        //     filter.gameObject.SetActive(true);
         
         _samplePoints.Clear();
         _pointsInside.Clear();
+        _samples.Clear();
     }
 
     private void OnDrawGizmos()
@@ -111,24 +117,28 @@ public class MeshSampler : MonoBehaviour
         
         Gizmos.color = Color.white;
 
-        foreach (var samplePoint in _pointsInside)
+        foreach (var samplePoint in _samples)
         {
-            Gizmos.DrawSphere(samplePoint.sample, 0.1f);
-            Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * 1.0f);
+            Gizmos.DrawSphere(samplePoint, 0.1f);
+            // Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * 1.0f);
         }
     }
 
-    private List<Vector3> SampleMesh(Vector3[] vertices, int[] triangles, float radius, int tries)
+    private List<Vector3> SampleMesh(Mesh mesh, float radius, int tries)
     {
         List<Vector3> samples = new List<Vector3>();
         List<int> active = new List<int>();
 
-        (float[] area, float[] cdf, float totalArea) = BuildTriangleAreaCDF(vertices, triangles);
-        (Vector3 min, Vector3 max) = BuildBoundingBox(vertices);
+        (float[] area, float[] cdf, float totalArea) = BuildTriangleAreaCDF(mesh.vertices, mesh.triangles);
+        (Vector3 min, Vector3 max) = BuildBoundingBox(mesh.vertices);
 
         (Vector3[,,] grid, float cellSize, int gx, int gy, int gz) = InitializeGrid(min, max, radius);
 
         int triangleIndex = SampleTriangleIndexFromCDF(cdf);
+
+        int[] triangles = mesh.triangles;
+        Vector3[] vertices = mesh.vertices;
+        Vector3[] normals = mesh.normals;
 
         int i0 = triangles[triangleIndex * 3 + 0];
         int i1 = triangles[triangleIndex * 3 + 1];
@@ -142,8 +152,11 @@ public class MeshSampler : MonoBehaviour
 
         Sample sample = new Sample()
         {
+            v0 = vertices[i0],
+            v1 = vertices[i1],
+            v2 = vertices[i2],
             sample = p,
-            triangleNormal = Vector3.Cross(vertices[i1] - vertices[i0], vertices[i2] - vertices[i0]).normalized,
+            triangleNormal = normals[i0].normalized,
         };
         
         _samplePoints.Add(sample);
@@ -183,8 +196,11 @@ public class MeshSampler : MonoBehaviour
                     
                     sample = new Sample()
                     {
+                        v0 = vertices[i0],
+                        v1 = vertices[i1],
+                        v2 = vertices[i2],
                         sample = candidate,
-                        triangleNormal = Vector3.Cross(vertices[i1] - vertices[i0], vertices[i2] - vertices[i0]).normalized,
+                        triangleNormal = normals[i0].normalized,
                     };
                     
                     _samplePoints.Add(sample);
@@ -368,10 +384,21 @@ public class MeshSampler : MonoBehaviour
 
         return (hits % 2) == 0;
     }
+
+    private bool Inside(Sample sample)
+    {
+        Vector3 p0 = sample.v0;
+        
+        float dot = Vector3.Dot(sample.triangleNormal, sample.sample - p0);
+        
+        return dot <= 0;
+    }
 }
 
 public struct Sample
 {
+    public Vector3 v0, v1, v2;
+    
     public Vector3 sample;
     public Vector3 triangleNormal;
 }
