@@ -60,30 +60,26 @@ public class MeshSampler : MonoBehaviour
 
         // gameObject.AddComponent<MeshFilter>().sharedMesh = _combinedMesh;
         // gameObject.AddComponent<MeshRenderer>().sharedMaterials = _meshMaterials;
-        _collider = gameObject.AddComponent<MeshCollider>();
+        // _collider = gameObject.AddComponent<MeshCollider>();
         
         gameObject.layer = LayerMask.NameToLayer("Level");
         
         _samples.Clear();
-
         _samples = SampleMesh(_combinedMesh, _radius, _tries);
-        Debug.Log($"{_samplePoints.Count}");
         
-        foreach(var s in _samplePoints)
-        {
-            Vector3 p = s.sample;
-            Vector3 n = s.triangleNormal;
+        // foreach(var s in _samplePoints)
+        // {
+        //     Vector3 p = s.sample;
+        //     Vector3 n = s.triangleNormal;
 
-            float epsilon = 1f;
-            Vector3 pInterior = p - n * epsilon;
+        //     float epsilon = 1f;
+        //     Vector3 pInterior = p - n * epsilon;
 
-            if (IsInside(pInterior, _collider, 256))
-            {
-                _pointsInside.Add(s);
-            }
-        }
-        
-        Debug.Log($"{_pointsInside.Count}");
+        //     if (IsInside(pInterior, _collider, 256))
+        //     {
+        //         _pointsInside.Add(s);
+        //     }
+        // }
     }
 
     public void Clear()
