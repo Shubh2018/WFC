@@ -30,7 +30,7 @@ public class MeshSampler : MonoBehaviour
 
     public void Generate()
     {
-        if(_samplePoints.Count > 0)
+        if(_samplePoints.Count > 0 && _meshFilter.Length > 0)
             Clear();
             
         _meshFilter = GetComponentsInChildren<MeshFilter>();
@@ -47,7 +47,7 @@ public class MeshSampler : MonoBehaviour
                 transform = _meshFilter[i].transform.localToWorldMatrix,
             };
             
-            // _meshFilter[i].gameObject.SetActive(false);
+            _meshFilter[i].gameObject.SetActive(false);
             _meshMaterials = new Material[renderer.sharedMaterials.Length];
             _meshMaterials = renderer.sharedMaterials;
         }
@@ -58,26 +58,31 @@ public class MeshSampler : MonoBehaviour
         };
         _combinedMesh.CombineMeshes(instances);
 
-        // gameObject.AddComponent<MeshFilter>().sharedMesh = _combinedMesh;
-        // gameObject.AddComponent<MeshRenderer>().sharedMaterials = _meshMaterials;
-        // _collider = gameObject.AddComponent<MeshCollider>();
+        gameObject.AddComponent<MeshFilter>().sharedMesh = _combinedMesh;
+        gameObject.AddComponent<MeshRenderer>().sharedMaterials = _meshMaterials;
+        _collider = gameObject.AddComponent<MeshCollider>();
         
         gameObject.layer = LayerMask.NameToLayer("Level");
         
         _samples.Clear();
         _samples = SampleMesh(_combinedMesh, _radius, _tries);
-        
-        // foreach(var s in _samplePoints)
+
+        for (int i = _samplePoints.Count - 1; i >= 0; i--)
+        {
+            if(!Inside(_samplePoints[i]))
+                _samplePoints.RemoveAt(i);
+        }
+
+        // for (int i = _samplePoints.Count - 1; i <= 0; i--)
         // {
-        //     Vector3 p = s.sample;
-        //     Vector3 n = s.triangleNormal;
-
         //     float epsilon = 1f;
-        //     Vector3 pInterior = p - n * epsilon;
-
-        //     if (IsInside(pInterior, _collider, 256))
+        //
+        //     Sample pInterior = _samplePoints[i];
+        //     pInterior.sample += pInterior.triangleNormal * epsilon;
+        //     
+        //     if (IsInside(pInterior, _collider))
         //     {
-        //         _pointsInside.Add(s);
+        //         _samplePoints.RemoveAt(i);
         //     }
         // }
     }
@@ -93,8 +98,8 @@ public class MeshSampler : MonoBehaviour
         if(gameObject.TryGetComponent<MeshRenderer>(out var meshRenderer))
             DestroyImmediate(meshRenderer);
         
-        // foreach(var filter in _meshFilter)
-        //     filter.gameObject.SetActive(true);
+        foreach(var filter in _meshFilter)
+            filter.gameObject.SetActive(true);
         
         _samplePoints.Clear();
         _pointsInside.Clear();
@@ -113,10 +118,10 @@ public class MeshSampler : MonoBehaviour
         
         Gizmos.color = Color.white;
 
-        foreach (var samplePoint in _samples)
+        foreach (var samplePoint in _samplePoints)
         {
-            Gizmos.DrawSphere(samplePoint, 0.1f);
-            // Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * 1.0f);
+            Gizmos.DrawSphere(samplePoint.sample, 0.1f);
+            Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * 0.5f);
         }
     }
 
@@ -353,17 +358,17 @@ public class MeshSampler : MonoBehaviour
         grid[g.x, g.y, g.z] = point;
     }
 
-    private bool IsInside(Vector3 pInterior, MeshCollider collider, int maxSteps = 64)
+    private bool IsInside(Sample pInterior, MeshCollider collider, int maxSteps = 64)
     {
         Vector3 dir = Vector3.right;
         int hits = 0;
         float remaining = 10000f;
         float epsilon = 0.01f;
-        Vector3 origin = pInterior;
+        Vector3 origin = pInterior.sample;
         
         for(int i = 0; i < maxSteps && remaining > 0.0f; i++)
         {
-            bool hit = Physics.Raycast(origin, dir, out RaycastHit col, remaining, 1 << collider.gameObject.layer);
+            bool hit = Physics.Raycast(origin, dir, out RaycastHit col, remaining, LayerMask.NameToLayer("Level"));
 
             if (hit)
             {
