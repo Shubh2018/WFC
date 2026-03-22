@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Intersection
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 8774373638748318410, guid: 58a75e6aedee18e3099032ea7154ec96, type: 3}
-  Weight: 1
+  Weight: 2
   IgnoreSelf: 0
   ClockwiseRotationSteps: 0
   Up:

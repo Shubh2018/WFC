@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Junction
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 3847552137022721645, guid: 5ebbd7a788d4e1e21bf0283f8be5f24e, type: 3}
-  Weight: 1
+  Weight: 2
   IgnoreSelf: 0
   ClockwiseRotationSteps: 0
   Up:

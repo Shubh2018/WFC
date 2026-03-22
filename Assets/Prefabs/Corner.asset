@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Corner
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 7262459333311164405, guid: f24750b4671142d94a069d6cd79118c1, type: 3}
-  Weight: 1
+  Weight: 2
   IgnoreSelf: 0
   ClockwiseRotationSteps: 0
   Up:

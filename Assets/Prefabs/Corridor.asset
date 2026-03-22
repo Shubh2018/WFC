@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Corridor
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 3288893121992232937, guid: c2cfd8af606780566b47dea02f320313, type: 3}
-  Weight: 1
+  Weight: 2
   IgnoreSelf: 0
   ClockwiseRotationSteps: 0
   Up:
