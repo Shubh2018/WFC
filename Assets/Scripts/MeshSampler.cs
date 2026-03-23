@@ -67,24 +67,27 @@ public class MeshSampler : MonoBehaviour
         _samples.Clear();
         _samples = SampleMesh(_combinedMesh, _radius, _tries);
 
+        // for (int i = _samples.Count - 1; i >= 0; i--)
+        // {
+        //     if(!IsInside(_samples[i], _collider))
+        //         _samples.RemoveAt(i);
+        // }
+
+        Debug.Log($"{_samplePoints.Count}");
         for (int i = _samplePoints.Count - 1; i >= 0; i--)
         {
-            if(!Inside(_samplePoints[i]))
+            Debug.Log($"For Loop");
+            // float epsilon = 1f;
+            //
+            // Sample pInterior = _samplePoints[i];
+            // pInterior.sample += pInterior.triangleNormal * epsilon;
+            //
+            if (!IsInside(_samplePoints[i], _collider))
+            {
                 _samplePoints.RemoveAt(i);
+                Debug.Log($"Inside Check");
+            }
         }
-
-        // for (int i = _samplePoints.Count - 1; i <= 0; i--)
-        // {
-        //     float epsilon = 1f;
-        //
-        //     Sample pInterior = _samplePoints[i];
-        //     pInterior.sample += pInterior.triangleNormal * epsilon;
-        //     
-        //     if (IsInside(pInterior, _collider))
-        //     {
-        //         _samplePoints.RemoveAt(i);
-        //     }
-        // }
     }
 
     public void Clear()
@@ -120,8 +123,9 @@ public class MeshSampler : MonoBehaviour
 
         foreach (var samplePoint in _samplePoints)
         {
-            Gizmos.DrawSphere(samplePoint.sample, 0.1f);
-            Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * 0.5f);
+            Gizmos.DrawSphere(samplePoint.sample, 0.05f);
+            // Gizmos.DrawWireSphere(samplePoint.sample, 0.25f);
+            // Gizmos.DrawRay(samplePoint, samplePoint.triangleNormal * 0.5f);
         }
     }
 
@@ -358,44 +362,21 @@ public class MeshSampler : MonoBehaviour
         grid[g.x, g.y, g.z] = point;
     }
 
-    private bool IsInside(Sample pInterior, MeshCollider collider, int maxSteps = 64)
+    private bool IsInside(Sample pInterior, Collider collider, int maxSteps = 64)
     {
-        Vector3 dir = Vector3.right;
-        int hits = 0;
-        float remaining = 10000f;
-        float epsilon = 0.01f;
-        Vector3 origin = pInterior.sample;
-        
-        for(int i = 0; i < maxSteps && remaining > 0.0f; i++)
-        {
-            bool hit = Physics.Raycast(origin, dir, out RaycastHit col, remaining, LayerMask.NameToLayer("Level"));
+        Debug.Log($"Inside Inside");
+        Vector3 dir = (collider.bounds.center - pInterior.sample).normalized;
 
-            if (hit)
-            {
-                hits++;
+        float d = Vector3.Dot(dir, pInterior.triangleNormal);
 
-                float advance = col.distance + epsilon;
-                remaining -= advance;
-                origin += dir * advance;
-            }
+        if (d > 0)
+            return true;
 
-            else
-                break;
-        }
-
-        return (hits % 2) == 0;
-    }
-
-    private bool Inside(Sample sample)
-    {
-        Vector3 p0 = sample.v0;
-        
-        float dot = Vector3.Dot(sample.triangleNormal, sample.sample - p0);
-        
-        return dot <= 0;
+        return false;
     }
 }
 
+[System.Serializable]
 public struct Sample
 {
     public Vector3 v0, v1, v2;
