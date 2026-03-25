@@ -1,10 +1,14 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Numerics;
 using Random = UnityEngine.Random;
+using Vector3 = UnityEngine.Vector3;
 
 public enum SurfaceType
 {
-    Floor, Wall, Ceiling
+    Floor,
+    Wall,
+    Ceiling
 };
 
 public class MeshSampler : MonoBehaviour
@@ -17,32 +21,33 @@ public class MeshSampler : MonoBehaviour
     private Dictionary<Mesh, int[]> _triangles;
     private Dictionary<Mesh, Vector3[]> _vertices;
 
-    // private List<Vector3> _samplePoints = new List<Vector3>();
+    private List<Sample> _floorSamples = new List<Sample>();
 
     private int safety = 10000;
     private Material[] _meshMaterials;
 
     private MeshCollider _collider;
     private Mesh _combinedMesh;
-    
+
     private List<Sample> _samplePoints = new List<Sample>();
     private List<Sample> _pointsInside = new List<Sample>();
 
     public void Generate()
     {
-        if(_samplePoints.Count > 0 && _meshFilter.Length > 0)
+        if (_samplePoints.Count > 0 && _meshFilter.Length > 0)
             Clear();
-            
+
         _meshFilter = GetComponentsInChildren<MeshFilter>();
-        
+
         _samplePoints.Clear();
-        
-        foreach(MeshFilter meshFilter in _meshFilter)
+
+        foreach (MeshFilter meshFilter in _meshFilter)
             _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
     }
 
     public void Clear()
     {
+        _floorSamples.Clear();  
         _samplePoints.Clear();
         _pointsInside.Clear();
     }
@@ -54,9 +59,9 @@ public class MeshSampler : MonoBehaviour
         if (meshCollider)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(meshCollider.bounds.center, meshCollider.bounds.size); 
+            Gizmos.DrawWireCube(meshCollider.bounds.center, meshCollider.bounds.size);
         }
-        
+
         Gizmos.color = Color.white;
 
         foreach (var samplePoint in _samplePoints)
@@ -64,6 +69,8 @@ public class MeshSampler : MonoBehaviour
             Gizmos.DrawSphere(samplePoint.sample, 0.05f);
             Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * 1.0f);
         }
+        
+        Gizmos.DrawRay(Vector3.zero, Vector3.up * 5.0f);
     }
 
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
@@ -71,7 +78,8 @@ public class MeshSampler : MonoBehaviour
         List<Sample> samples = new List<Sample>();
         List<int> active = new List<int>();
 
-        (float[] area, float[] cdf, float totalArea) = BuildTriangleAreaCDF(mesh.sharedMesh.vertices, mesh.sharedMesh.triangles);
+        (float[] area, float[] cdf, float totalArea) =
+            BuildTriangleAreaCDF(mesh.sharedMesh.vertices, mesh.sharedMesh.triangles);
         (Vector3 min, Vector3 max) = BuildBoundingBox(mesh.sharedMesh.vertices);
 
         (Vector3[,,] grid, float cellSize, int gx, int gy, int gz) = InitializeGrid(min, max, radius);
@@ -88,7 +96,7 @@ public class MeshSampler : MonoBehaviour
 
         Vector3 p = SamplePointInTriangle(vertices[i0], vertices[i1], vertices[i2]);
         InsertSampleToGrid(p, grid, min, cellSize);
-        
+
         Sample sample = new Sample()
         {
             sample = p,
@@ -124,11 +132,12 @@ public class MeshSampler : MonoBehaviour
                 if (IsValid(candidate, radius, grid, min, cellSize, gx, gy, gz))
                 {
                     InsertSampleToGrid(candidate, grid, min, cellSize);
-                    
+
                     sample = new Sample()
                     {
                         sample = candidate,
-                        triangleNormal = Vector3.Cross((vertices[i1] - vertices[i0]), (vertices[i2] - vertices[i0])).normalized,
+                        triangleNormal = Vector3.Cross((vertices[i1] - vertices[i0]), (vertices[i2] - vertices[i0]))
+                            .normalized,
                     };
 
                     samples.Add(sample);
@@ -156,10 +165,12 @@ public class MeshSampler : MonoBehaviour
         
         for (int i = samples.Count - 1; i >= 0; i--)
         {
-            if(!IsInside(samples[i], mesh.transform.position))
+            if (!IsInside(samples[i], mesh.transform.position))
                 samples.RemoveAt(i);
-        } 
-
+        }
+        
+        samples.AddRange(_floorSamples);
+        
         return samples;
     }
 
@@ -308,8 +319,12 @@ public class MeshSampler : MonoBehaviour
         Vector3 dir = (meshPos - pInterior.sample).normalized;
 
         float d = Vector3.Dot(dir, pInterior.triangleNormal);
+        float floor = Vector3.Dot(dir, Vector3.up);
+        
+        Debug.DrawRay(pInterior.sample, dir * 3);
+        Debug.DrawRay(pInterior.sample, dir * 3, Color.green);
 
-        return d > 0;
+        return d > 0 || (floor >= 0);
     }
 }
 
