@@ -21,6 +21,9 @@ public class WFC : MonoBehaviour
     IEnumerator collapseTilesRoutine;
     bool doneCollapse = false;
 
+    [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
+    [HideInInspector] public AStar path;
+
 
     public int getTiles => transform.childCount;
     public double getCollapseTime => collapseExecutionTime;
@@ -54,6 +57,17 @@ public class WFC : MonoBehaviour
         Vector3Int.down
     };
 
+    public void StartFindPath()
+    {
+        if (path == null) path = gameObject.AddComponent<AStar>();
+        path.GeneratePath(_width, _length, _pathPoints);
+    }
+
+    public void StopFindPath()
+    {
+        path.StopFindingPath();
+    }
+
     public void StartCollapse(Action doneFuncHook) 
     {
         collapseTilesRoutine = CollapseTiles(doneFuncHook);
@@ -79,6 +93,12 @@ public class WFC : MonoBehaviour
         {
             Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
             Gizmos.DrawWireCube(activeCollapsningTile - new Vector3(0.0f, -0.5f, 0.0f), Vector3.one);
+        }
+
+        foreach (Vector3Int point in _pathPoints)
+        {
+            Gizmos.color = Color.orange;
+            Gizmos.DrawSphere(point, 0.1f);
         }
     }
 

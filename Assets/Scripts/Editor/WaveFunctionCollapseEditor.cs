@@ -18,6 +18,12 @@ public class WaveFunctionCollapseEditor : Editor
         Button generateButton = rootTree.Q<Button>("_generateTiles");
         generateButton.RegisterCallback<ClickEvent>(GenerateTiles);
 
+        Button generatePathButton = rootTree.Q<Button>("_generatePath");
+        generatePathButton.RegisterCallback<ClickEvent>(GeneratePath);
+
+        Button stopGeneratePathButton = rootTree.Q<Button>("_stopGeneratePath");
+        stopGeneratePathButton.RegisterCallback<ClickEvent>(StopGeneratePath);
+
         Button collapseButton = rootTree.Q<Button>("_collapseTiles");
         collapseButton.RegisterCallback<ClickEvent>(CollapseTiles);
 
@@ -64,6 +70,16 @@ public class WaveFunctionCollapseEditor : Editor
     private void GenerateTiles(ClickEvent evt)
     {   
         WaveFunctionCollapse.GenerateTiles();
+    }
+
+    private void GeneratePath(ClickEvent evt)
+    {
+        WaveFunctionCollapse.StartFindPath();
+    }
+
+    private void StopGeneratePath(ClickEvent evt)
+    {
+        WaveFunctionCollapse.StopFindPath();
     }
 
     private void CollapseTiles(ClickEvent evt)

@@ -13,7 +13,12 @@
                     <ui:Button text="Clear All" name="_clearTiles" style="min-width: auto;"/>
                 </ui:GroupBox>
             </ui:Tab>
-            <ui:Tab label="Collapse" tabindex="1" enabled="true">
+            <ui:Tab label="Navigation" tabindex="1">
+                <ui:Button text="Generate Path" name="_generatePath"/>
+                <ui:Button text="Stop Generation" name="_stopGeneratePath"/>
+                <ui:ListView name="_pathPoints" show-foldout-header="true" show-add-remove-footer="true" header-title="Path Points" data-source-type="WFC, Assembly-CSharp" data-source-path="_pathPoints" binding-path="_pathPoints"/>
+            </ui:Tab>
+            <ui:Tab label="Collapse" tabindex="2" enabled="true">
                 <ui:GroupBox name="CollapseGroup" style="flex-direction: column; flex-grow: 0; justify-content: space-evenly; align-content: stretch; align-self: center;">
                     <ui:Button text="Start Collapse" name="_collapseTiles" data-source-type="WFC, Assembly-CSharp" style="flex-direction: row; flex-wrap: nowrap; align-content: stretch; align-self: center; justify-content: space-evenly;"/>
                 </ui:GroupBox>
