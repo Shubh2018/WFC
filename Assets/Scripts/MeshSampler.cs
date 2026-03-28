@@ -316,15 +316,18 @@ public class MeshSampler : MonoBehaviour
 
     private bool IsInside(Sample pInterior, Vector3 meshPos)
     {
-        Vector3 dir = (meshPos - pInterior.sample).normalized;
+        Vector3 dir = (meshPos - pInterior.sample);
 
-        float d = Vector3.Dot(dir, pInterior.triangleNormal);
-        float floor = Vector3.Dot(dir, Vector3.up);
+        float d = Vector3.Dot(dir.normalized, pInterior.triangleNormal);
+        float floor = Vector3.Dot(dir.normalized, Vector3.up);
         
-        Debug.DrawRay(pInterior.sample, dir * 3);
-        Debug.DrawRay(pInterior.sample, dir * 3, Color.green);
+        RaycastHit[] hits = Physics.RaycastAll(meshPos, dir.normalized, dir.magnitude, LayerMask.GetMask("Default"));
+        Debug.Log($"{hits.Length}");
 
-        return d > 0 || (floor >= 0);
+        // if (hits.Length > 1)
+        //     return false;
+        
+        return d >= 0 || (floor >= 0 || hits.Length > 0);
     }
 }
 

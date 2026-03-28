@@ -84,12 +84,6 @@ public class PoissonDiskSampling : MonoBehaviour
 
         int[,,] grid = new int[gridLength, gridWidth, gridHeight];
 
-        // for (int i = 0; i < gridWidth; i++)
-        // {
-        //     for(int j = 0; j < gridHeight; j++)
-        //         grid[i,j] = -1;
-        // }
-
         List<Vector3> samples = new List<Vector3>();
         List<int> active = new List<int>();
         
