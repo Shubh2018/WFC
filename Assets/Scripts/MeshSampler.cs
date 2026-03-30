@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Numerics;
+using Quaternion = UnityEngine.Quaternion;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 
@@ -18,6 +19,8 @@ public class MeshSampler : MonoBehaviour
     [SerializeField] private float _radius;
     [SerializeField] private int _tries = 30;
 
+    [SerializeField] private Spawner _gameObjectsToSpawn;
+
     private Dictionary<Mesh, int[]> _triangles;
     private Dictionary<Mesh, Vector3[]> _vertices;
 
@@ -31,6 +34,8 @@ public class MeshSampler : MonoBehaviour
 
     private List<Sample> _samplePoints = new List<Sample>();
     private List<Sample> _pointsInside = new List<Sample>();
+    
+    private List<GameObject> _spawnedObjects = new List<GameObject>();
 
     public void Generate()
     {
@@ -43,6 +48,20 @@ public class MeshSampler : MonoBehaviour
 
         foreach (MeshFilter meshFilter in _meshFilter)
             _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
+
+        int count = _gameObjectsToSpawn.Count;
+
+        while (count > 0)
+        {
+            count -= 1;
+            
+            int random = Random.Range(0, _gameObjectsToSpawn.Prefabs.Count);
+            int sampleIndex = Random.Range(0, _samplePoints.Count);
+            
+            _spawnedObjects.Add(Instantiate(_gameObjectsToSpawn.Prefabs[random], _samplePoints[sampleIndex].sample, Quaternion.identity));
+            
+            _samplePoints.RemoveAt(sampleIndex);
+        }
     }
 
     public void Clear()
@@ -50,6 +69,11 @@ public class MeshSampler : MonoBehaviour
         _floorSamples.Clear();  
         _samplePoints.Clear();
         _pointsInside.Clear();
+        
+        foreach(var spawnedObject in _spawnedObjects)
+            DestroyImmediate(spawnedObject);
+        
+        _spawnedObjects.Clear();
     }
 
     private void OnDrawGizmos()
@@ -336,4 +360,14 @@ public struct Sample
 {
     public Vector3 sample;
     public Vector3 triangleNormal;
+}
+
+[System.Serializable]
+public struct Spawner
+{
+    [SerializeField] private List<GameObject> _prefabs;
+    [SerializeField] private int _count;
+
+    public List<GameObject> Prefabs => _prefabs;
+    public int Count => _count;
 }

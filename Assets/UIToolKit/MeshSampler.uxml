@@ -2,6 +2,7 @@
     <ui:VisualElement style="flex-grow: 1;">
         <ui:FloatField label="Radius" value="0.5" binding-path="_radius" name="Tries"/>
         <ui:IntegerField label="Tries" value="30" binding-path="_tries" name="Radius"/>
+        <uie:PropertyField name="Objects" binding-path="_gameObjectsToSpawn"/>
         <ui:VisualElement style="flex-grow: 1; flex-direction: row; align-self: stretch; align-items: flex-start; justify-content: center; margin-top: 19px; margin-right: 19px; margin-bottom: 19px; margin-left: 19px;">
             <ui:Button text="Generate Samples" name="Generate"/>
             <ui:Button text="Clear Samples" name="Clear"/>
