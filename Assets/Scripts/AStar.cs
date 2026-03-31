@@ -44,13 +44,16 @@ public class AStar : MonoBehaviour
         Vector3Int.back + Vector3Int.left,
         Vector3Int.back + Vector3Int.right
     };
+    private bool doneFindingPath = false;
 
     public List<Vector3> CollapsedPath => constructedPath;
+    public bool IsDoneFindingPath => doneFindingPath;
 
     // Debugging data for gizmos
     private List<Node> pathsNodes = new List<Node>();
     private int width, length;
     private Vector3 baseOffsetPos = new Vector3(-0.5f, 0.0f, -0.5f);
+    private bool _settingMoveDiagonal = false;
 
     public void OnDrawGizmos()
     {
@@ -68,20 +71,20 @@ public class AStar : MonoBehaviour
         Gizmos.DrawLineList(new Vector3[8]{
 
             // Line #1
-            new Vector3(-0.5f, 1.0f, -0.5f),
-            new Vector3(width - 0.5f, 1.0f, -0.5f),
+            new Vector3(-0.5f, 0.0f, -0.5f),
+            new Vector3(width - 0.5f, 0.0f, -0.5f),
 
             // Line #2
-            new Vector3(width - 0.5f, 1.0f, -0.5f),
-            new Vector3(width - 0.5f, 1.0f, length - 0.5f),
+            new Vector3(width - 0.5f, 0.0f, -0.5f),
+            new Vector3(width - 0.5f, 0.0f, length - 0.5f),
 
             // Line #3
-            new Vector3(width - 0.5f, 1.0f, length - 0.5f),
-            new Vector3(-0.5f, 1.0f, length - 0.5f),
+            new Vector3(width - 0.5f, 0.0f, length - 0.5f),
+            new Vector3(-0.5f, 0.0f, length - 0.5f),
 
             // Line #4
-            new Vector3(-0.5f, 1.0f, length - 0.5f),
-            new Vector3(-0.5f, 1.0f, -0.5f)
+            new Vector3(-0.5f, 0.0f, length - 0.5f),
+            new Vector3(-0.5f, 0.0f, -0.5f)
         });
 
         // Draw the open nodes
@@ -107,11 +110,17 @@ public class AStar : MonoBehaviour
         }
     }
 
+    public void UpdateSettings(bool moveDiagonal)
+    {
+        this._settingMoveDiagonal = moveDiagonal;
+    }
+
     public void GeneratePath(int width, int length, List<Vector3Int> path)
     {
         this.width = width;
         this.length = length;
         this.pathPoints = path;
+        this.doneFindingPath = false;
         pathRoutine = FindRoute(path);
         StartCoroutine(pathRoutine);
     }
@@ -134,7 +143,7 @@ public class AStar : MonoBehaviour
 
         while (current != null)
         {
-            path.Add(current.position + transform.position);
+            path.Add(current.position);
             current = current.parent;
         }
 
@@ -197,10 +206,14 @@ public class AStar : MonoBehaviour
                 // Generate children
                 List<Node> children = new List<Node>();
 
-                foreach (Vector3Int offset in offsets)
+                for (int k = 0; k < offsets.Length; k++)
                 {
+                    // If this offset is diagonal and the setting is off, break
+                    if (!_settingMoveDiagonal && k > 3)
+                        break;
+
                     // Get node position
-                    Vector3Int nodePosition = currentNode.position + offset;
+                    Vector3Int nodePosition = currentNode.position + offsets[k];
 
                     // Make sure within range
                     if (nodePosition[0] > width 
@@ -254,6 +267,8 @@ public class AStar : MonoBehaviour
             openList.Clear();
             closedList.Clear();
         }
+
+        doneFindingPath = true;
     }
 
     private void VisualisePath(List<Vector3> tempPath)
@@ -274,7 +289,6 @@ public class AStar : MonoBehaviour
         }
 
         lineRenderer.positionCount = constructedPath.Count + tempPath.Count;
-        Debug.Log($"lineRenderer path length: {constructedPath.Count}");
-        lineRenderer.SetPositions(constructedPath.Concat(tempPath).ToArray());
+        lineRenderer.SetPositions(constructedPath.Concat(tempPath).Select(p => p + transform.position).ToArray());
     }
 }

@@ -53,3 +53,10 @@ public class NodeData : ScriptableObject
     public NodeFaceHorizontal Front;
     public NodeFaceHorizontal Back;
 }
+
+public class PathNodeData {
+    public NodeFace Left = new NodeFace();
+    public NodeFace Right = new NodeFace();
+    public NodeFace Front = new NodeFace();
+    public NodeFace Back = new NodeFace();
+}

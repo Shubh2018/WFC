@@ -23,7 +23,8 @@ public class WFC : MonoBehaviour
 
     [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
     [HideInInspector] public AStar path;
-
+    [HideInInspector] public bool _pathMoveDiagonal = false;
+    private List<PathNode> pathNodes = new List<PathNode>();
 
     public int getTiles => transform.childCount;
     public double getCollapseTime => collapseExecutionTime;
@@ -47,6 +48,94 @@ public class WFC : MonoBehaviour
         }
     }
 
+    private class PathNode
+    {
+        public PathNodeData data = new PathNodeData();
+        public List<int> pathIndicies = new List<int>();
+        public WFC parent;
+
+        public PathNode(WFC parent)
+        {
+            this.parent = parent; // Used to reference the AStar path list
+
+            // Default to the wall type, however only the face being a path or not matters really
+            data.Front.name = data.Back.name = data.Left.name = data.Right.name = NodeFace.Name.Wall;
+        }
+
+        public bool CheckContainsPos(int index)
+        {
+            // If this object contains no indicies yet
+            if (pathIndicies.Count == 0) return false;
+
+            Vector3Int a = Vector3Int.FloorToInt(parent.path.CollapsedPath[index]);
+            Vector3Int b = Vector3Int.FloorToInt(parent.path.CollapsedPath[pathIndicies[0]]);
+
+            // If the first and provides index are at the same coordinate
+            if (a.x == b.x && a.z == b.z) return true;
+
+            // If their coordinates are different
+            return false;
+        }
+
+        public void AddPath(int index)
+        {
+            List<Vector3> path = parent.path.CollapsedPath; // The list of path points
+
+            if (path.Count == 0 || index < 0 || index >= path.Count) return; // check if this index is invalid
+
+            Vector3 temp = new Vector3(-999, -999, -999); // temp vector to check for invalid ngihbours
+            Vector3 currPath = path[index]; // get the current path vector
+            Vector3[] relationship = new Vector3[3] { temp, temp, temp }; // setup relationship between the previous, current, and next path positions
+
+            // Make an array of path coordinates
+            relationship[1] = currPath;
+            if (index > 0) relationship[0] = path[index - 1];
+            if (index < (path.Count - 1)) relationship[2] = path[index + 1];
+
+            // Go through the neighboors and compare their coordinates with the one in the middle
+            foreach (Vector3 neighbor in new[]{ relationship[0], relationship[2] })
+            {
+                if (neighbor.x <= -999) continue; // No neighbour in this direction, ignore
+
+                Vector3 delta = (relationship[1] - neighbor).normalized; // Find the delta value
+                Vector3 cross = Vector3.Cross(Vector3.up, delta); // Calculate the cross product
+
+                // Update the face type depending on the direction the neighboors are facing eachother
+                if (cross.x == -1) data.Front.name = NodeFace.Name.Path;
+                if (cross.x == 1) data.Back.name = NodeFace.Name.Path;
+                if (cross.z == 1) data.Right.name = NodeFace.Name.Path;
+                if (cross.z == -1) data.Left.name = NodeFace.Name.Path;
+            }
+
+            // Only add the index if it matches the vector and it is not already there
+            // Used in case the same point exists multiple times but with different neighbours
+            if (!pathIndicies.Contains(index)) pathIndicies.Add(index);
+        }
+
+        public List<NodeData> GetPotentialNodes()
+        {
+            List<NodeData> potentialNodes = new List<NodeData>(parent._nodes);
+            potentialNodes.AddRange(parent._nodesGenerated);
+
+            UnityEngine.Debug.Log($"coords: {String.Join(", ", pathIndicies)}");
+            UnityEngine.Debug.Log($"potential nodes before: {potentialNodes.Count()}");
+
+            for (int i = potentialNodes.Count - 1; i >= 0; i--)
+            {
+                NodeData node = potentialNodes[i];
+                if (node.Left.name != data.Left.name && data.Left.name == NodeFace.Name.Path
+                || node.Right.name != data.Right.name && data.Right.name == NodeFace.Name.Path
+                || node.Front.name != data.Front.name && data.Front.name == NodeFace.Name.Path
+                || node.Back.name != data.Back.name && data.Back.name == NodeFace.Name.Path)
+                    potentialNodes.RemoveAt(i);
+            }
+
+            UnityEngine.Debug.Log($"potential nodes after: {potentialNodes.Count()}");
+
+            return potentialNodes;
+        }
+    }
+
     private Vector3Int[] offsets = new Vector3Int[]
     {
         Vector3Int.forward,
@@ -60,7 +149,10 @@ public class WFC : MonoBehaviour
     public void StartFindPath()
     {
         if (path == null) path = gameObject.AddComponent<AStar>();
+        path.UpdateSettings(_pathMoveDiagonal);
         path.GeneratePath(_width, _length, _pathPoints);
+
+        StartCoroutine(GeneratePathNodes());
     }
 
     public void StopFindPath()
@@ -99,6 +191,26 @@ public class WFC : MonoBehaviour
         {
             Gizmos.color = Color.orange;
             Gizmos.DrawSphere(point, 0.1f);
+        }
+
+        foreach (PathNode point in pathNodes) 
+        {
+            foreach (int index in point.pathIndicies)
+            {
+                if (index >= path.CollapsedPath.Count) continue;
+
+                Gizmos.color = point.data.Front.name == NodeFace.Name.Path ? Color.green : Color.red;
+                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f)); // Left
+
+                Gizmos.color = point.data.Back.name == NodeFace.Name.Path ? Color.green : Color.red;
+                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Right
+
+                Gizmos.color = point.data.Left.name == NodeFace.Name.Path ? Color.green : Color.red;
+                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Forward
+
+                Gizmos.color = point.data.Right.name == NodeFace.Name.Path ? Color.green : Color.red;
+                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f)); // Back
+            }
         }
     }
 
@@ -191,6 +303,42 @@ public class WFC : MonoBehaviour
         UnityEngine.Debug.Log("Cleared Tiles...");
     }
 
+    private IEnumerator GeneratePathNodes()
+    {
+        yield return new WaitUntil(() => path.IsDoneFindingPath);
+
+        pathNodes.Clear();
+
+        for (int i = 0; i < path.CollapsedPath.Count; i++)
+        {
+            foreach (PathNode pathNode in pathNodes)
+            {
+                if(pathNode.CheckContainsPos(i))
+                {
+                    pathNode.AddPath(i);
+                    goto nextLabel;
+                }
+            }
+
+            PathNode newPathNode = new PathNode(this);
+            newPathNode.AddPath(i);
+            pathNodes.Add(newPathNode);
+
+            nextLabel:;
+        }
+
+        UnityEngine.Debug.Log($"Total paths: {path.CollapsedPath.Count}");
+
+        foreach (PathNode node in pathNodes)
+        {
+            UnityEngine.Debug.Log($"Path Node Coors: {string.Join( ",", node.pathIndicies.Select(i => $"{i} ({path.CollapsedPath[i]})").ToArray())}");
+            UnityEngine.Debug.Log($"Path dirs: front: {node.data.Front.name}, back: {node.data.Back.name}, left: {node.data.Left.name}, right: {node.data.Right.name}");
+            UnityEngine.Debug.Log("");
+        }
+
+        UnityEngine.Debug.Log("done generating path nodes...");
+    }
+
     public IEnumerator CollapseTiles(Action doneFuncHook)
     {
         //StartCollapseLabel:
@@ -205,7 +353,44 @@ public class WFC : MonoBehaviour
         _grid = new NodeData[_width, _height, _length];
 
         _nodesToCollapse.Clear();
-        _nodesToCollapse.Add(new Tile(this, Vector3Int.zero, true));
+
+        // Start generating tiles with their potential nodes for the path points
+        if (pathNodes.Count > 0)
+        {
+            List<Vector3Int> points = new List<Vector3Int>(); // Used to check for dubplicates
+
+            for (int i = 0; i < path.CollapsedPath.Count; i++)
+            {
+                // Current point
+                Vector3Int point = Vector3Int.FloorToInt(path.CollapsedPath[i]);
+
+                // If this point has already been generated, continue
+                if (points.FindIndex(p => p.x == point.x && p.z == point.z) >= 0) continue;
+
+                PathNode currNode = null;
+
+                foreach(PathNode node in pathNodes)
+                {
+                    if (node.CheckContainsPos(i))
+                    {
+                        currNode = node;
+                        break;
+                    }
+                }
+
+                if (currNode == null)
+                {
+                    UnityEngine.Debug.LogWarning($"path point {i} does not have a related path node!");
+                    goto doneCollapseLabel;
+                }
+
+                // Get a list of potential nodes
+                Tile tile = new Tile(this, point, true);
+                tile.potentialNodes = currNode.GetPotentialNodes();
+                _nodesToCollapse.Add(tile);
+                points.Add(point);
+            }
+        }
 
         while(_nodesToCollapse.Count > 0)
         {
@@ -231,7 +416,7 @@ public class WFC : MonoBehaviour
 
             else
             {
-                // Choose a tile based on weight
+                // Choose a node based on weight
                 double[] nodeWeights = CalculateNodesWeights(tile.potentialNodes);
                 int chosenTileIdx = ChooseWeightedTile(nodeWeights, new System.Random());
 
@@ -319,6 +504,14 @@ public class WFC : MonoBehaviour
                 }
             }
         }
+    }
+
+    private bool CheckTileOnPath(Tile tile)
+    {
+        foreach(Vector3 pos in path.CollapsedPath)
+            if (Vector3Int.FloorToInt(pos).Equals(tile.pos))
+                return true;
+        return false;
     }
 
     private int CheckEntropy(int tilesCount)
