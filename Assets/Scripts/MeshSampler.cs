@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using UnityEditor.ShaderGraph.Internal;
 using Quaternion = UnityEngine.Quaternion;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -56,11 +58,12 @@ public class MeshSampler : MonoBehaviour
             count -= 1;
             
             int random = Random.Range(0, _gameObjectsToSpawn.Prefabs.Count);
-            int sampleIndex = Random.Range(0, _samplePoints.Count);
+            int sampleIndex = Random.Range(0, _floorSamples.Count);
+
+            Debug.Log($"{random} : {_gameObjectsToSpawn.Count} :: {sampleIndex} : {_floorSamples.Count}");
+            _spawnedObjects.Add(Instantiate(_gameObjectsToSpawn.Prefabs[random], _floorSamples[sampleIndex].sample, Quaternion.identity));
             
-            _spawnedObjects.Add(Instantiate(_gameObjectsToSpawn.Prefabs[random], _samplePoints[sampleIndex].sample, Quaternion.identity));
-            
-            _samplePoints.RemoveAt(sampleIndex);
+            _floorSamples.RemoveAt(sampleIndex);
         }
     }
 
@@ -193,7 +196,26 @@ public class MeshSampler : MonoBehaviour
                 samples.RemoveAt(i);
         }
         
-        samples.AddRange(_floorSamples);
+        samples = samples.OrderBy(s => s.sample.y).ToList();
+        
+        float minY = float.MaxValue;
+
+        foreach (var s in samples)
+        {
+            if(Mathf.Round(s.sample.y) < minY)
+                minY = Mathf.Round(s.sample.y);
+        }
+        
+        Debug.Log($"minY: {minY}");
+
+        // foreach (var s in samples)
+        // {
+        //     if(s.sample.y <= minY)
+        //         _floorSamples.Add(s);
+        // }
+        
+        _floorSamples.AddRange(samples.FindAll(s => (s.sample.y <= minY)));
+        Debug.Log($"FloorSamples FinAll: {samples.FindAll(s => (s.sample.y <= minY)).Count}");
         
         return samples;
     }
@@ -345,13 +367,7 @@ public class MeshSampler : MonoBehaviour
         float d = Vector3.Dot(dir.normalized, pInterior.triangleNormal);
         float floor = Vector3.Dot(dir.normalized, Vector3.up);
         
-        RaycastHit[] hits = Physics.RaycastAll(meshPos, dir.normalized, dir.magnitude, LayerMask.GetMask("Default"));
-        Debug.Log($"{hits.Length}");
-
-        // if (hits.Length > 1)
-        //     return false;
-        
-        return d >= 0 || (floor >= 0 || hits.Length > 0);
+        return d >= 0 || floor >= 0;
     }
 }
 
