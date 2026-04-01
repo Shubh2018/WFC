@@ -1,8 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using UnityEditor.ShaderGraph.Internal;
 using Quaternion = UnityEngine.Quaternion;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -27,6 +25,7 @@ public class MeshSampler : MonoBehaviour
     private Dictionary<Mesh, Vector3[]> _vertices;
 
     private List<Sample> _floorSamples = new List<Sample>();
+    private List<Sample> _wallSamples = new List<Sample>();
 
     private int safety = 10000;
     private Material[] _meshMaterials;
@@ -51,25 +50,13 @@ public class MeshSampler : MonoBehaviour
         foreach (MeshFilter meshFilter in _meshFilter)
             _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
 
-        int count = _gameObjectsToSpawn.Count;
-
-        while (count > 0)
-        {
-            count -= 1;
-            
-            int random = Random.Range(0, _gameObjectsToSpawn.Prefabs.Count);
-            int sampleIndex = Random.Range(0, _floorSamples.Count);
-
-            Debug.Log($"{random} : {_gameObjectsToSpawn.Count} :: {sampleIndex} : {_floorSamples.Count}");
-            _spawnedObjects.Add(Instantiate(_gameObjectsToSpawn.Prefabs[random], _floorSamples[sampleIndex].sample, Quaternion.identity));
-            
-            _floorSamples.RemoveAt(sampleIndex);
-        }
+        SpawnProps();
     }
 
     public void Clear()
     {
         _floorSamples.Clear();  
+        _wallSamples.Clear();
         _samplePoints.Clear();
         _pointsInside.Clear();
         
@@ -91,13 +78,19 @@ public class MeshSampler : MonoBehaviour
 
         Gizmos.color = Color.white;
 
-        foreach (var samplePoint in _samplePoints)
+        foreach (var floorPoint in _samplePoints)
         {
-            Gizmos.DrawSphere(samplePoint.sample, 0.05f);
-            Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * 1.0f);
+            Gizmos.DrawSphere(floorPoint.sample, 0.05f);
+            Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * 1.0f);
         }
         
-        Gizmos.DrawRay(Vector3.zero, Vector3.up * 5.0f);
+        // foreach (var wallPoint in _wallSamples)
+        // {
+        //     Gizmos.DrawSphere(wallPoint.sample, 0.05f);
+        //     Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * 1.0f);
+        // }
+        
+        // Gizmos.DrawRay(Vector3.zero, Vector3.up * 5.0f);
     }
 
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
@@ -198,24 +191,7 @@ public class MeshSampler : MonoBehaviour
         
         samples = samples.OrderBy(s => s.sample.y).ToList();
         
-        float minY = float.MaxValue;
-
-        foreach (var s in samples)
-        {
-            if(Mathf.Round(s.sample.y) < minY)
-                minY = Mathf.Round(s.sample.y);
-        }
-        
-        Debug.Log($"minY: {minY}");
-
-        // foreach (var s in samples)
-        // {
-        //     if(s.sample.y <= minY)
-        //         _floorSamples.Add(s);
-        // }
-        
-        _floorSamples.AddRange(samples.FindAll(s => (s.sample.y <= minY)));
-        Debug.Log($"FloorSamples FinAll: {samples.FindAll(s => (s.sample.y <= minY)).Count}");
+        SortSamples(samples);
         
         return samples;
     }
@@ -246,7 +222,7 @@ public class MeshSampler : MonoBehaviour
         }
 
         for (int i = 0; i < count; i++)
-            cdf[i] = cdf[i] / totalArea;
+            cdf[i] /= totalArea;
 
         return (area, cdf, totalArea);
     }
@@ -367,7 +343,56 @@ public class MeshSampler : MonoBehaviour
         float d = Vector3.Dot(dir.normalized, pInterior.triangleNormal);
         float floor = Vector3.Dot(dir.normalized, Vector3.up);
         
-        return d >= 0 || floor >= 0;
+        return d >= 0 || floor >= 1;
+    }
+
+    private void SortSamples(List<Sample> samples)
+    {
+        float minY = float.MaxValue;
+        float maxY = float.MinValue;
+
+        foreach (var s in samples)
+        {
+            if(Mathf.Ceil(s.sample.y) < minY)
+                minY = Mathf.Ceil(s.sample.y);
+            
+            if(Mathf.Floor(s.sample.y) > maxY)
+                maxY = Mathf.Floor(s.sample.y);
+        }
+        
+        _floorSamples.AddRange(samples.FindAll(s => (s.sample.y <= minY)));
+        _wallSamples.AddRange(samples.FindAll(s => (s.sample.y > minY && s.sample.y < maxY)));
+    }
+
+    private void SpawnProps()
+    {
+        int count = _gameObjectsToSpawn.Count <= (_wallSamples.Count + _floorSamples.Count) ? _gameObjectsToSpawn.Count : 
+            (_wallSamples.Count + _floorSamples.Count);
+
+        while (count > 0)
+        {
+            int sampleIndex = 0;
+            int random = Random.Range(0, _gameObjectsToSpawn.Prefabs.Count);
+            
+            switch (_gameObjectsToSpawn.Prefabs[random].Type)
+            {
+                case PropType.Floor:              
+                    sampleIndex = Random.Range(0, _floorSamples.Count);
+                    _spawnedObjects.Add(Instantiate(_gameObjectsToSpawn.Prefabs[random].Prop, _floorSamples[sampleIndex].sample, Quaternion.identity));
+                    _floorSamples.RemoveAt(sampleIndex);
+                    break;
+                case PropType.Wall:
+                    sampleIndex = Random.Range(0, _wallSamples.Count);
+                    GameObject obj = Instantiate(_gameObjectsToSpawn.Prefabs[random].Prop,
+                        _wallSamples[sampleIndex].sample, Quaternion.identity);
+                    obj.transform.forward = _wallSamples[sampleIndex].triangleNormal;
+                    _spawnedObjects.Add(obj);
+                    _wallSamples.RemoveAt(sampleIndex);
+                    break;
+            }
+            
+            count -= 1;
+        }
     }
 }
 
@@ -381,9 +406,9 @@ public struct Sample
 [System.Serializable]
 public struct Spawner
 {
-    [SerializeField] private List<GameObject> _prefabs;
+    [SerializeField] private List<PropData> _prefabs;
     [SerializeField] private int _count;
 
-    public List<GameObject> Prefabs => _prefabs;
+    public List<PropData> Prefabs => _prefabs;
     public int Count => _count;
 }
