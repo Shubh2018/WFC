@@ -154,8 +154,10 @@ MonoBehaviour:
   _radius: 1
   _tries: 70
   _gameObjectsToSpawn:
-    _prefabs: []
-    _count: 0
+    _wallPrefabs: []
+    _floorPrefabs: []
+    _wallPropCount: 0
+    _floorPropCount: 0
 --- !u!4 &94925547
 Transform:
   m_ObjectHideFlags: 0
@@ -405,7 +407,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &410087040
 Light:
   m_ObjectHideFlags: 0
@@ -596,16 +598,16 @@ MonoBehaviour:
   _radius: 1.5
   _tries: 70
   _gameObjectsToSpawn:
-    _prefabs:
+    _wallPrefabs:
+    - {fileID: 11400000, guid: ceb8b7ddb7fd09b4991f337ed0bdc61b, type: 2}
+    _floorPrefabs:
     - {fileID: 11400000, guid: 0fc0f4cbc368fb14783a3ae05d299593, type: 2}
     - {fileID: 11400000, guid: 6dd89140475c4db40958cf9df5ac9007, type: 2}
     - {fileID: 11400000, guid: 7d23f64b25419b24f890131caf41fe77, type: 2}
     - {fileID: 11400000, guid: 39b6d3d2be612f44a9b3bfff8627821c, type: 2}
-    - {fileID: 11400000, guid: b826c0ad0baeef54d9bb24febcac3e71, type: 2}
     - {fileID: 11400000, guid: 3b86dc62ac32d99449a878693ff7f697, type: 2}
-    - {fileID: 11400000, guid: ceb8b7ddb7fd09b4991f337ed0bdc61b, type: 2}
-    - {fileID: 11400000, guid: abeea441851dd2f4ebbd09ea66595493, type: 2}
-    _count: 20
+    _wallPropCount: 5
+    _floorPropCount: 20
 --- !u!4 &843203282
 Transform:
   m_ObjectHideFlags: 0
@@ -914,8 +916,10 @@ MonoBehaviour:
   _radius: 2
   _tries: 70
   _gameObjectsToSpawn:
-    _prefabs: []
-    _count: 0
+    _wallPrefabs: []
+    _floorPrefabs: []
+    _wallPropCount: 0
+    _floorPropCount: 0
 --- !u!4 &1201504430
 Transform:
   m_ObjectHideFlags: 0
@@ -1684,8 +1688,10 @@ MonoBehaviour:
   _radius: 2
   _tries: 70
   _gameObjectsToSpawn:
-    _prefabs: []
-    _count: 0
+    _wallPrefabs: []
+    _floorPrefabs: []
+    _wallPropCount: 0
+    _floorPropCount: 0
 --- !u!1 &2044114384
 GameObject:
   m_ObjectHideFlags: 0

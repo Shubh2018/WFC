@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 329470fa9586577499096c183eba9254, type: 3}
   m_Name: Prop3
   m_EditorClassIdentifier: Assembly-CSharp::PropData
-  _prop: {fileID: 2157335988112527113, guid: c0b6670604b282847a0f26cf98f36820, type: 3}
+  _prop: {fileID: 141833403441819946, guid: ed0140ea386bbe94fb5ffe2faf0fa7b1, type: 3}
   _type: 0

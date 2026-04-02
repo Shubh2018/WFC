@@ -14,7 +14,7 @@ public enum SurfaceType
 
 public class MeshSampler : MonoBehaviour
 {
-    private MeshFilter[] _meshFilter;
+    private List<MeshFilter> _meshFilter = new List<MeshFilter>();
 
     [SerializeField] private float _radius;
     [SerializeField] private int _tries = 30;
@@ -40,15 +40,19 @@ public class MeshSampler : MonoBehaviour
 
     public void Generate()
     {
-        if (_samplePoints.Count > 0 && _meshFilter.Length > 0)
+        if (_samplePoints.Count > 0 && _meshFilter.Count > 0)
             Clear();
 
-        _meshFilter = GetComponentsInChildren<MeshFilter>();
+        _meshFilter = GetComponentsInChildren<MeshFilter>().ToList();
 
         _samplePoints.Clear();
 
         foreach (MeshFilter meshFilter in _meshFilter)
+        {
+            Debug.Log($"{transform.TransformPoint(meshFilter.transform.position)}: {transform.TransformVector(meshFilter.transform.localScale)}");
             _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
+        }
+        
 
         SpawnProps();
     }
@@ -59,6 +63,8 @@ public class MeshSampler : MonoBehaviour
         _wallSamples.Clear();
         _samplePoints.Clear();
         _pointsInside.Clear();
+
+        _meshFilter.Clear();
         
         foreach(var spawnedObject in _spawnedObjects)
             DestroyImmediate(spawnedObject);
@@ -83,14 +89,6 @@ public class MeshSampler : MonoBehaviour
             Gizmos.DrawSphere(floorPoint.sample, 0.05f);
             Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * 1.0f);
         }
-        
-        // foreach (var wallPoint in _wallSamples)
-        // {
-        //     Gizmos.DrawSphere(wallPoint.sample, 0.05f);
-        //     Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * 1.0f);
-        // }
-        
-        // Gizmos.DrawRay(Vector3.zero, Vector3.up * 5.0f);
     }
 
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
@@ -190,6 +188,7 @@ public class MeshSampler : MonoBehaviour
         }
         
         samples = samples.OrderBy(s => s.sample.y).ToList();
+        float halfHeightY = mesh.transform.localScale.y / 2;
         
         SortSamples(samples);
         
@@ -359,39 +358,47 @@ public class MeshSampler : MonoBehaviour
             if(Mathf.Floor(s.sample.y) > maxY)
                 maxY = Mathf.Floor(s.sample.y);
         }
+
+        float thresholdMin = Mathf.Abs((minY + maxY) / 2) * 1f;
+        float thresholdMax = Mathf.Abs((minY + maxY) / 2) * 1.75f;
         
-        _floorSamples.AddRange(samples.FindAll(s => (s.sample.y <= minY)));
-        _wallSamples.AddRange(samples.FindAll(s => (s.sample.y > minY && s.sample.y < maxY)));
+        _floorSamples.AddRange(samples.FindAll(s => (s.sample.y < thresholdMin) && (Vector3.Dot(s.triangleNormal, Vector3.up) > 0)));
+        _wallSamples.AddRange(samples.FindAll(s => (s.sample.y > thresholdMin && s.sample.y <= thresholdMax)));
     }
 
     private void SpawnProps()
     {
-        int count = _gameObjectsToSpawn.Count <= (_wallSamples.Count + _floorSamples.Count) ? _gameObjectsToSpawn.Count : 
-            (_wallSamples.Count + _floorSamples.Count);
-
-        while (count > 0)
+        int wallCount = _gameObjectsToSpawn.WallPropCount;
+        int floorCount = _gameObjectsToSpawn.FloorPropCount;
+        
+        int sampleIndex = 0;
+        int random = 0;
+        
+        while (floorCount > 0)
         {
-            int sampleIndex = 0;
-            int random = Random.Range(0, _gameObjectsToSpawn.Prefabs.Count);
+            random = Random.Range(0, _gameObjectsToSpawn.FloorPrefabs.Count);
+            sampleIndex = Random.Range(0, _floorSamples.Count);
             
-            switch (_gameObjectsToSpawn.Prefabs[random].Type)
-            {
-                case PropType.Floor:              
-                    sampleIndex = Random.Range(0, _floorSamples.Count);
-                    _spawnedObjects.Add(Instantiate(_gameObjectsToSpawn.Prefabs[random].Prop, _floorSamples[sampleIndex].sample, Quaternion.identity));
-                    _floorSamples.RemoveAt(sampleIndex);
-                    break;
-                case PropType.Wall:
-                    sampleIndex = Random.Range(0, _wallSamples.Count);
-                    GameObject obj = Instantiate(_gameObjectsToSpawn.Prefabs[random].Prop,
-                        _wallSamples[sampleIndex].sample, Quaternion.identity);
-                    obj.transform.forward = _wallSamples[sampleIndex].triangleNormal;
-                    _spawnedObjects.Add(obj);
-                    _wallSamples.RemoveAt(sampleIndex);
-                    break;
-            }
+            _spawnedObjects.Add(Instantiate(_gameObjectsToSpawn.FloorPrefabs[random].Prop, _floorSamples[sampleIndex].sample, Quaternion.identity));
+            _floorSamples.RemoveAt(sampleIndex);
             
-            count -= 1;
+            floorCount -= 1;
+        }
+
+        while (wallCount > 0)
+        {
+            sampleIndex = Random.Range(0, _wallSamples.Count);
+            random = Random.Range(0, _gameObjectsToSpawn.WallPrefabs.Count);
+            
+            GameObject obj = Instantiate(_gameObjectsToSpawn.WallPrefabs[random].Prop,
+                _wallSamples[sampleIndex].sample, Quaternion.identity);
+            
+            obj.transform.forward = _wallSamples[sampleIndex].triangleNormal;
+            
+            _spawnedObjects.Add(obj);
+            _wallSamples.RemoveAt(sampleIndex);
+
+            wallCount -= 1;
         }
     }
 }
@@ -406,9 +413,14 @@ public struct Sample
 [System.Serializable]
 public struct Spawner
 {
-    [SerializeField] private List<PropData> _prefabs;
-    [SerializeField] private int _count;
+    [SerializeField] private List<PropData> _wallPrefabs;
+    [SerializeField] private List<PropData> _floorPrefabs;
+    
+    [SerializeField] private int _wallPropCount;
+    [SerializeField] private int _floorPropCount;
 
-    public List<PropData> Prefabs => _prefabs;
-    public int Count => _count;
+    public List<PropData> WallPrefabs => _wallPrefabs;
+    public List<PropData> FloorPrefabs => _floorPrefabs;
+    public int WallPropCount => _wallPropCount;
+    public int FloorPropCount => _floorPropCount;
 }
