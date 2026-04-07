@@ -14,3 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PropData
   _prop: {fileID: 6967361487159559488, guid: c533c10f37d12c941bf5dfea26e26cac, type: 3}
   _type: 0
+  _maxCount: 5
+  _propPlacement: 2
+  checkOrientation: 0
