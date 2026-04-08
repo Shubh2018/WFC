@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 1101821886753708349, guid: 83b2ffc97121fcbb7aff3c9d5c564c32, type: 3}
   Weight: 1
+  IgnoreSelf: 0
   ClockwiseRotationSteps: 0
   Up:
     name: 0
     invariantRotation: 1
     rotationIndex: 0
   Down:
-    name: 1
+    name: 0
     invariantRotation: 1
     rotationIndex: 0
   Left:

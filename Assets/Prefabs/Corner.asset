@@ -21,7 +21,7 @@ MonoBehaviour:
     invariantRotation: 1
     rotationIndex: 1
   Down:
-    name: 1
+    name: 0
     invariantRotation: 1
     rotationIndex: 0
   Left:

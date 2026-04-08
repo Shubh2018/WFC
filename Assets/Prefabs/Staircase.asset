@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Staircase
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 9168917625172809675, guid: 37b53b43c55d97b38af38a6b062352d0, type: 3}
-  Weight: 0
+  Weight: 1
   IgnoreSelf: 1
   ClockwiseRotationSteps: 0
   Up:
@@ -21,7 +21,7 @@ MonoBehaviour:
     invariantRotation: 1
     rotationIndex: 0
   Down:
-    name: 1
+    name: 0
     invariantRotation: 1
     rotationIndex: 0
   Left:
@@ -29,7 +29,7 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   Right:
-    name: 4
+    name: 2
     symmetry: 1
     type: 0
   Front:
@@ -37,6 +37,6 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   Back:
-    name: 2
+    name: 4
     symmetry: 1
     type: 0

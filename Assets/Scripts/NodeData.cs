@@ -11,7 +11,8 @@ public class NodeFace
         Path,
         StaircaseEnd,
         StaircaseTop,
-        PathOpen
+        PathOpen,
+        None
     }
 
     public Name name;
@@ -55,8 +56,10 @@ public class NodeData : ScriptableObject
 }
 
 public class PathNodeData {
-    public NodeFace Left = new NodeFace();
-    public NodeFace Right = new NodeFace();
-    public NodeFace Front = new NodeFace();
-    public NodeFace Back = new NodeFace();
+    public NodeFace.Name Up = NodeFace.Name.None;
+    public NodeFace.Name Down = NodeFace.Name.None;
+    public NodeFace.Name Left = NodeFace.Name.None;
+    public NodeFace.Name Right = NodeFace.Name.None;
+    public NodeFace.Name Front = NodeFace.Name.None;
+    public NodeFace.Name Back = NodeFace.Name.None;
 }
