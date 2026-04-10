@@ -4,75 +4,108 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AStar : MonoBehaviour
+public class Node : IEquatable<Node>
 {
-    private class Node : IEquatable<Node>
+    public Node parent;
+    public Vector3Int position;
+    public double g, h, f; 
+
+    public Node(Node parent, Vector3Int position)
     {
-        public Node parent;
-        public Vector3Int position;
-
-        public double g, h, f; 
-
-        public Node(Node parent, Vector3Int position)
-        {
-            this.parent = parent;
-            this.position = position;
-
-            this.g = this.h = this.f = 0.0f;
-        }
-
-        public bool Equals(Node other)
-        {
-            if (this.position == null) return false;
-            return this.position.Equals(other.position);
-        }
+        this.parent = parent;
+        this.position = position;
+        this.g = this.h = this.f = 0.0f;
     }
 
+    public bool Equals(Node other)
+    {
+        if (this.position == null) return false;
+        return this.position.Equals(other.position);
+    }
+}
+
+public class StairCase
+{
+    public Vector3Int bottomEntrance;
+    public Vector3Int bottomStairs;
+    public Vector3Int topCorner;
+    public Vector3Int topExit;
+    public int rotation;
+
+    public StairCase(Vector3Int p1, Vector3Int p2, Vector3Int p3, Vector3Int p4)
+    {
+        this.bottomEntrance = p1;
+        this.bottomStairs = p2;
+        this.topCorner = p3;
+        this.topExit = p4;
+        this.rotation = GetRotation(p1, p2);
+    }
+
+    private int GetRotation(Vector3Int p1, Vector3Int p2)
+    {
+        if (p1.z < p2.z) return 0;
+        else if (p1.x < p2.x) return 1;
+        else if (p1.z > p2.z) return 2;
+        else return 3;
+    }
+
+    public bool CheckContainsPos(Vector3Int pos)
+    {
+        return (Utils.VecCmp(pos, bottomEntrance, 0.5f)
+             || Utils.VecCmp(pos, bottomStairs, 0.5f)
+             || Utils.VecCmp(pos, topCorner, 0.5f)
+             || Utils.VecCmp(pos, topExit, 0.5f));
+    }
+
+    public void DrawGizmoBox()
+    {
+        Gizmos.color = Color.orange;
+
+        Vector3 size = topCorner.x != topExit.x ? new Vector3Int(2, 2, 1) : new Vector3Int(1, 2, 2);
+        Vector3 center = ((Vector3) (bottomEntrance + bottomStairs + topCorner + topExit)) / 4.0f + new Vector3(0, 0.5f, 0);
+
+        Gizmos.DrawWireCube(center, size);
+    }
+
+    public void DrawGizmoPoints()
+    {
+        // Lowest entrance point
+        Gizmos.color = Color.black;
+        Gizmos.DrawSphere(bottomEntrance + new Vector3(0.0f, 0.5f, 0.0f), 0.05f);
+
+        // Lowest stairs point
+        Gizmos.color = Color.purple;
+        Gizmos.DrawSphere(bottomStairs + new Vector3(0.0f, 0.5f, 0.0f), 0.05f);
+
+        // Top exit point
+        Gizmos.color = Color.white;
+        Gizmos.DrawSphere(topExit + new Vector3(0.0f, 0.5f, 0.0f), 0.05f);
+
+        // Top corner point
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(topCorner + new Vector3(0.0f, 0.5f, 0.0f), 0.05f);
+    }
+}
+
+public class AStar : MonoBehaviour
+{
+    // Private Variables
     LineRenderer lineRenderer;
     IEnumerator pathRoutine;
     private List<Vector3> constructedPath = new List<Vector3>();
-    private List<Vector3Int> stairsPoints = new List<Vector3Int>();
-    private List<Vector3Int> blockedPoints = new List<Vector3Int>();
+    private List<StairCase> staircases = new List<StairCase>();
     private List<Node> openList = new List<Node>();
     private List<Node> closedList = new List<Node>();
-    private List<Vector3Int> pathPoints;
-    private Vector3Int[] offsets = new Vector3Int[]{
-        Vector3Int.forward,
-        Vector3Int.back,
-        Vector3Int.right,
-        Vector3Int.left,
-        Vector3Int.up,
-        Vector3Int.down,
-        Vector3Int.forward + Vector3Int.left,
-        Vector3Int.forward + Vector3Int.right,
-        Vector3Int.back + Vector3Int.left,
-        Vector3Int.back + Vector3Int.right,
-        Vector3Int.forward + Vector3Int.left + Vector3Int.up,
-        Vector3Int.forward + Vector3Int.right + Vector3Int.up,
-        Vector3Int.back + Vector3Int.left + Vector3Int.up,
-        Vector3Int.back + Vector3Int.right + Vector3Int.up,
-        Vector3Int.forward + Vector3Int.left + Vector3Int.down,
-        Vector3Int.forward + Vector3Int.right + Vector3Int.down,
-        Vector3Int.back + Vector3Int.left + Vector3Int.down,
-        Vector3Int.back + Vector3Int.right + Vector3Int.down
-    };
-    private Vector3Int[] offsetsStairs = new Vector3Int[]{
-        Vector3Int.forward,
-        Vector3Int.back,
-        Vector3Int.right,
-        Vector3Int.left
-    };
     private bool doneFindingPath = false;
 
+    // Getters
     public List<Vector3> CollapsedPath => constructedPath;
-    public List<Vector3Int> StaircasePoints => blockedPoints;
+    public List<StairCase> GetStaircases => staircases;
     public bool IsDoneFindingPath => doneFindingPath;
 
     // Debugging data for gizmos
     private WFC _parent;
     private List<Node> pathsNodes = new List<Node>();
-    private Vector3 baseOffsetPos = new Vector3(-0.5f, 0.0f, -0.5f);
-    private bool _settingMoveDiagonal = false;
 
     public void OnDrawGizmos()
     {
@@ -85,23 +118,15 @@ public class AStar : MonoBehaviour
             Gizmos.DrawSphere(pathsNodes[i].position, 0.1f);
         }
 
-        // Draw the stairs points
-        Gizmos.color = Color.blue;
-        foreach (Vector3Int point in stairsPoints)
+        // Draw the staircases
+        foreach (StairCase staircase in staircases)
         {
-            Gizmos.DrawSphere(point, 0.1f);
-        }
-
-        // Draw the blocked areas
-        Gizmos.color = Color.red;
-        foreach (Vector3Int point in blockedPoints)
-        {
-            Gizmos.DrawWireCube(point, Vector3.one);
+            staircase.DrawGizmoBox();
+            staircase.DrawGizmoPoints();
         }
 
         // Draw the field to traverse
         Gizmos.color = Color.blue;
-
         if (_parent != null)
         {
             for (int height = 0; height < _parent.getHeight; height++)
@@ -149,29 +174,43 @@ public class AStar : MonoBehaviour
         }
     }
 
-    public void UpdateSettings(bool moveDiagonal)
-    {
-        this._settingMoveDiagonal = moveDiagonal;
-    }
-
     public void GeneratePath(WFC parent, List<Vector3Int> path)
     {
         this._parent = parent;
-        this.pathPoints = path;
         this.doneFindingPath = false;
-        pathRoutine = FindRoute(path);
+
+        if (!CheckPathValidity(path))
+        {
+            UnityEngine.Debug.LogWarning("Some path points are invalid...");
+            return;
+        }
+
+        pathRoutine = FindRoute(new List<Vector3Int>(path));
         StartCoroutine(pathRoutine);
     }
 
     public void StopFindingPath() 
     {
+        // Stop the coroutine
         if (pathRoutine != null) StopCoroutine(pathRoutine);
         pathRoutine = null;
+        doneFindingPath = true;
 
         // Reset variables
-        constructedPath.Clear();
         openList.Clear();
         closedList.Clear();
+    }
+
+    public void ClearPath()
+    {
+        // Reset variables
+        constructedPath.Clear();
+        staircases.Clear();
+        openList.Clear();
+        closedList.Clear();
+
+        // Reset the linerenderer
+        if (lineRenderer) lineRenderer.positionCount = 0;
     }
 
     private List<Vector3> CollapsePath(Node endNode)
@@ -189,63 +228,117 @@ public class AStar : MonoBehaviour
         return path;
     }
 
+    // Path points are only valid if:
+    // - They are within the level
+    // - They are not occupying the same space
+    // - They are vertically no more than 1 vertically space away from eachother
+    private bool CheckPathValidity(List<Vector3Int> path)
+    {
+        for (int i = 0; i < path.Count; i++)
+        {
+            Vector3Int p1 = path[i];
+
+            // If the point is outside the level
+            if (!Utils.CheckPosValid(p1, _parent.getWidth, _parent.getHeight, _parent.getLength)) return false;
+
+            // If the two points are vertically more than 1 grid tile away from eachother
+            if (i < (path.Count - 1) && Math.Abs(p1.y - path[i+1].y) > 1) return false;
+
+            // Compare the current point with all the others
+            for (int j = 0; j < path.Count; j++)
+            {
+                Vector3Int p3 = path[j];
+
+                if (i == j) continue; // This point is the same in both instances, continue
+                if (Utils.VecCmp(p1, p3, 0.0f)) return false; // If the point is at the same location as another point
+            }
+        }
+
+        // No errors found, all points are valid
+        return true;
+    }
+
     private IEnumerator FindRoute(List<Vector3Int> points)
     {
-        // Reset lists
-        constructedPath.Clear();
-
-        List<Vector3Int> pointsTemp = new List<Vector3Int>(points);
-        List<Vector3Int> pointsAutoGen = new List<Vector3Int>();
-        List<Vector3Int> pointsBlocked = new List<Vector3Int>();
+        ClearPath(); // Clear previously generated data
 
         // Used to reposition nodes across levels for adding stairs correctly
-        for (int j = 0; j < pointsTemp.Count - 1; j++)
+        for (int j = 0; j < points.Count - 1; j++)
         {
-            if(pointsTemp[j].y != pointsTemp[j+1].y) 
-            {
-                Vector3Int newOffsetPos = new Vector3Int(999, 999, 999);
+            Vector3Int currPoint = points[j];
+            Vector3Int nextPoint = points[j+1];
 
-                foreach (Vector3Int offset in offsetsStairs)
+            // If the two points are at a different level, place a staircase here
+            if(currPoint.y != nextPoint.y) 
+            {
+                // Find a direction in which there are space for the staircase
+                // The order is randomised to make it more interesting
+                foreach (Vector3Int offset in Utils.offsets2.OrderBy(i => Guid.NewGuid()).ToList())
                 {
                     // Make sure the new point is placed with the correct offset and level according to the next point
-                    Vector3Int levelOffset = pointsTemp[j].y < pointsTemp[j+1].y ? Vector3Int.down : Vector3Int.up;
-                    Vector3Int newPos = pointsTemp[j+1] + levelOffset + offset * 3;
+                    Vector3Int levelOffset = currPoint.y < nextPoint.y ? Vector3Int.down : Vector3Int.up;
+                    Vector3Int newPos = nextPoint + levelOffset + offset * 3;
 
                     // The new point is only valid if:
                     // - It is within the level
                     // - and does not overlap with another point
-                    // - nor overlaps with a previously autogenerated point
-                    if (CheckPosValid(newPos) 
-                    && !CheckVectorOverlap(pointsTemp, newPos)
-                    && !CheckVectorOverlap(pointsAutoGen, newPos + Vector3Int.down)
-                    && !CheckVectorOverlap(pointsAutoGen, newPos + Vector3Int.up))
+                    // - nor overlaps with a previously autogenerated point either above or below
+                    if (Utils.CheckPosValid(newPos, _parent.getWidth, _parent.getHeight, _parent.getLength) 
+                    && !Utils.CheckVectorOverlap(points, newPos)
+                    && !Utils.CheckVectorOverlap(points, newPos + Vector3Int.down)
+                    && !Utils.CheckVectorOverlap(points, newPos + Vector3Int.up))
                     {
-                        newOffsetPos = newPos;
-                        pointsBlocked.Add(newPos - offset);
-                        pointsBlocked.Add(newPos - offset * 2);
-                        pointsBlocked.Add(newPos - levelOffset - offset);
-                        pointsBlocked.Add(newPos - levelOffset - offset * 2);
+                        // List of all the points making up a staircase
+                        Vector3Int p1 = newPos - offset;
+                        Vector3Int p2 = newPos - offset * 2;
+                        Vector3Int p3 = newPos - levelOffset - offset;
+                        Vector3Int p4 = newPos - levelOffset - offset * 2;
+
+                        // Insert the location for the staircase into the points list
+                        points.Insert(j + 1, newPos);
+
+                        // Adding the points depends on if we go up or down a staircase
+                        if (currPoint.y < nextPoint.y) 
+                        {
+                            staircases.Add(new StairCase(p1, p2, p3, p4));
+                            points.Insert(j + 2, p1);
+                            points.Insert(j + 3, p2);
+                            points.Insert(j + 4, p3);
+                            points.Insert(j + 5, p4);
+                        }
+
+                        else 
+                        {
+                            staircases.Add(new StairCase(p4, p3, p2, p1));
+                            points.Insert(j + 2, p4);
+                            points.Insert(j + 3, p3);
+                            points.Insert(j + 4, p2);
+                            points.Insert(j + 5, p1);
+                        }
+
+                        j += 5;
+
+                        // A staircase position has been found, continue
+                        goto genStairsLoop;
                     }
                 }
 
-                // Insert the point into the points list
-                pointsTemp.Insert(j++ + 1, newOffsetPos);
-                pointsAutoGen.Add(newOffsetPos);
+                // If there cannot be generated a starcase here we have an issue
+                UnityEngine.Debug.LogWarning($"A staircase cannot be generated in this location: ({currPoint.x}, {currPoint.y}, {currPoint.z})");
             }
 
-            stairsPoints = pointsAutoGen;
-            blockedPoints = pointsBlocked;
+            genStairsLoop:;
         }
 
         // Loop through all paths
-        for (int j = 0; j < pointsTemp.Count - 1; j++)
+        for (int j = 0; j < points.Count - 1; j++)
         {
             // To be added to the final path once finished
             List<Vector3> tempPath = new List<Vector3>();
 
             // Setup data
-            Node startNode = new Node(null, pointsTemp[j]);
-            Node endNode = new Node(null, pointsTemp[j+1]);
+            Node startNode = new Node(null, points[j]);
+            Node endNode = new Node(null, points[j+1]);
 
             openList.Add(startNode);
 
@@ -287,17 +380,13 @@ public class AStar : MonoBehaviour
                 // Generate children
                 List<Node> children = new List<Node>();
 
-                for (int k = 0; k < offsets.Length; k++)
+                foreach (Vector3Int offset in Utils.offsets3)
                 {
-                    // If this offset is diagonal and the setting is off, break
-                    if (!_settingMoveDiagonal && k > 5)
-                        break;
-
                     // Get node position
-                    Vector3Int nodePosition = currentNode.position + offsets[k];
+                    Vector3Int nodePosition = currentNode.position + offset;
 
                     // Make sure within range of the level
-                    if (!CheckPosValid(nodePosition))
+                    if (!Utils.CheckPosValid(nodePosition, _parent.getWidth, _parent.getHeight, _parent.getLength))
                         continue;
 
                     // Create new node
@@ -308,21 +397,24 @@ public class AStar : MonoBehaviour
                 }
 
                 // Loop through children
-                foreach (Node childNode in children)
+                for (int k = 0; k < children.Count; k++)
                 {
+                    Node childNode = children[k];
+
                     // Child is on the closed list
                     foreach (Node closedChild in closedList)
                         if (childNode.Equals(closedChild))
                             continue;
 
-                    // The child is on a blocked path point
-                    if (startNode.position.y == endNode.position.y 
-                    && CheckVectorOverlap(pointsBlocked, childNode.position, 0.5f))
+                    // The child is on a staircase when it should not be
+                    if ((!CheckStaircaseOverlap(startNode.position)
+                    && !CheckStaircaseOverlap(endNode.position))
+                    && (CheckStaircaseOverlap(childNode.position)
+                    || k > 5))
                         continue;
 
-
                     // If we are going downstairs
-                    if (endNode.position.y < startNode.position.y)
+                    /*if (endNode.position.y < startNode.position.y)
                     {
                         // Make sure the first step always moves forward
                         if (currentNode == startNode 
@@ -340,10 +432,10 @@ public class AStar : MonoBehaviour
                     if (endNode.position.y > startNode.position.y)
                     {
                         // Make sure the second to last child always moves up
-                        if (VecCmp(childNode.position, endNode.position)
+                        if (Utils.VecCmp(childNode.position, endNode.position)
                         && childNode.position.y != endNode.position.y)
                             continue;
-                    }
+                    }*/
                     
                     // Create the f, g, and h values
                     childNode.g = currentNode.g + 1;
@@ -378,7 +470,7 @@ public class AStar : MonoBehaviour
 
     private void VisualisePath(List<Vector3> tempPath)
     {
-        if (lineRenderer == null)
+        if ((lineRenderer = gameObject.GetComponent<LineRenderer>()) && lineRenderer == null)
         {
             // Create the line renderer object
             lineRenderer = gameObject.AddComponent<LineRenderer>();
@@ -397,23 +489,13 @@ public class AStar : MonoBehaviour
         lineRenderer.SetPositions(constructedPath.Concat(tempPath).Select(p => p + transform.position).ToArray());
     }
 
-    private bool VecCmp(Vector3Int a, Vector3Int b, float distance = 1.0f)
+    public bool CheckStaircaseOverlap(Vector3Int pos)
     {
-        return Vector3Int.Distance(a, b) <= distance;
+        return staircases.Exists((StairCase stairs) => stairs.CheckContainsPos(pos));
     }
 
-    private bool CheckPosValid(Vector3Int pos)
+    public StairCase GetStaircase(int index)
     {
-        return (pos.x < _parent.getWidth 
-             && pos.x >= 0
-             && pos.y < _parent.getHeight
-             && pos.y >= 0
-             && pos.z < _parent.getLength
-             && pos.z >= 0);
-    }
-
-    public bool CheckVectorOverlap(List<Vector3Int> points, Vector3Int pos, float distance = 1.0f)
-    {
-        return points.Exists(point => VecCmp(point, pos, distance));
+        return staircases.Find((StairCase stair) => stair.CheckContainsPos(Vector3Int.FloorToInt(constructedPath[index])));
     }
 }

@@ -25,18 +25,18 @@ MonoBehaviour:
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 3
+    name: 2
     symmetry: 1
     type: 0
   Right:
-    name: 5
+    name: 2
     symmetry: 1
     type: 0
   Front:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
   Back:
-    name: 2
+    name: 4
     symmetry: 1
     type: 0

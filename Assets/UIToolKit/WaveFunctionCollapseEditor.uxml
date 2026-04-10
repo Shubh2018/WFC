@@ -16,10 +16,9 @@
             <ui:Tab label="Navigation" tabindex="1">
                 <ui:Button text="Generate Path" name="_generatePath"/>
                 <ui:Button text="Stop Generation" name="_stopGeneratePath"/>
+                <ui:Button text="Clear Path" name="_clearPath"/>
                 <ui:ListView name="_pathPoints" show-foldout-header="true" show-add-remove-footer="true" header-title="Path Points" data-source-type="WFC, Assembly-CSharp" data-source-path="_pathPoints" binding-path="_pathPoints"/>
-                <ui:GroupBox name="_settingsBox" text="Settings" style="border-top-width: 5px; border-right-width: 5px; border-bottom-width: 5px; border-left-width: 5px; border-left-color: rgb(48, 48, 48); border-right-color: rgb(48, 48, 48); border-top-color: rgb(48, 48, 48); border-bottom-color: rgb(48, 48, 48); padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px;">
-                    <ui:Toggle label="Move Diagonal " name="_generateDiagonal" value="false" data-source-type="WFC, Assembly-CSharp" data-source-path="_pathMoveDiagonal" binding-path="_pathMoveDiagonal"/>
-                </ui:GroupBox>
+                <ui:GroupBox name="_settingsBox" text="Settings" style="border-top-width: 5px; border-right-width: 5px; border-bottom-width: 5px; border-left-width: 5px; border-left-color: rgb(48, 48, 48); border-right-color: rgb(48, 48, 48); border-top-color: rgb(48, 48, 48); border-bottom-color: rgb(48, 48, 48); padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px;"/>
             </ui:Tab>
             <ui:Tab label="Collapse" tabindex="2" enabled="true">
                 <ui:GroupBox name="CollapseGroup" style="flex-direction: column; flex-grow: 0; justify-content: space-evenly; align-content: stretch; align-self: center;">

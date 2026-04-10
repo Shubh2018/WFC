@@ -25,7 +25,7 @@ MonoBehaviour:
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 4
+    name: 2
     symmetry: 1
     type: 0
   Right:
@@ -33,7 +33,7 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   Front:
-    name: 2
+    name: 4
     symmetry: 1
     type: 0
   Back:

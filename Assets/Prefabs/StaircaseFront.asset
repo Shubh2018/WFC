@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Staircase
+  m_Name: StaircaseFront
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 9168917625172809675, guid: 37b53b43c55d97b38af38a6b062352d0, type: 3}
   Weight: 1

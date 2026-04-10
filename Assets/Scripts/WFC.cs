@@ -1,20 +1,163 @@
 using UnityEngine;
+using UnityEditor;
 using System;
 using System.Linq;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 
+// Represents a tile that needs to be collapsed
+public class Tile
+{
+    public Vector3Int pos;
+    public List<NodeData> potentialNodes;
+    public List<Tile> neighbors;
+    public bool shouldBeUpdated;
+
+    public Tile(WFC parent, Vector3Int coord, bool update = false)
+    {
+        pos = coord;
+        neighbors = new List<Tile>();
+        shouldBeUpdated = update;
+
+        potentialNodes = new List<NodeData>(parent.getNodes);
+        potentialNodes.AddRange(parent.getNodesGen);
+        potentialNodes = potentialNodes.Where(node => !node.name.Contains("Staircase")).ToList();
+    }
+}
+
+public class PathNode
+{
+    public PathNodeData data = new PathNodeData();
+    public List<int> pathIndicies = new List<int>();
+    public WFC parent;
+
+    public PathNode(WFC parent)
+    {
+        this.parent = parent; // Used to reference the AStar path list
+    }
+
+    public bool CheckContainsPos(int index)
+    {
+        // If this object contains no indicies yet
+        if (pathIndicies.Count == 0) return false;
+
+        Vector3Int a = Vector3Int.FloorToInt(parent.path.CollapsedPath[index]);
+        Vector3Int b = Vector3Int.FloorToInt(parent.path.CollapsedPath[pathIndicies[0]]);
+
+        // If the first and provides index are at the same coordinate
+        if (a.x == b.x && a.y == b.y && a.z == b.z) return true;
+
+        // If their coordinates are different
+        return false;
+    }
+
+    public void AddPath(int index)
+    {
+        List<Vector3> path = parent.path.CollapsedPath; // The list of path points
+
+        if (path.Count == 0 || index < 0 || index >= path.Count) return; // check if this index is invalid
+
+        Vector3 temp = new Vector3(-999, -999, -999); // temp vector to check for invalid ngihbours
+        Vector3 currPath = path[index]; // get the current path vector
+        Vector3[] relationship = new Vector3[2] { temp, temp }; // setup relationship between the previous and next path positions
+
+        // Make an array of path coordinates
+        if (index > 0) relationship[0] = path[index - 1];
+        if (index < (path.Count - 1)) relationship[1] = path[index + 1];
+
+        // Go through the neighboors and compare their coordinates with the one in the middle
+        foreach (Vector3 neighbor in new[]{ relationship[0], relationship[1] })
+        {
+            if (neighbor.x <= -999) continue; // No neighbour in this direction, ignore
+            if (neighbor.y != currPath.y) continue; // The neighbor is on another level, ignore
+
+            Vector3 delta = (currPath - neighbor).normalized; // Find the delta value
+            Vector3 cross = Vector3.Cross(Vector3.up, delta); // Calculate the cross product
+
+            // Edge case regarding the height of the node
+            //if (currPath.y < neighbor.y) cross += Vector3.up;
+            //else if (currPath.y > neighbor.y) cross += Vector3.down;
+
+            // Update the face type depending on how the vectors are facing eachother
+            if (cross.x == -1) data.Front = NodeFace.Name.Path;
+            if (cross.x == 1) data.Back = NodeFace.Name.Path;
+            //if (cross.y == 1) data.Up = NodeFace.Name.Path;
+            //if (cross.y == -1) data.Down = NodeFace.Name.Path;
+            if (cross.z == 1) data.Right = NodeFace.Name.Path;
+            if (cross.z == -1) data.Left = NodeFace.Name.Path;
+        }
+
+        // Only add the index if it matches the vector and it is not already there
+        // Used in case the same point exists multiple times but with different neighbours
+        if (!pathIndicies.Contains(index)) pathIndicies.Add(index);
+    }
+
+    private NodeData FindStairCaseNode(List<NodeData> nodes)
+    {
+        StairCase stairs = parent.path.GetStaircase(pathIndicies[0]);
+        Vector3Int pos = Vector3Int.FloorToInt(parent.path.CollapsedPath[pathIndicies[0]]);
+        string name = "";
+
+        if (Utils.VecCmp(stairs.bottomEntrance, pos, 0.5f)) name = "StaircaseEnd";
+        else if (Utils.VecCmp(stairs.bottomStairs, pos, 0.5f)) name = "StaircaseFront";
+        else if (Utils.VecCmp(stairs.topExit, pos, 0.5f)) name = "StaircaseTopFront";
+        else if (Utils.VecCmp(stairs.topCorner, pos, 0.5f)) name = "StaircaseTopEnd";
+
+        UnityEngine.Debug.Log(pos);
+        UnityEngine.Debug.Log($"{name}_{stairs.rotation * 90}");
+
+        return nodes.Find((NodeData node) => node.name == $"{name}_{stairs.rotation * 90}");
+    }
+
+    public List<NodeData> GetPotentialNodes()
+    {
+        List<NodeData> potentialNodes = new List<NodeData>(parent.getNodes);
+        potentialNodes.AddRange(parent.getNodesGen);
+
+        // Check if this node is part of a staircase
+        if (parent.path.CheckStaircaseOverlap(Vector3Int.FloorToInt(parent.path.CollapsedPath[pathIndicies[0]]))) 
+            return new List<NodeData> { FindStairCaseNode(potentialNodes) };
+        
+        // Since this node is not a staircase, filter out any staircase nodes
+        potentialNodes = potentialNodes.Where(node => !node.name.Contains("Staircase")).ToList();
+
+        UnityEngine.Debug.Log($"coords: {String.Join(", ", pathIndicies)}");
+        UnityEngine.Debug.Log($"potential nodes before: {potentialNodes.Count()}");
+
+        for (int i = potentialNodes.Count - 1; i >= 0; i--)
+        {
+            NodeData node = potentialNodes[i];
+
+            if (data.Left != NodeFace.Name.None && node.Left.name != data.Left
+            || data.Right != NodeFace.Name.None && node.Right.name != data.Right
+            || data.Front != NodeFace.Name.None && node.Front.name != data.Front
+            || data.Back != NodeFace.Name.None && node.Back.name != data.Back
+            || data.Up != NodeFace.Name.None && node.Up.name != data.Up
+            || data.Down != NodeFace.Name.None && node.Down.name != data.Down)
+                potentialNodes.RemoveAt(i);
+        }
+
+        UnityEngine.Debug.Log($"potential nodes after: {potentialNodes.Count()}");
+
+        return potentialNodes;
+    }
+}
+
 public class WFC : MonoBehaviour
 {
+    // Serilised Fields
     [SerializeField] private int _width;
     [SerializeField] private int _length;
     [SerializeField] private int _height;
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
     [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
+    [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
+
+    // Private Variables
     NodeData[,,] _grid;
     List<Tile> _nodesToCollapse = new List<Tile>();
-    public bool pauseGeneration = false;
+    List<PathNode> pathNodes = new List<PathNode>();
     double collapseExecutionTime = 0;
     public float collapseWaitTime = 1.0f;
     Vector3Int activeCollapsningTile;
@@ -22,251 +165,34 @@ public class WFC : MonoBehaviour
     bool doneCollapse = false;
     bool doneGeneratingPath = false;
 
-    [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
-    [HideInInspector] public AStar path;
-    [HideInInspector] public bool _pathMoveDiagonal = false;
-    private List<PathNode> pathNodes = new List<PathNode>();
+    // Public Variables
+    public AStar path;
+    public bool pauseGeneration = false;
 
+    // Getters
     public int getTiles => transform.childCount;
     public double getCollapseTime => collapseExecutionTime;
     public int getWidth => _width;
     public int getHeight => _height;
     public int getLength => _length;
-
-    // Represents a tile that needs to be collapsed
-    private class Tile
-    {
-        public Vector3Int pos;
-        public List<NodeData> potentialNodes;
-        public List<Tile> neighbors;
-        public bool shouldBeUpdated;
-
-        public Tile(WFC parent, Vector3Int coord, bool update = false)
-        {
-            pos = coord;
-            neighbors = new List<Tile>();
-            shouldBeUpdated = update;
-
-            potentialNodes = new List<NodeData>(parent._nodes);
-            potentialNodes.AddRange(parent._nodesGenerated);
-        }
-    }
-
-    private class PathNode
-    {
-        public enum StairCaseType 
-        {
-            None,
-            Lowest,
-            Middle,
-            Highest
-        }
-
-        public PathNodeData data = new PathNodeData();
-        public List<int> pathIndicies = new List<int>();
-        public WFC parent;
-        public StairCaseType stairCase;
-        public bool isStairCase => stairCase != StairCaseType.None;
-
-        public PathNode(WFC parent)
-        {
-            this.parent = parent; // Used to reference the AStar path list
-        }
-
-        public bool CheckContainsPos(int index)
-        {
-            // If this object contains no indicies yet
-            if (pathIndicies.Count == 0) return false;
-
-            Vector3Int a = Vector3Int.FloorToInt(parent.path.CollapsedPath[index]);
-            Vector3Int b = Vector3Int.FloorToInt(parent.path.CollapsedPath[pathIndicies[0]]);
-
-            // If the first and provides index are at the same coordinate
-            if (a.x == b.x && a.y == b.y && a.z == b.z) return true;
-
-            // If their coordinates are different
-            return false;
-        }
-
-        private void SetPointDirType(Vector3 p1, Vector3 p2, PathNodeData dir)
-        {
-                Vector3 delta = (p1 - p2).normalized; // Find the delta value
-                Vector3 cross = Vector3.Cross(Vector3.up, delta); // Calculate the cross product
-
-                // Edge case regarding the height of the node
-                if (p1.y < p2.y) cross += Vector3.up;
-                else if (p1.y > p2.y) cross += Vector3.down;
-
-                // Update the face type depending on how the vectors are facing eachother
-                if (cross.x == -1) data.Front = dir.Front;
-                if (cross.x == 1) data.Back = dir.Back;
-                if (cross.y == 1) data.Up = dir.Up;
-                if (cross.y == -1) data.Down = dir.Down;
-                if (cross.z == 1) data.Right = dir.Right;
-                if (cross.z == -1) data.Left = dir.Left;
-        }
-
-        private void SetPointDirType2(Vector3 p1, Vector3 p2, PathNodeData dir)
-        {
-                Vector3 delta = (p1 - p2).normalized; // Find the delta value
-                Vector3 cross = Vector3.Cross(Vector3.up, delta); // Calculate the cross product
-
-                if (cross.x == 1) {
-                    data.Back = dir.Front;
-                    data.Front = dir.Back;
-                    data.Left = dir.Right;
-                    data.Right = dir.Left;
-                } else if (cross.x == -1) {
-                    data.Back = dir.Back;
-                    data.Front = dir.Front;
-                    data.Left = dir.Left;
-                    data.Right = dir.Right;
-                } else if (cross.z == 1) {
-                    data.Back = dir.Right;
-                    data.Front = dir.Left;
-                    data.Left = dir.Front;
-                    data.Right = dir.Back;         
-                } else if (cross.z == -1) {
-                    data.Back = dir.Left;
-                    data.Front = dir.Right;
-                    data.Left = dir.Back;
-                    data.Right = dir.Front;
-                }
-
-                data.Up = dir.Up;
-                data.Down = dir.Down;
-        }
-
-        private bool CheckIsStaircasePoint(Vector3 point)
-        {
-            return parent.path.CheckVectorOverlap(parent.path.StaircasePoints, Vector3Int.FloorToInt(point), 0.1f);
-        }
-
-        private void CheckStaircasePath(Vector3 p1, Vector3 n1, Vector3 n2)
-        {
-            // Check if this path is even a staircase
-            if (CheckIsStaircasePoint(p1))
-            {
-                if (n1.y == p1.y && n2.y == p1.y)
-                {
-                    stairCase = StairCaseType.Lowest;
-                    SetPointDirType2(p1, CheckIsStaircasePoint(n1) ? n1 : n2, new PathNodeData {
-                        Front = NodeFace.Name.StaircaseEnd,
-                        Back = NodeFace.Name.Path,
-                        Up = NodeFace.Name.StaircaseTop
-                    });
-                }
-
-                else if (data.Up != NodeFace.Name.None)
-                {
-                    stairCase = StairCaseType.Middle;
-                    SetPointDirType2(p1, n1.y == p1.y ? n1 : n2, new PathNodeData {
-                        Front = NodeFace.Name.StaircaseEnd,
-                        Back = NodeFace.Name.Wall,
-                        Up = NodeFace.Name.StaircaseTop
-                    });
-                }
-
-                else
-                {
-                    stairCase = StairCaseType.Highest;
-                    SetPointDirType2(p1, n1.y < p1.y ? n2 : n1, new PathNodeData {
-                        Down = NodeFace.Name.StaircaseTop,
-                        Front = NodeFace.Name.Path
-                    });
-                }
-            }
-        }
-
-        public void AddPath(int index)
-        {
-            List<Vector3> path = parent.path.CollapsedPath; // The list of path points
-
-            if (path.Count == 0 || index < 0 || index >= path.Count) return; // check if this index is invalid
-
-            Vector3 temp = new Vector3(-999, -999, -999); // temp vector to check for invalid ngihbours
-            Vector3 currPath = path[index]; // get the current path vector
-            Vector3[] relationship = new Vector3[2] { temp, temp }; // setup relationship between the previous and next path positions
-
-            // Make an array of path coordinates
-            if (index > 0) relationship[0] = path[index - 1];
-            if (index < (path.Count - 1)) relationship[1] = path[index + 1];
-
-            // Go through the neighboors and compare their coordinates with the one in the middle
-            foreach (Vector3 neighbor in new[]{ relationship[0], relationship[1] })
-            {
-                if (neighbor.x <= -999) continue; // No neighbour in this direction, ignore
-
-                // Set the face to path if they are facing eachother
-                // default: NodeFace.Name.None
-                SetPointDirType(currPath, neighbor, new PathNodeData {
-                    Front = NodeFace.Name.Path,
-                    Back = NodeFace.Name.Path,
-                    Up = NodeFace.Name.Path,
-                    Down = NodeFace.Name.Path,
-                    Right = NodeFace.Name.Path,
-                    Left = NodeFace.Name.Path
-                });
-            }
-
-            // Check if this path is part of a staircase and update accordingly
-            CheckStaircasePath(currPath, relationship[0], relationship[1]);
-
-            // Only add the index if it matches the vector and it is not already there
-            // Used in case the same point exists multiple times but with different neighbours
-            if (!pathIndicies.Contains(index)) pathIndicies.Add(index);
-        }
-
-        public List<NodeData> GetPotentialNodes()
-        {
-            List<NodeData> potentialNodes = new List<NodeData>(parent._nodes);
-            potentialNodes.AddRange(parent._nodesGenerated);
-
-            UnityEngine.Debug.Log($"coords: {String.Join(", ", pathIndicies)}");
-            UnityEngine.Debug.Log($"potential nodes before: {potentialNodes.Count()}");
-
-            for (int i = potentialNodes.Count - 1; i >= 0; i--)
-            {
-                NodeData node = potentialNodes[i];
-
-                if (data.Left != NodeFace.Name.None && node.Left.name != data.Left
-                || data.Right != NodeFace.Name.None && node.Right.name != data.Right
-                || data.Front != NodeFace.Name.None && node.Front.name != data.Front
-                || data.Back != NodeFace.Name.None && node.Back.name != data.Back
-                || data.Up != NodeFace.Name.None && node.Up.name != data.Up
-                || data.Down != NodeFace.Name.None && node.Down.name != data.Down)
-                    potentialNodes.RemoveAt(i);
-            }
-
-            UnityEngine.Debug.Log($"potential nodes after: {potentialNodes.Count()}");
-
-            return potentialNodes;
-        }
-    }
-
-    private Vector3Int[] offsets = new Vector3Int[]
-    {
-        Vector3Int.forward,
-        Vector3Int.back,
-        Vector3Int.right,
-        Vector3Int.left,
-        Vector3Int.up,
-        Vector3Int.down
-    };
+    public List<NodeData> getNodes => _nodes;
+    public List<NodeData> getNodesGen => _nodesGenerated;
 
     public void StartFindPath()
     {
-        if (path == null) path = gameObject.AddComponent<AStar>();
+        if ((path = gameObject.GetComponent<AStar>()) && path == null) 
+            path = gameObject.AddComponent<AStar>();
+
         doneGeneratingPath = false;
-        path.UpdateSettings(_pathMoveDiagonal);
         path.GeneratePath(this, _pathPoints);
 
         StartCoroutine(GeneratePathNodes());
     }
 
-    public void StopFindPath()
-    {
+    public void StopFindPath() => path.StopFindingPath();
+    public void ClearPath() {
         path.StopFindingPath();
+        path.ClearPath();
     }
 
     public void StartCollapse(Action doneFuncHook) 
@@ -312,7 +238,7 @@ public class WFC : MonoBehaviour
                 Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Up
 
                 Gizmos.color = point.data.Down != NodeFace.Name.None ? Color.green : Color.red;
-                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f)); // Up
+                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f)); // Down
 
                 Gizmos.color = point.data.Front != NodeFace.Name.None ? Color.green : Color.red;
                 Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f)); // Left
@@ -328,27 +254,22 @@ public class WFC : MonoBehaviour
             }
         }
 
-        if (doneGeneratingPath)
+        if (_grid != null)
         {
-            foreach(PathNode node in pathNodes)
+            for (int x = 0; x < _width; x++)
             {
-                if (node.isStairCase)
+                for (int y = 0; y < _height; y++)
                 {
-                    switch(node.stairCase)
+                    for (int z = 0; z < _length; z++)
                     {
-                        case PathNode.StairCaseType.Lowest:
-                            Gizmos.color = Color.black;
-                            break;
-                        case PathNode.StairCaseType.Middle:
-                            Gizmos.color = Color.purple;
-                            break;
-                        case PathNode.StairCaseType.Highest:
-                            Gizmos.color = Color.white;
-                            break;
-                    }
+                        if (!_grid[x, y, z]) continue;
+                        NodeData node = _grid[x, y, z];
 
-                    foreach(int idx in node.pathIndicies)
-                        Gizmos.DrawSphere(path.CollapsedPath[idx] + new Vector3(0.0f, 0.5f, 0.0f), 0.05f);
+                        Handles.Label(new Vector3(x - 0.4f, y + 0.5f, z) + transform.position, $"{node.Left.name}");
+                        Handles.Label(new Vector3(x + 0.4f, y + 0.5f, z) + transform.position, $"{node.Right.name}");
+                        Handles.Label(new Vector3(x, y + 0.5f, z + 0.4f) + transform.position, $"{node.Front.name}");
+                        Handles.Label(new Vector3(x, y + 0.5f, z - 0.4f) + transform.position, $"{node.Back.name}");
+                    }
                 }
             }
         }
@@ -368,11 +289,12 @@ public class WFC : MonoBehaviour
             List<NodeFaceHorizontal.Name> currFaceNames = new List<NodeFaceHorizontal.Name>{ currNode.Back.name, currNode.Right.name, currNode.Front.name, currNode.Left.name };
 
             // Only rotate nodes with a positive weight that are not symmetrical all the way around (like the crossroad)
-            if(currNode.Left.type != NodeFaceHorizontal.Type.None 
+            if((currNode.Left.type != NodeFaceHorizontal.Type.None 
             || currNode.Right.type != NodeFaceHorizontal.Type.None
             || currNode.Front.type != NodeFaceHorizontal.Type.None
             || currNode.Back.type != NodeFaceHorizontal.Type.None
-            || currFaceNames.Distinct().Skip(1).Any()) 
+            || currFaceNames.Distinct().Skip(1).Any())
+            && currNode.Weight > 0) 
             {
                 // Rotate object clockwise a maximum of three times
                 for(int j = 0; j < 3; j++)
@@ -468,14 +390,6 @@ public class WFC : MonoBehaviour
 
         UnityEngine.Debug.Log($"Total paths: {path.CollapsedPath.Count}");
 
-        /*foreach (PathNode node in pathNodes)
-        {
-            UnityEngine.Debug.Log($"Path Node Coors: {string.Join( ",", node.pathIndicies.Select(i => $"{i} ({path.CollapsedPath[i]})").ToArray())}");
-            UnityEngine.Debug.Log($"Path dirs: front: {node.data.Front}, back: {node.data.Back}, left: {node.data.Left}, right: {node.data.Right}, up: {node.data.Up}, down: {node.data.Down}");
-            UnityEngine.Debug.Log($"Path is staircase: {node.isStairCase}, value: {node.stairCase}");
-            UnityEngine.Debug.Log("");
-        }*/
-
         doneGeneratingPath = true;
         UnityEngine.Debug.Log("done generating path nodes...");
     }
@@ -556,7 +470,7 @@ public class WFC : MonoBehaviour
                 if(tile.potentialNodes.Count < 1)
                 {
                     _grid[tile.pos.x, tile.pos.y, tile.pos.z] = _nodes[0];
-                    UnityEngine.Debug.LogWarning($"Can't Collapse on {tile.pos.x}, {tile.pos.y}, {tile.pos.z}");
+                    UnityEngine.Debug.LogWarning($"Cannot Collapse on {tile.pos.x}, {tile.pos.y}, {tile.pos.z}");
 
                     activeCollapsningTile = tile.pos;
                     goto doneCollapseLabel;
@@ -564,6 +478,13 @@ public class WFC : MonoBehaviour
 
                 else
                 {
+                    if (tile.potentialNodes.Count == 1)
+                    {
+                        UnityEngine.Debug.Log($"tile: {tile.pos}, nodes: {tile.potentialNodes.Count}");
+                        for (int l = 0; l < tile.potentialNodes.Count; l++)
+                            UnityEngine.Debug.Log(tile.potentialNodes[l] == null);
+                    }
+
                     // Choose a node based on weight
                     double[] nodeWeights = CalculateNodesWeights(tile.potentialNodes);
                     int chosenTileIdx = ChooseWeightedTile(nodeWeights, new System.Random());
@@ -615,11 +536,11 @@ public class WFC : MonoBehaviour
     {
         if(!tile.shouldBeUpdated) return; // No neighbor has been collapsed for this tile, so no need to recheck its options
 
-        for(int i = 0; i < offsets.Length; i++)
+        for(int i = 0; i < Utils.offsets.Length; i++)
         {
-            Vector3Int neighbor = tile.pos + offsets[i];
+            Vector3Int neighbor = tile.pos + Utils.offsets[i];
 
-            if(CheckGridValidity(neighbor))
+            if(Utils.CheckPosValid(neighbor, _width, _height, _length))
             {
                 NodeData neighborNode = _grid[neighbor.x, neighbor.y, neighbor.z];
 
@@ -761,9 +682,4 @@ public class WFC : MonoBehaviour
             potentialNodes.RemoveAt(i);
         }
     }
-
-    private bool CheckGridValidity(Vector3Int pos) =>
-           pos.x > -1 && pos.x < _width 
-        && pos.y > -1 && pos.y < _height 
-        && pos.z > -1 && pos.z < _length;
 }

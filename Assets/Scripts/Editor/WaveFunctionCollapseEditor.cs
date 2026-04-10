@@ -24,6 +24,9 @@ public class WaveFunctionCollapseEditor : Editor
         Button stopGeneratePathButton = rootTree.Q<Button>("_stopGeneratePath");
         stopGeneratePathButton.RegisterCallback<ClickEvent>(StopGeneratePath);
 
+        Button clearPathButton = rootTree.Q<Button>("_clearPath");
+        clearPathButton.RegisterCallback<ClickEvent>(ClearPath);
+
         Button collapseButton = rootTree.Q<Button>("_collapseTiles");
         collapseButton.RegisterCallback<ClickEvent>(CollapseTiles);
 
@@ -80,6 +83,11 @@ public class WaveFunctionCollapseEditor : Editor
     private void StopGeneratePath(ClickEvent evt)
     {
         WaveFunctionCollapse.StopFindPath();
+    }
+
+    private void ClearPath(ClickEvent evt)
+    {
+        WaveFunctionCollapse.ClearPath();
     }
 
     private void CollapseTiles(ClickEvent evt)
