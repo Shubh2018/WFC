@@ -104,10 +104,11 @@ public class PathNode
         else if (Utils.VecCmp(stairs.topExit, pos, 0.5f)) name = "StaircaseTopFront";
         else if (Utils.VecCmp(stairs.topCorner, pos, 0.5f)) name = "StaircaseTopEnd";
 
-        UnityEngine.Debug.Log(pos);
-        UnityEngine.Debug.Log($"{name}_{stairs.rotation * 90}");
+        name = stairs.rotation > 0 ? $"{name}_{stairs.rotation * 90}" : name;
 
-        return nodes.Find((NodeData node) => node.name == $"{name}_{stairs.rotation * 90}");
+        UnityEngine.Debug.Log($"staircase: {pos}, name: {name}");
+
+        return nodes.Find((NodeData node) => node.name == name);
     }
 
     public List<NodeData> GetPotentialNodes()
@@ -178,6 +179,14 @@ public class WFC : MonoBehaviour
     public List<NodeData> getNodes => _nodes;
     public List<NodeData> getNodesGen => _nodesGenerated;
 
+    // Gizmos Debug Settings
+    public bool enableGizmosFacesText = false;
+    public bool enableGizmosGrid = false;
+    public bool enableGizmosCoords = false;
+    public bool enableGizmosPathRouting = false;
+    public bool enableGizmosPathPoints = false;
+    public bool enableGizmosNodeName = false;
+
     public void StartFindPath()
     {
         if ((path = gameObject.GetComponent<AStar>()) && path == null) 
@@ -207,54 +216,84 @@ public class WFC : MonoBehaviour
         if (collapseTilesRoutine != null) StopCoroutine(collapseTilesRoutine);
     }
 
+    public void SavePathSettings(bool pathState, bool pathPointsState, bool pathStaircases, bool pathField, bool pathFinding, bool pathDelay)
+    {
+        if (path) {
+            path.enableGizmosPathPoints = pathPointsState;
+            path.enableGizmosPathStaircases = pathStaircases;
+            path.enableGizmosPathField = pathField;
+            path.enableGizmosPathFinding = pathFinding;
+            path.enableGizmosGenerationDelay = pathDelay;
+        }
+
+        LineRenderer lr = gameObject.GetComponent<LineRenderer>();
+        if (lr) lr.enabled = pathState;
+    }
+
     public void OnDrawGizmos() {
         Gizmos.color = new Color(1.0f, 1.0f, 1.0f, 0.1f);
         Gizmos.matrix = transform.localToWorldMatrix;
 
-        for (int i = 0; i < _width; i++)
-            for (int k = 0; k < _height; k++)
-                for (int j = 0; j < _length; j++)
-                    Gizmos.DrawWireCube(new Vector3(i, k + 0.5f, j), Vector3.one);
-        
-        if (!doneCollapse)
+        if (enableGizmosGrid || enableGizmosCoords)
         {
-            Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
-            Gizmos.DrawWireCube(activeCollapsningTile - new Vector3(0.0f, -0.5f, 0.0f), Vector3.one);
-        }
-
-        foreach (Vector3Int point in _pathPoints)
-        {
-            Gizmos.color = Color.orange;
-            Gizmos.DrawSphere(point, 0.1f);
-        }
-
-        foreach (PathNode point in pathNodes)
-        {
-            foreach (int index in point.pathIndicies)
+            for (int i = 0; i < _width; i++)
             {
-                if (index >= path.CollapsedPath.Count) continue;
-
-                Gizmos.color = point.data.Up != NodeFace.Name.None ? Color.green : Color.red;
-                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Up
-
-                Gizmos.color = point.data.Down != NodeFace.Name.None ? Color.green : Color.red;
-                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f)); // Down
-
-                Gizmos.color = point.data.Front != NodeFace.Name.None ? Color.green : Color.red;
-                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f)); // Left
-
-                Gizmos.color = point.data.Back != NodeFace.Name.None ? Color.green : Color.red;
-                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Right
-
-                Gizmos.color = point.data.Left != NodeFace.Name.None ? Color.green : Color.red;
-                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Forward
-
-                Gizmos.color = point.data.Right != NodeFace.Name.None ? Color.green : Color.red;
-                Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f)); // Back
+                for (int k = 0; k < _height; k++)
+                {
+                    for (int j = 0; j < _length; j++)
+                    {
+                        if (enableGizmosGrid) Gizmos.DrawWireCube(new Vector3(i, k + 0.5f, j), Vector3.one);
+                        if (enableGizmosCoords) Handles.Label(new Vector3(i - 0.5f, k ,j - 0.5f) + transform.position, $"({i}, {j}, {k})");
+                    }
+                }
+            }
+            
+            if (!doneCollapse)
+            {
+                Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
+                Gizmos.DrawWireCube(activeCollapsningTile - new Vector3(0.0f, -0.5f, 0.0f), Vector3.one);
             }
         }
 
-        if (_grid != null)
+        if (enableGizmosPathPoints)
+        {
+            foreach (Vector3Int point in _pathPoints)
+            {
+                Gizmos.color = Color.orange;
+                Gizmos.DrawSphere(point, 0.1f);
+            }
+        }
+
+        if (enableGizmosPathRouting)
+        {
+            foreach (PathNode point in pathNodes)
+            {
+                foreach (int index in point.pathIndicies)
+                {
+                    if (index >= path.CollapsedPath.Count) continue;
+
+                    Gizmos.color = point.data.Up != NodeFace.Name.None ? Color.green : Color.red;
+                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Up
+
+                    Gizmos.color = point.data.Down != NodeFace.Name.None ? Color.green : Color.red;
+                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f)); // Down
+
+                    Gizmos.color = point.data.Front != NodeFace.Name.None ? Color.green : Color.red;
+                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f)); // Left
+
+                    Gizmos.color = point.data.Back != NodeFace.Name.None ? Color.green : Color.red;
+                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Right
+
+                    Gizmos.color = point.data.Left != NodeFace.Name.None ? Color.green : Color.red;
+                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Forward
+
+                    Gizmos.color = point.data.Right != NodeFace.Name.None ? Color.green : Color.red;
+                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f)); // Back
+                }
+            }
+        }
+
+        if (_grid != null && (enableGizmosFacesText || enableGizmosNodeName))
         {
             for (int x = 0; x < _width; x++)
             {
@@ -265,10 +304,19 @@ public class WFC : MonoBehaviour
                         if (!_grid[x, y, z]) continue;
                         NodeData node = _grid[x, y, z];
 
-                        Handles.Label(new Vector3(x - 0.4f, y + 0.5f, z) + transform.position, $"{node.Left.name}");
-                        Handles.Label(new Vector3(x + 0.4f, y + 0.5f, z) + transform.position, $"{node.Right.name}");
-                        Handles.Label(new Vector3(x, y + 0.5f, z + 0.4f) + transform.position, $"{node.Front.name}");
-                        Handles.Label(new Vector3(x, y + 0.5f, z - 0.4f) + transform.position, $"{node.Back.name}");
+                        if (enableGizmosFacesText)
+                        {
+                            Handles.Label(new Vector3(x - 0.4f, y + 0.5f, z) + transform.position, $"{node.Left.name}");
+                            Handles.Label(new Vector3(x + 0.4f, y + 0.5f, z) + transform.position, $"{node.Right.name}");
+                            Handles.Label(new Vector3(x, y + 0.5f, z + 0.4f) + transform.position, $"{node.Front.name}");
+                            Handles.Label(new Vector3(x, y + 0.5f, z - 0.4f) + transform.position, $"{node.Back.name}");
+                            Handles.Label(new Vector3(x, y + 0.5f, z - 0.4f) + transform.position, $"{node.Back.name}");
+                            Handles.Label(new Vector3(x, y + 0.1f, z) + transform.position, $"{node.Down.name}");
+                            Handles.Label(new Vector3(x, y + 0.9f, z) + transform.position, $"{node.Up.name}");
+                        }
+
+                        if (enableGizmosNodeName)
+                            Handles.Label(new Vector3(x, y + 0.5f, z) + transform.position, $"{node.name}");
                     }
                 }
             }
@@ -357,6 +405,7 @@ public class WFC : MonoBehaviour
     {
         _nodesToCollapse.Clear();
         if(clearAll) _nodesGenerated.Clear();
+        _grid = null;
 
         while (transform.childCount > 0) 
             DestroyImmediate(transform.GetChild(0).gameObject);
@@ -478,13 +527,6 @@ public class WFC : MonoBehaviour
 
                 else
                 {
-                    if (tile.potentialNodes.Count == 1)
-                    {
-                        UnityEngine.Debug.Log($"tile: {tile.pos}, nodes: {tile.potentialNodes.Count}");
-                        for (int l = 0; l < tile.potentialNodes.Count; l++)
-                            UnityEngine.Debug.Log(tile.potentialNodes[l] == null);
-                    }
-
                     // Choose a node based on weight
                     double[] nodeWeights = CalculateNodesWeights(tile.potentialNodes);
                     int chosenTileIdx = ChooseWeightedTile(nodeWeights, new System.Random());
@@ -556,9 +598,9 @@ public class WFC : MonoBehaviour
                             break;
                         case 3: WhittleNodes(tile.potentialNodes, neighborNode.Right, "left");
                             break;
-                        case 4: WhittleNodes(tile.potentialNodes, neighborNode.Up, "down");
+                        case 4: WhittleNodes(tile.potentialNodes, neighborNode.Down, "up");
                             break;
-                        case 5: WhittleNodes(tile.potentialNodes, neighborNode.Down, "up");
+                        case 5: WhittleNodes(tile.potentialNodes, neighborNode.Up, "down");
                             break;
                     }
                 }
