@@ -13,7 +13,13 @@
                     <ui:Button text="Clear All" name="_clearTiles" style="min-width: auto;"/>
                 </ui:GroupBox>
             </ui:Tab>
-            <ui:Tab label="Collapse" tabindex="1" enabled="true">
+            <ui:Tab label="Navigation" tabindex="1">
+                <ui:Button text="Generate Path" name="_generatePath"/>
+                <ui:Button text="Stop Generation" name="_stopGeneratePath"/>
+                <ui:Button text="Clear Path" name="_clearPath"/>
+                <ui:ListView name="_pathPoints" show-foldout-header="true" show-add-remove-footer="true" header-title="Path Points" data-source-type="WFC, Assembly-CSharp" data-source-path="_pathPoints" binding-path="_pathPoints"/>
+            </ui:Tab>
+            <ui:Tab label="Collapse" tabindex="2" enabled="true">
                 <ui:GroupBox name="CollapseGroup" style="flex-direction: column; flex-grow: 0; justify-content: space-evenly; align-content: stretch; align-self: center;">
                     <ui:Button text="Start Collapse" name="_collapseTiles" data-source-type="WFC, Assembly-CSharp" style="flex-direction: row; flex-wrap: nowrap; align-content: stretch; align-self: center; justify-content: space-evenly;"/>
                 </ui:GroupBox>
@@ -34,4 +40,23 @@
             </ui:Tab>
         </ui:TabView>
     </ui:VisualElement>
+    <ui:GroupBox name="_settingsBox" text="Debug Settings" style="border-top-width: 5px; border-right-width: 5px; border-bottom-width: 5px; border-left-width: 5px; border-left-color: rgb(48, 48, 48); border-right-color: rgb(48, 48, 48); border-top-color: rgb(48, 48, 48); border-bottom-color: rgb(48, 48, 48); padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px;">
+        <ui:ScrollView horizontal-scroller-visibility="Hidden" vertical-page-size="-1" horizontal-page-size="2" mode="Horizontal">
+            <ui:GroupBox text="WFC" style="padding-right: 5px; padding-left: 5px; border-left-color: rgb(48, 48, 48); border-right-color: rgb(48, 48, 48); border-top-color: rgb(48, 48, 48); border-bottom-color: rgb(48, 48, 48); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px;">
+                <ui:Toggle label="Enable Grid" name="_toggleWFCGrid" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosGrid" binding-path="enableGizmosGrid" value="true"/>
+                <ui:Toggle label="Enable Coords" name="_toggleWFCCoords" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosCoords" binding-path="enableGizmosCoords"/>
+                <ui:Toggle label="Enable Faces" name="_toggleWFCFaces" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosFacesText" binding-path="enableGizmosFacesText"/>
+                <ui:Toggle label="Enable Names" name="_toggleWFCNodeNames" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosNodeName" binding-path="enableGizmosNodeName"/>
+            </ui:GroupBox>
+            <ui:GroupBox text="A*" style="border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgb(48, 48, 48); border-right-color: rgb(48, 48, 48); border-top-color: rgb(48, 48, 48); border-bottom-color: rgb(48, 48, 48); padding-right: 5px; padding-left: 5px;">
+                <ui:Toggle label="Enable Path" name="_togglePath" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPath" binding-path="enableGizmosPath" value="true"/>
+                <ui:Toggle label="Enable Points" name="_togglePathPoints" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPathPoints" binding-path="enableGizmosPathPoints" value="true"/>
+                <ui:Toggle label="Enable Routing" name="_togglePathRouting" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPathRouting" binding-path="enableGizmosPathRouting" value="true"/>
+                <ui:Toggle label="Enable Stairs" name="_togglePathStairs" value="true"/>
+                <ui:Toggle label="Enable Field" name="_togglePathField" value="false"/>
+                <ui:Toggle label="Enable Pathfinding" name="_togglePathFinding" value="true"/>
+                <ui:Toggle label="Enable Delay" name="_togglePathDelay" value="true"/>
+            </ui:GroupBox>
+        </ui:ScrollView>
+    </ui:GroupBox>
 </ui:UXML>
