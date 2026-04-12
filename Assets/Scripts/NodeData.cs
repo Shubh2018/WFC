@@ -5,10 +5,14 @@ public class NodeFace
 {
     public enum Name 
     {
-        Air,
-        Solid,
-        Grass,
-        Road
+        Ceilling,
+        Floor,
+        Wall,
+        Path,
+        StaircaseEnd,
+        StaircaseTop,
+        PathOpen,
+        None
     }
 
     public Name name;
@@ -48,4 +52,13 @@ public class NodeData : ScriptableObject
     public NodeFaceHorizontal Right;
     public NodeFaceHorizontal Front;
     public NodeFaceHorizontal Back;
+}
+
+public class PathNodeData {
+    public NodeFace.Name Up = NodeFace.Name.None;
+    public NodeFace.Name Down = NodeFace.Name.None;
+    public NodeFace.Name Left = NodeFace.Name.None;
+    public NodeFace.Name Right = NodeFace.Name.None;
+    public NodeFace.Name Front = NodeFace.Name.None;
+    public NodeFace.Name Back = NodeFace.Name.None;
 }

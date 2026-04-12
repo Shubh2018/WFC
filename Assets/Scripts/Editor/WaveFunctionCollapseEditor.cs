@@ -18,6 +18,15 @@ public class WaveFunctionCollapseEditor : Editor
         Button generateButton = rootTree.Q<Button>("_generateTiles");
         generateButton.RegisterCallback<ClickEvent>(GenerateTiles);
 
+        Button generatePathButton = rootTree.Q<Button>("_generatePath");
+        generatePathButton.RegisterCallback<ClickEvent>(GeneratePath);
+
+        Button stopGeneratePathButton = rootTree.Q<Button>("_stopGeneratePath");
+        stopGeneratePathButton.RegisterCallback<ClickEvent>(StopGeneratePath);
+
+        Button clearPathButton = rootTree.Q<Button>("_clearPath");
+        clearPathButton.RegisterCallback<ClickEvent>(ClearPath);
+
         Button collapseButton = rootTree.Q<Button>("_collapseTiles");
         collapseButton.RegisterCallback<ClickEvent>(CollapseTiles);
 
@@ -43,6 +52,33 @@ public class WaveFunctionCollapseEditor : Editor
         Slider collapseSpeedSlider = rootTree.Q<Slider>("_collapseSpeedSlider");
         collapseSpeedSlider.RegisterCallback<ChangeEvent<float>>(UpdateCollapseTime);
 
+        // Debug Settings
+        Toggle togglePathLine = rootTree.Q<Toggle>("_togglePath");
+        Toggle togglePathPoints = rootTree.Q<Toggle>("_togglePathPoints");
+        Toggle togglePathStairs = rootTree.Q<Toggle>("_togglePathStairs");
+        Toggle togglePathField = rootTree.Q<Toggle>("_togglePathField");
+        Toggle togglePathFinding = rootTree.Q<Toggle>("_togglePathFinding");
+        Toggle togglePathDelay = rootTree.Q<Toggle>("_togglePathDelay");
+        
+        togglePathLine.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+            WaveFunctionCollapse.SavePathSettings(evt.newValue, togglePathPoints.value, togglePathStairs.value, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
+        );
+        togglePathPoints.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+            WaveFunctionCollapse.SavePathSettings(togglePathLine.value, evt.newValue, togglePathStairs.value, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
+        );
+        togglePathStairs.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+            WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, evt.newValue, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
+        );
+        togglePathField.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+            WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, evt.newValue, togglePathFinding.value, togglePathDelay.value)
+        );
+        togglePathFinding.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+            WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, togglePathField.value, evt.newValue, togglePathDelay.value)
+        );
+        togglePathDelay.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+            WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, togglePathField.value, togglePathFinding.value, evt.newValue)
+        );
+
         SetGenLabels(0, 0.0, 1.0f);
         
         return rootTree;
@@ -64,6 +100,21 @@ public class WaveFunctionCollapseEditor : Editor
     private void GenerateTiles(ClickEvent evt)
     {   
         WaveFunctionCollapse.GenerateTiles();
+    }
+
+    private void GeneratePath(ClickEvent evt)
+    {
+        WaveFunctionCollapse.StartFindPath();
+    }
+
+    private void StopGeneratePath(ClickEvent evt)
+    {
+        WaveFunctionCollapse.StopFindPath();
+    }
+
+    private void ClearPath(ClickEvent evt)
+    {
+        WaveFunctionCollapse.ClearPath();
     }
 
     private void CollapseTiles(ClickEvent evt)
