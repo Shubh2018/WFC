@@ -1863,7 +1863,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1957797392}
   - component: {fileID: 1957797391}
-  - component: {fileID: 1957797393}
   m_Layer: 0
   m_Name: WFC
   m_TagString: Untagged
@@ -1910,25 +1909,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1957797393
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1957797390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e37b9ec458f026249b982b0d4b16ade6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MeshSampler
-  _radius: 2
-  _tries: 70
-  _gameObjectsToSpawn:
-    _wallPrefabs: []
-    _floorPrefabs: []
-    maxWallPropCountPerRoom: 0
-    maxFloorPropCountPerRoom: 0
 --- !u!1 &2044114384
 GameObject:
   m_ObjectHideFlags: 0
