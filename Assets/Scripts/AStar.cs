@@ -50,6 +50,7 @@ public class StairCase
         this.rotation = GetRotation(p1, p2);
     }
 
+    // Sets the rotation of the staircase based on the coordinates
     private int GetRotation(Vector3Int p1, Vector3Int p2)
     {
         if (p1.z < p2.z) return 0;
@@ -58,6 +59,7 @@ public class StairCase
         else return 3;
     }
 
+    // Used to check if this staircase piece contains a specific vector coordinate
     public bool CheckContainsPos(Vector3Int pos)
     {
         return (Utils.VecCmp(pos, bottomEntrance, 0.5f)
@@ -66,6 +68,7 @@ public class StairCase
              || Utils.VecCmp(pos, topExit, 0.5f));
     }
 
+    // Draws the gizmo box for the staircase
     public void DrawGizmoBox()
     {
         Gizmos.color = Color.orange;
@@ -76,6 +79,7 @@ public class StairCase
         Gizmos.DrawWireCube(center, size);
     }
 
+    // Draws the gizmo points for the staircase pieces
     public void DrawGizmoPoints()
     {
         // Lowest entrance point
@@ -334,6 +338,7 @@ public class AStar : MonoBehaviour
 
                 // If there cannot be generated a starcase here we have an issue
                 UnityEngine.Debug.LogWarning($"A staircase cannot be generated in this location: ({nextPoint.x}, {nextPoint.y}, {nextPoint.z})");
+                goto doneLabel;
             }
 
             genStairsLoop:;
@@ -454,6 +459,7 @@ public class AStar : MonoBehaviour
             closedList.Clear();
         }
 
+        doneLabel:;
         doneFindingPath = true;
     }
 

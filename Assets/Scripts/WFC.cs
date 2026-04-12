@@ -22,7 +22,7 @@ public class Tile
 
         potentialNodes = new List<NodeData>(parent.getNodes);
         potentialNodes.AddRange(parent.getNodesGen);
-        potentialNodes = potentialNodes.Where(node => !node.name.Contains("Staircase")).ToList();
+        potentialNodes = potentialNodes.Where(node => !node.IsStairPiece).ToList();
     }
 }
 
@@ -75,15 +75,9 @@ public class PathNode
             Vector3 delta = (currPath - neighbor).normalized; // Find the delta value
             Vector3 cross = Vector3.Cross(Vector3.up, delta); // Calculate the cross product
 
-            // Edge case regarding the height of the node
-            //if (currPath.y < neighbor.y) cross += Vector3.up;
-            //else if (currPath.y > neighbor.y) cross += Vector3.down;
-
             // Update the face type depending on how the vectors are facing eachother
             if (cross.x == -1) data.Front = NodeFace.Name.Path;
             if (cross.x == 1) data.Back = NodeFace.Name.Path;
-            //if (cross.y == 1) data.Up = NodeFace.Name.Path;
-            //if (cross.y == -1) data.Down = NodeFace.Name.Path;
             if (cross.z == 1) data.Right = NodeFace.Name.Path;
             if (cross.z == -1) data.Left = NodeFace.Name.Path;
         }
@@ -106,8 +100,6 @@ public class PathNode
 
         name = stairs.rotation > 0 ? $"{name}_{stairs.rotation * 90}" : name;
 
-        UnityEngine.Debug.Log($"staircase: {pos}, name: {name}");
-
         return nodes.Find((NodeData node) => node.name == name);
     }
 
@@ -121,7 +113,7 @@ public class PathNode
             return new List<NodeData> { FindStairCaseNode(potentialNodes) };
         
         // Since this node is not a staircase, filter out any staircase nodes
-        potentialNodes = potentialNodes.Where(node => !node.name.Contains("Staircase")).ToList();
+        potentialNodes = potentialNodes.Where(node => !node.IsStairPiece).ToList();
 
         UnityEngine.Debug.Log($"coords: {String.Join(", ", pathIndicies)}");
         UnityEngine.Debug.Log($"potential nodes before: {potentialNodes.Count()}");
@@ -180,12 +172,19 @@ public class WFC : MonoBehaviour
     public List<NodeData> getNodesGen => _nodesGenerated;
 
     // Gizmos Debug Settings
-    public bool enableGizmosFacesText = false;
+    // -- WFC
     public bool enableGizmosGrid = false;
     public bool enableGizmosCoords = false;
-    public bool enableGizmosPathRouting = false;
-    public bool enableGizmosPathPoints = false;
+    public bool enableGizmosFacesText = false;
     public bool enableGizmosNodeName = false;
+    // -- A*
+    public bool enableGizmosPath = false;
+    public bool enableGizmosPathPoints = false;
+    public bool enableGizmosPathRouting = false;
+    public bool enableGizmosPathStaircases = false;
+    public bool enableGizmosPathField = false;
+    public bool enableGizmosPathFinding = false;
+    public bool enableGizmosDelay = false;
 
     public void StartFindPath()
     {
@@ -216,8 +215,10 @@ public class WFC : MonoBehaviour
         if (collapseTilesRoutine != null) StopCoroutine(collapseTilesRoutine);
     }
 
+    // Used with the Unity VisualElement editor to save transitive information to the AStar object
     public void SavePathSettings(bool pathState, bool pathPointsState, bool pathStaircases, bool pathField, bool pathFinding, bool pathDelay)
     {
+        // If the path object exist, toggle its settings
         if (path) {
             path.enableGizmosPathPoints = pathPointsState;
             path.enableGizmosPathStaircases = pathStaircases;
@@ -226,6 +227,7 @@ public class WFC : MonoBehaviour
             path.enableGizmosGenerationDelay = pathDelay;
         }
 
+        // Toggle rendering of the LineRenderer used to display the A* path
         LineRenderer lr = gameObject.GetComponent<LineRenderer>();
         if (lr) lr.enabled = pathState;
     }
