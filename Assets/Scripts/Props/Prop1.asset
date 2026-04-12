@@ -15,5 +15,6 @@ MonoBehaviour:
   _prop: {fileID: 4377933626515690895, guid: a1834b6441f5f964186d094e8fd881e5, type: 3}
   _type: 0
   _maxCount: 20
-  _propPlacement: 4
-  checkOrientation: 0
+  _checkOrentation: 0
+  _limitOnePerRoom: 0
+  _propPlacement: 0

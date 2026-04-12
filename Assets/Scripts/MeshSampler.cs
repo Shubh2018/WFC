@@ -23,11 +23,6 @@ public class MeshSampler : MonoBehaviour
 
     private readonly List<Sample> _floorSamples = new List<Sample>();
     private readonly List<Sample> _wallSamples = new List<Sample>();
- 
-    private readonly List<Sample> _floorSamplesTopLeft = new List<Sample>();
-    private readonly List<Sample> _floorSamplesTopRight = new List<Sample>();
-    private readonly List<Sample> _floorSamplesBottomLeft = new List<Sample>();
-    private readonly List<Sample> _floorSamplesBottomRight = new List<Sample>();
 
     private int safety = 10000;
     private Material[] _meshMaterials;
@@ -37,6 +32,7 @@ public class MeshSampler : MonoBehaviour
 
     private List<Sample> _samplePoints = new List<Sample>();
     private List<Sample> _pointsInside = new List<Sample>();
+    private List<Sample> _samplesNearWalls = new List<Sample>();
     
     private List<GameObject> _spawnedObjects = new List<GameObject>();
     
@@ -63,14 +59,11 @@ public class MeshSampler : MonoBehaviour
         _wallSamples.Clear();
         _samplePoints.Clear();
         _pointsInside.Clear();
+        
+        _samplesNearWalls.Clear();
 
         _meshFilter.Clear();
         _props.Clear();
-        
-        _floorSamplesTopLeft.Clear();
-        _floorSamplesTopRight.Clear();
-        _floorSamplesBottomLeft.Clear();
-        _floorSamplesBottomRight.Clear();
         
         foreach(var spawnedObject in _spawnedObjects)
             DestroyImmediate(spawnedObject);
@@ -93,8 +86,14 @@ public class MeshSampler : MonoBehaviour
         foreach (var floorPoint in _samplePoints)
         {
             Gizmos.DrawSphere(floorPoint.sample, 0.05f);
-            Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * 1.0f);
+            //Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * 1.0f);
         }
+        
+        // foreach (var wallPoint in _wallSamples)
+        // {
+        //     Gizmos.DrawSphere(wallPoint.sample, 0.05f);
+        //     Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * 1.0f);
+        // }
     }
 
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
@@ -197,7 +196,10 @@ public class MeshSampler : MonoBehaviour
         //float halfHeightY = mesh.transform.localScale.y / 2;
         
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(samples);
-        SpawnProps(minMesh, maxMesh);
+        
+        SpawnFloorProps(minMesh, maxMesh);
+        SpawnWallProps(minMesh, maxMesh);
+        
         return samples;
     }
 
@@ -355,16 +357,14 @@ public class MeshSampler : MonoBehaviour
     {
         _floorSamples.Clear();
         _wallSamples.Clear();
-        
-        _floorSamplesTopLeft.Clear();
-        _floorSamplesTopRight.Clear();
-        _floorSamplesBottomLeft.Clear();
-        _floorSamplesBottomRight.Clear();
+        _samplesNearWalls.Clear();
         
         _props.Clear();
         
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
+        
+        float dist = 3.5f;
 
         foreach (var v in samples)
         {
@@ -376,73 +376,60 @@ public class MeshSampler : MonoBehaviour
             max.y = Mathf.Max(max.y, v.sample.y);
             max.z = Mathf.Max(max.z, v.sample.z);
         }
-        
-        Vector3 mid = (min + max) / 2;
 
         float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 1f;
-        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.75f;
+        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.75f; 
         
         _floorSamples.AddRange(samples.FindAll(s => (s.sample.y < thresholdMin) && 
                                                     (Vector3.Dot(s.triangleNormal, Vector3.up) > 0 &&
                                                      (s.sample.x > min.x && s.sample.x < max.x) && (s.sample.z > min.z && s.sample.z < max.z))));
         
-        _wallSamples.AddRange(samples.FindAll(s => (s.sample.y > thresholdMin && s.sample.y <= thresholdMax)));
+        _wallSamples.AddRange(samples.FindAll(s => ((s.sample.y > thresholdMin && s.sample.y <= thresholdMax) 
+                                                    && (s.sample.y > min.y && s.sample.y < max.y))));
         
-        _floorSamplesTopLeft.AddRange(_floorSamples.FindAll(s => ((s.sample.z > mid.z) && s.sample.x < mid.x)));
-        _floorSamplesTopRight.AddRange(_floorSamples.FindAll(s => (s.sample.z > mid.z && s.sample.x > mid.x)));
-        _floorSamplesBottomLeft.AddRange(_floorSamples.FindAll(s => (s.sample.z < mid.z && s.sample.x < mid.x)));
-        _floorSamplesBottomRight.AddRange(_floorSamples.FindAll(s => (s.sample.z < mid.z && s.sample.x > mid.x)));
+        for (int i = 0; i < _wallSamples.Count; i++)
+        {
+            for (int j = 0; j < _floorSamples.Count; j++)
+            {
+                if (Vector3.Distance(_wallSamples[i].sample, _floorSamples[j].sample) > 1 &&
+                    Vector3.Distance(_wallSamples[i].sample, _floorSamples[j].sample) < dist)
+                {
+                    _samplesNearWalls.Add(_floorSamples[j]);
+                    _floorSamples.RemoveAt(j);
+                }
+            }
+        }
 
         return (min, max);
     }
 
-    private void SpawnProps(Vector3 min, Vector3 max)
+    private void SpawnFloorProps(Vector3 min, Vector3 max)
     {
         Vector3 midPoint = (min + max) / 2;
         
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
         
-        int wallCount = toSpawn.MaxWallPropCountPerRoom;
         int floorCount = toSpawn.MaxFloorPropCountPerRoom;
         
         int sampleIndex = 0;
         int random = 0;
         
+        List<Sample> filteredSamples = new List<Sample>();
+        
         while (floorCount > 0 && toSpawn.FloorPrefabs.Count > 0)
         {
             int propCount = 0;
-            Sample s = new Sample();
             
             random = Random.Range(0, toSpawn.FloorPrefabs.Count);
+            filteredSamples.AddRange(FilterSamples(_floorSamples, toSpawn.FloorPrefabs[random].Placement, midPoint));
             
-            switch (toSpawn.FloorPrefabs[random].Placement)
-            {
-                case PropPlacement.TopLeft: 
-                    sampleIndex = Random.Range(0, _floorSamplesTopLeft.Count);
-                    s = _floorSamplesTopLeft[sampleIndex];
-                    _floorSamplesTopLeft.RemoveAt(sampleIndex);
-                    break;
-                case PropPlacement.TopRight:
-                    sampleIndex = Random.Range(0, _floorSamplesTopRight.Count);
-                    s = _floorSamplesTopRight[sampleIndex];
-                    _floorSamplesTopRight.RemoveAt(sampleIndex);
-                    break;
-                case PropPlacement.BottomLeft:
-                    sampleIndex = Random.Range(0, _floorSamplesBottomLeft.Count);
-                    s = _floorSamplesBottomLeft[sampleIndex];
-                    _floorSamplesBottomLeft.RemoveAt(sampleIndex);
-                    break;
-                case PropPlacement.BottomRight:
-                    sampleIndex = Random.Range(0, _floorSamplesBottomRight.Count);
-                    s = _floorSamplesBottomRight[sampleIndex];
-                    _floorSamplesBottomRight.RemoveAt(sampleIndex);
-                    break;
-                default:
-                    sampleIndex = Random.Range(0, _floorSamples.Count);
-                    s = _floorSamples[sampleIndex];
-                    _floorSamples.RemoveAt(sampleIndex);
-                    break;
-            }
+            Debug.Log($"{_floorSamples.Count}");
+            
+            sampleIndex = Random.Range(0, filteredSamples.Count);
+            
+            Sample s = filteredSamples[sampleIndex];
+            filteredSamples.RemoveAt(sampleIndex);
+            _floorSamples.Remove(s);
             
             Vector3 dir = midPoint - s.sample;
             dir.y = 0;
@@ -468,21 +455,43 @@ public class MeshSampler : MonoBehaviour
                 propCount += 1;
 
                 _props[toSpawn.FloorPrefabs[random]] = propCount;
-
                 floorCount -= 1;
             }
+            
             else
             {
                 toSpawn.FloorPrefabs.RemoveAt(random);
             }
+            
+            filteredSamples.Clear();
         }
+    }
 
+    private void SpawnWallProps(Vector3 min, Vector3 max)
+    {
+        Vector3 midPoint = (min + max) / 2;
+        
+        Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
+        
+        int wallCount = toSpawn.MaxWallPropCountPerRoom;
+        
+        int sampleIndex = 0;
+        int random = 0;
+        
+        List<Sample> filteredSamples = new List<Sample>();
+        
         while (wallCount > 0 && toSpawn.WallPrefabs.Count > 0)
         {
             int propCount = 0;
             
-            sampleIndex = Random.Range(0, _wallSamples.Count);
             random = Random.Range(0, toSpawn.WallPrefabs.Count);
+            
+            filteredSamples.AddRange(FilterSamples(_wallSamples, toSpawn.FloorPrefabs[random].Placement, midPoint));
+            
+            sampleIndex = Random.Range(0, filteredSamples.Count);
+            Sample s = filteredSamples[sampleIndex];
+            filteredSamples.RemoveAt(sampleIndex);
+            _wallSamples.Remove(s);
             
             if (_props.ContainsKey(toSpawn.WallPrefabs[random]))
                 propCount = _props[toSpawn.WallPrefabs[random]];
@@ -492,17 +501,15 @@ public class MeshSampler : MonoBehaviour
             if (propCount < toSpawn.WallPrefabs[random].MaxCount)
             {
                 GameObject obj = Instantiate(toSpawn.WallPrefabs[random].Prop,
-                    _wallSamples[sampleIndex].sample, Quaternion.identity);
+                    s.sample, Quaternion.identity);
             
-                obj.transform.forward = _wallSamples[sampleIndex].triangleNormal;
+                obj.transform.forward = s.triangleNormal;
             
                 propCount += 1;
             
                 _props[toSpawn.WallPrefabs[random]] = propCount;
             
                 _spawnedObjects.Add(obj);
-                _wallSamples.RemoveAt(sampleIndex);
-        
                 wallCount -= 1;
             }
 
@@ -510,6 +517,32 @@ public class MeshSampler : MonoBehaviour
             {
                 toSpawn.WallPrefabs.RemoveAt(random);
             }
+
+            filteredSamples.Clear();
+        }
+    }
+
+    private List<Sample> FilterSamples(List<Sample> samplesToFilter, PropPlacement placement, Vector3 mid)
+    {
+        switch (placement)
+        {
+            case PropPlacement.NearWall:
+                return _samplesNearWalls;
+            
+            case PropPlacement.TopLeft:
+                return samplesToFilter.FindAll(s => (s.sample.z > mid.z && s.sample.x < mid.x));
+
+            case PropPlacement.TopRight:
+                return samplesToFilter.FindAll(s => (s.sample.z > mid.z && s.sample.x > mid.x));
+            
+            case PropPlacement.BottomLeft:
+                return samplesToFilter.FindAll(s => (s.sample.z < mid.z && s.sample.x < mid.x));
+            
+            case PropPlacement.BottomRight:
+                return samplesToFilter.FindAll(s => (s.sample.z < mid.z && s.sample.x > mid.x));
+            
+            default:
+                return samplesToFilter;
         }
     }
 }
