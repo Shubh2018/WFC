@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 9168917625172809675, guid: 37b53b43c55d97b38af38a6b062352d0, type: 3}
   Weight: 1
-  IgnoreSelf: 1
+  IsStairPiece: 1
   ClockwiseRotationSteps: 0
   Up:
     name: 5

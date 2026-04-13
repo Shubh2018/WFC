@@ -52,10 +52,10 @@
                 <ui:Toggle label="Enable Path" name="_togglePath" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPath" binding-path="enableGizmosPath" value="true"/>
                 <ui:Toggle label="Enable Points" name="_togglePathPoints" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPathPoints" binding-path="enableGizmosPathPoints" value="true"/>
                 <ui:Toggle label="Enable Routing" name="_togglePathRouting" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPathRouting" binding-path="enableGizmosPathRouting" value="true"/>
-                <ui:Toggle label="Enable Stairs" name="_togglePathStairs" value="true"/>
-                <ui:Toggle label="Enable Field" name="_togglePathField" value="false"/>
-                <ui:Toggle label="Enable Pathfinding" name="_togglePathFinding" value="true"/>
-                <ui:Toggle label="Enable Delay" name="_togglePathDelay" value="true"/>
+                <ui:Toggle label="Enable Stairs" name="_togglePathStairs" value="true" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPathStaircases" binding-path="enableGizmosPathStaircases"/>
+                <ui:Toggle label="Enable Field" name="_togglePathField" value="false" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPathField" binding-path="enableGizmosPathField"/>
+                <ui:Toggle label="Enable Pathfinding" name="_togglePathFinding" value="true" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPathFinding" binding-path="enableGizmosPathFinding"/>
+                <ui:Toggle label="Enable Delay" name="_togglePathDelay" value="true" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosDelay" binding-path="enableGizmosDelay"/>
             </ui:GroupBox>
         </ui:ScrollView>
     </ui:GroupBox>
