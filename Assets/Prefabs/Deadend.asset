@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
   m_Name: Deadend
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 1101821886753708349, guid: 83b2ffc97121fcbb7aff3c9d5c564c32, type: 3}
+  Prefab: {fileID: 7544684519765922761, guid: d52dc16286b02e64b920588202b24786, type: 3}
   Weight: 1
-  IgnoreSelf: 0
+  IsStairPiece: 0
   ClockwiseRotationSteps: 0
   Up:
     name: 0

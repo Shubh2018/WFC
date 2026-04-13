@@ -72,12 +72,17 @@ MonoBehaviour:
   collapseWaitTime: 0
   path: {fileID: 5721613335181599853}
   pauseGeneration: 0
-  enableGizmosFacesText: 0
   enableGizmosGrid: 1
   enableGizmosCoords: 0
-  enableGizmosPathRouting: 0
-  enableGizmosPathPoints: 1
+  enableGizmosFacesText: 0
   enableGizmosNodeName: 0
+  enableGizmosPath: 0
+  enableGizmosPathPoints: 1
+  enableGizmosPathRouting: 0
+  enableGizmosPathStaircases: 0
+  enableGizmosPathField: 0
+  enableGizmosPathFinding: 0
+  enableGizmosDelay: 0
 --- !u!114 &5721613335181599853
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -91,10 +96,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AStar
   enableGizmosPathPoints: 1
-  enableGizmosPathStaircases: 1
+  enableGizmosPathStaircases: 0
   enableGizmosPathField: 0
-  enableGizmosPathFinding: 1
-  enableGizmosGenerationDelay: 1
+  enableGizmosPathFinding: 0
+  enableGizmosGenerationDelay: 0
 --- !u!120 &3231456974316567436
 LineRenderer:
   serializedVersion: 3
@@ -103,7 +108,7 @@ LineRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6795160518976951517}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1

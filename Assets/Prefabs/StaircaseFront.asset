@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
   m_Name: StaircaseFront
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 9168917625172809675, guid: 37b53b43c55d97b38af38a6b062352d0, type: 3}
+  Prefab: {fileID: 7560950466503981987, guid: b8985d6bfb626e24793a9af136a2fe57, type: 3}
   Weight: 1
   IsStairPiece: 1
   ClockwiseRotationSteps: 0

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
   m_Name: Corner
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 7262459333311164405, guid: f24750b4671142d94a069d6cd79118c1, type: 3}
+  Prefab: {fileID: 3705999419518530822, guid: 9ec73e733d114444b8f6cf6aa24d3bcd, type: 3}
   Weight: 2
-  IgnoreSelf: 0
+  IsStairPiece: 0
   ClockwiseRotationSteps: 0
   Up:
     name: 0

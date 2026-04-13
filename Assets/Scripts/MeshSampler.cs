@@ -34,6 +34,9 @@ public class MeshSampler : MonoBehaviour
     private List<Sample> _pointsInside = new List<Sample>();
     private List<Sample> _samplesNearWalls = new List<Sample>();
     
+    private List<Sample> _floorSamplesAll = new List<Sample>();
+    private List<Sample> _wallSamplesAll = new List<Sample>();
+    
     private List<GameObject> _spawnedObjects = new List<GameObject>();
     
     private Dictionary<PropData, int> _props = new Dictionary<PropData, int>();
@@ -60,6 +63,9 @@ public class MeshSampler : MonoBehaviour
         _samplePoints.Clear();
         _pointsInside.Clear();
         
+        _floorSamplesAll.Clear();
+        _wallSamplesAll.Clear();
+        
         _samplesNearWalls.Clear();
 
         _meshFilter.Clear();
@@ -73,20 +79,28 @@ public class MeshSampler : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        gameObject.TryGetComponent<MeshCollider>(out var meshCollider);
-
-        if (meshCollider)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(meshCollider.bounds.center, meshCollider.bounds.size);
-        }
+        // gameObject.TryGetComponent<MeshCollider>(out var meshCollider);
+        //
+        // if (meshCollider)
+        // {
+        //     Gizmos.color = Color.red;
+        //     Gizmos.DrawWireCube(meshCollider.bounds.center, meshCollider.bounds.size);
+        // }
 
         Gizmos.color = Color.white;
 
-        foreach (var floorPoint in _samplePoints)
+        foreach (var floorPoint in _floorSamplesAll)
         {
-            Gizmos.DrawSphere(floorPoint.sample, 0.05f);
-            //Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * 1.0f);
+            Gizmos.DrawSphere(floorPoint.sample, 0.01f);
+            Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .05f);
+        }
+
+        Gizmos.color = Color.red;
+        
+        foreach (var wallPoint in _wallSamplesAll)
+        {
+            Gizmos.DrawSphere(wallPoint.sample, 0.01f);
+            Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .05f);
         }
         
         // foreach (var wallPoint in _wallSamples)
@@ -384,15 +398,18 @@ public class MeshSampler : MonoBehaviour
                                                     (Vector3.Dot(s.triangleNormal, Vector3.up) > 0 &&
                                                      (s.sample.x > min.x && s.sample.x < max.x) && (s.sample.z > min.z && s.sample.z < max.z))));
         
+        _floorSamplesAll.AddRange(_floorSamples);
+        
         _wallSamples.AddRange(samples.FindAll(s => ((s.sample.y > thresholdMin && s.sample.y <= thresholdMax) 
                                                     && (s.sample.y > min.y && s.sample.y < max.y))));
+        _wallSamplesAll.AddRange(_wallSamples);
         
         for (int i = 0; i < _wallSamples.Count; i++)
         {
             for (int j = 0; j < _floorSamples.Count; j++)
             {
                 if (Vector3.Distance(_wallSamples[i].sample, _floorSamples[j].sample) > 1 &&
-                    Vector3.Distance(_wallSamples[i].sample, _floorSamples[j].sample) < dist)
+                    Vector3.Distance(_wallSamples[i].sample, _floorSamples[j].sample) <= dist)
                 {
                     _samplesNearWalls.Add(_floorSamples[j]);
                     _floorSamples.RemoveAt(j);
@@ -486,7 +503,7 @@ public class MeshSampler : MonoBehaviour
             
             random = Random.Range(0, toSpawn.WallPrefabs.Count);
             
-            filteredSamples.AddRange(FilterSamples(_wallSamples, toSpawn.FloorPrefabs[random].Placement, midPoint));
+            filteredSamples.AddRange(FilterSamples(_wallSamples, toSpawn.WallPrefabs[random].Placement, midPoint));
             
             sampleIndex = Random.Range(0, filteredSamples.Count);
             Sample s = filteredSamples[sampleIndex];

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
   m_Name: Intersection
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 8774373638748318410, guid: 58a75e6aedee18e3099032ea7154ec96, type: 3}
+  Prefab: {fileID: 9197163299549263030, guid: 14db96896a5d4964ea9de084359f7564, type: 3}
   Weight: 2
-  IgnoreSelf: 0
+  IsStairPiece: 0
   ClockwiseRotationSteps: 0
   Up:
     name: 0
