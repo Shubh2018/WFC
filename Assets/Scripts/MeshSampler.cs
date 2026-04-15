@@ -79,14 +79,6 @@ public class MeshSampler : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        // gameObject.TryGetComponent<MeshCollider>(out var meshCollider);
-        //
-        // if (meshCollider)
-        // {
-        //     Gizmos.color = Color.red;
-        //     Gizmos.DrawWireCube(meshCollider.bounds.center, meshCollider.bounds.size);
-        // }
-
         Gizmos.color = Color.white;
 
         foreach (var floorPoint in _floorSamplesAll)
@@ -102,12 +94,6 @@ public class MeshSampler : MonoBehaviour
             Gizmos.DrawSphere(wallPoint.sample, 0.01f);
             Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .05f);
         }
-        
-        // foreach (var wallPoint in _wallSamples)
-        // {
-        //     Gizmos.DrawSphere(wallPoint.sample, 0.05f);
-        //     Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * 1.0f);
-        // }
     }
 
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
@@ -115,8 +101,7 @@ public class MeshSampler : MonoBehaviour
         List<Sample> samples = new List<Sample>();
         List<int> active = new List<int>();
 
-        (float[] area, float[] cdf, float totalArea) =
-            BuildTriangleAreaCDF(mesh.sharedMesh.vertices, mesh.sharedMesh.triangles);
+        float[] cdf = BuildTriangleAreaCDF(mesh.sharedMesh.vertices, mesh.sharedMesh.triangles);
         (Vector3 min, Vector3 max) = BuildBoundingBox(mesh.sharedMesh.vertices);
 
         (Vector3[,,] grid, float cellSize, int gx, int gy, int gz) = InitializeGrid(min, max, radius);
@@ -125,7 +110,6 @@ public class MeshSampler : MonoBehaviour
 
         int[] triangles = mesh.sharedMesh.triangles;
         Vector3[] vertices = mesh.sharedMesh.vertices;
-        Vector3[] normals = mesh.sharedMesh.normals;
 
         int i0 = triangles[triangleIndex * 3 + 0];
         int i1 = triangles[triangleIndex * 3 + 1];
@@ -207,7 +191,6 @@ public class MeshSampler : MonoBehaviour
         }
         
         samples = samples.OrderBy(s => s.sample.y).ToList();
-        //float halfHeightY = mesh.transform.localScale.y / 2;
         
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(samples);
         
@@ -217,7 +200,7 @@ public class MeshSampler : MonoBehaviour
         return samples;
     }
 
-    private (float[], float[], float) BuildTriangleAreaCDF(Vector3[] vertices, int[] triangles)
+    private float[] BuildTriangleAreaCDF(Vector3[] vertices, int[] triangles)
     {
         int count = triangles.Length / 3;
 
@@ -245,7 +228,7 @@ public class MeshSampler : MonoBehaviour
         for (int i = 0; i < count; i++)
             cdf[i] /= totalArea;
 
-        return (area, cdf, totalArea);
+        return cdf;
     }
 
     private int SampleTriangleIndexFromCDF(float[] cdf)
@@ -464,6 +447,8 @@ public class MeshSampler : MonoBehaviour
                 GameObject go = Instantiate(toSpawn.FloorPrefabs[random].Prop,
                     s.sample, Quaternion.identity);
                 
+                go.transform.parent = this.transform;
+                
                 if(toSpawn.FloorPrefabs[random].CheckOrientation)
                     go.transform.forward = dir;
                 
@@ -519,6 +504,8 @@ public class MeshSampler : MonoBehaviour
             {
                 GameObject obj = Instantiate(toSpawn.WallPrefabs[random].Prop,
                     s.sample, Quaternion.identity);
+                
+                obj.transform.parent = this.transform;
             
                 obj.transform.forward = s.triangleNormal;
             
