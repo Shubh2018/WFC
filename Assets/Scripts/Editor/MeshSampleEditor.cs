@@ -106,7 +106,7 @@ public class MeshSampleEditor : Editor
 
     private void GenerateSamples(ClickEvent evt)
     {
-        _meshSampler.Generate();
+        //_meshSampler.Generate();
     }
 
     private void ClearSamples(ClickEvent evt)

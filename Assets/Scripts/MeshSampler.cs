@@ -41,17 +41,19 @@ public class MeshSampler : MonoBehaviour
     
     private Dictionary<PropData, int> _props = new Dictionary<PropData, int>();
 
-    public void Generate()
+    public void Generate(MeshFilter meshFilter)
     {
         if (_samplePoints.Count > 0 && _meshFilter.Count > 0)
             Clear();
+        
+        _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
 
-        _meshFilter = GetComponentsInChildren<MeshFilter>().ToList();
-
-        _samplePoints.Clear();
-
-        foreach (MeshFilter meshFilter in _meshFilter)
-            _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
+        // _meshFilter = GetComponentsInChildren<MeshFilter>().ToList();
+        //
+        // _samplePoints.Clear();
+        //
+        // foreach (MeshFilter meshFilter in _meshFilter)
+        //     _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
         
         //SpawnProps();
     }
@@ -96,6 +98,11 @@ public class MeshSampler : MonoBehaviour
         }
     }
 
+    public List<Sample> GetSamples(MeshFilter mesh)
+    {
+        return SampleMesh(mesh, _radius, _tries);    
+    }
+    
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
     {
         List<Sample> samples = new List<Sample>();
@@ -194,8 +201,8 @@ public class MeshSampler : MonoBehaviour
         
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(samples);
         
-        SpawnFloorProps(minMesh, maxMesh);
-        SpawnWallProps(minMesh, maxMesh);
+        // SpawnFloorProps(minMesh, maxMesh);
+        // SpawnWallProps(minMesh, maxMesh);
         
         return samples;
     }

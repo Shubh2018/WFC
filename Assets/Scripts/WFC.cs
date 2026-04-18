@@ -5,6 +5,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
+using Debug = UnityEngine.Debug;
 
 // Represents a tile that needs to be collapsed
 public class Tile
@@ -26,12 +27,35 @@ public class Tile
     }
 }
 
+[System.Serializable]
+public class Samples
+{
+    public List<Sample> samples;
+
+    public Samples(List<Sample> samples)
+    {
+        this.samples = samples;
+    }
+}
+
+[System.Serializable]
+public class SampleData
+{
+    public NodeData nodeData;
+    public List<Samples> samples;
+
+    public SampleData()
+    {
+        this.samples = new List<Samples>();
+    }
+}
+
 public class PathNode
 {
     public PathNodeData data = new PathNodeData();
     public List<int> pathIndicies = new List<int>();
     public WFC parent;
-
+    
     public PathNode(WFC parent)
     {
         this.parent = parent; // Used to reference the AStar path list
@@ -146,6 +170,12 @@ public class WFC : MonoBehaviour
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
     [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
     [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
+    
+    // List to save the samples before generation
+    // currently saving 5 distinct sample data 
+    private List<SampleData> _generatedSamples = new List<SampleData>();
+    
+    private MeshSampler _meshSampler;
 
     // Private Variables
     NodeData[,,] _grid;
@@ -161,7 +191,7 @@ public class WFC : MonoBehaviour
     // Public Variables
     public AStar path;
     public bool pauseGeneration = false;
-
+    
     // Getters
     public int getTiles => transform.childCount;
     public double getCollapseTime => collapseExecutionTime;
@@ -331,6 +361,7 @@ public class WFC : MonoBehaviour
         _nodesGenerated.Clear();
 
         int nodes = _nodes.Count;
+        _meshSampler = GetComponent<MeshSampler>();
 
         // Go through all created nodes and rotate those that need it
         for(int i = 0; i < nodes; i++) 
@@ -394,6 +425,26 @@ public class WFC : MonoBehaviour
                 }
             }
         }
+        
+        foreach (var node in _nodesGenerated)
+        {
+            if(node.Prefab == null) continue;
+            
+            SampleData sampleData = new SampleData
+            {
+                nodeData = node
+            };
+
+            MeshFilter filter = sampleData.nodeData.Prefab.GetComponent<MeshFilter>();
+            
+            for (int i = 0; i < 5; i++)
+            {
+                sampleData.samples.Add(new Samples(_meshSampler.GetSamples(filter)));
+                // Debug.Log($"Samples {filter.name} {i}: {sampleData.samples[i].Count}");
+            }
+            
+            _generatedSamples.Add(sampleData);
+        }
     }
 
     private void RotateNodeVerticalFaces(NodeFaceVertical[] faces, int rotationAmount)
@@ -406,6 +457,7 @@ public class WFC : MonoBehaviour
     public void ClearTiles(bool clearAll = false) 
     {
         _nodesToCollapse.Clear();
+        
         if(clearAll) _nodesGenerated.Clear();
         _grid = null;
 
@@ -449,7 +501,7 @@ public class WFC : MonoBehaviour
     {
         //StartCollapseLabel:
         ClearTiles();
-
+        
         Stopwatch st = new Stopwatch();
         st.Start();
 
@@ -463,7 +515,7 @@ public class WFC : MonoBehaviour
         // Start generating tiles with their potential nodes for the path points
         if (pathNodes.Count > 0)
         {
-            List<Vector3Int> points = new List<Vector3Int>(); // Used to check for dublicates
+            List<Vector3Int> points = new List<Vector3Int>(); // Used to check for duplicates
 
             for (int i = 0; i < path.CollapsedPath.Count; i++)
             {
@@ -484,7 +536,7 @@ public class WFC : MonoBehaviour
                     }
                 }
 
-                // If a point is not connected to a node it is an bug
+                // If a point is not connected to a node it is a bug
                 if (currNode == null)
                 {
                     UnityEngine.Debug.LogWarning($"path point {i} does not have a related path node!");
@@ -551,6 +603,8 @@ public class WFC : MonoBehaviour
         st.Stop();
         collapseExecutionTime = st.ElapsedMilliseconds;
         doneFuncHook();
+        
+        _generatedSamples.Clear();
     }
 
     private double[] CalculateNodesWeights(List<NodeData> nodes) {
@@ -655,6 +709,19 @@ public class WFC : MonoBehaviour
         GameObject obj = Instantiate(node.Prefab, tile.pos + transform.position, Quaternion.Euler(0, rotationSteps * 90, 0));
         obj.name = node.name; // Rename the node so we know what type has been spawned
         obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
+
+        Debug.Log($"GeneratedSamples: {_generatedSamples.Count}");
+        foreach (var sData in _generatedSamples)
+        {
+            Debug.Log($"{sData.nodeData.name}");
+            if (sData.nodeData == node)
+            {
+                Debug.Log($"{obj.name}");
+            }
+        }
+
+        // MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
+        // _meshSampler.Generate(meshFilter);
     }
 
     private Vector3 GetRotPosVec(Vector3Int pos, int rotationSteps) => pos - rotationSteps switch {
