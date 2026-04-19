@@ -58,6 +58,11 @@ public class MeshSampler : MonoBehaviour
         //SpawnProps();
     }
 
+    public void AddSamples(List<Sample> samplePoints)
+    {
+        _samplePoints.AddRange(samplePoints);
+    }
+
     public void Clear()
     {
         _floorSamples.Clear();  
@@ -81,20 +86,27 @@ public class MeshSampler : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.white;
-
-        foreach (var floorPoint in _floorSamplesAll)
-        {
-            Gizmos.DrawSphere(floorPoint.sample, 0.01f);
-            Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .05f);
-        }
-
-        Gizmos.color = Color.red;
+        // Gizmos.color = Color.white;
+        //
+        // foreach (var floorPoint in _floorSamplesAll)
+        // {
+        //     Gizmos.DrawSphere(floorPoint.sample, 0.01f);
+        //     Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .05f);
+        // }
+        //
+        // Gizmos.color = Color.red;
+        //
+        // foreach (var wallPoint in _wallSamplesAll)
+        // {
+        //     Gizmos.DrawSphere(wallPoint.sample, 0.01f);
+        //     Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .05f);
+        // }
         
-        foreach (var wallPoint in _wallSamplesAll)
+        Gizmos.color = Color.red;
+
+        foreach (var samplePoint in _samplePoints)
         {
-            Gizmos.DrawSphere(wallPoint.sample, 0.01f);
-            Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .05f);
+            Gizmos.DrawSphere(samplePoint.sample, 0.01f);
         }
     }
 
@@ -359,11 +371,11 @@ public class MeshSampler : MonoBehaviour
 
     private (Vector3, Vector3) SortSamplesInMesh(List<Sample> samples)
     {
-        _floorSamples.Clear();
-        _wallSamples.Clear();
-        _samplesNearWalls.Clear();
-        
         _props.Clear();
+        
+        _wallSamples.Clear();
+        _floorSamples.Clear();
+        _samplesNearWalls.Clear();
         
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;

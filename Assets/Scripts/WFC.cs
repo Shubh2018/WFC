@@ -5,7 +5,9 @@ using System.Linq;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.LowLevelPhysics;
 using Debug = UnityEngine.Debug;
+using Random = UnityEngine.Random;
 
 // Represents a tile that needs to be collapsed
 public class Tile
@@ -713,10 +715,23 @@ public class WFC : MonoBehaviour
         Debug.Log($"GeneratedSamples: {_generatedSamples.Count}");
         foreach (var sData in _generatedSamples)
         {
-            Debug.Log($"{sData.nodeData.name}");
             if (sData.nodeData == node)
             {
-                Debug.Log($"{obj.name}");
+                List<Sample> selectedSamples = new List<Sample>();
+                int randomSampleSet = Random.Range(0, sData.samples.Count);
+
+                foreach (var sample in sData.samples[randomSampleSet].samples)
+                {
+                    Sample s = new Sample()
+                    {
+                        sample = obj.transform.position + sample.sample,
+                        triangleNormal = sample.triangleNormal
+                    };
+                    
+                    selectedSamples.Add(s);
+                }
+                
+                _meshSampler.AddSamples(selectedSamples);
             }
         }
 
