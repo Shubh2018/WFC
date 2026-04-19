@@ -53,6 +53,12 @@ public class NodeData : ScriptableObject
     public NodeFaceHorizontal Right;
     public NodeFaceHorizontal Front;
     public NodeFaceHorizontal Back;
+
+    public void SetRotation(float rotation)
+    {
+        if(Prefab != null)
+            Prefab.transform.rotation = Quaternion.Euler(new Vector3(0, rotation, 0));
+    }
 }
 
 public class PathNodeData {

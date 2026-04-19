@@ -264,7 +264,10 @@ public class WFC : MonoBehaviour
         if (lr) lr.enabled = pathState;
     }
 
-    public void OnDrawGizmos() {
+    public void OnDrawGizmos()
+    {
+        return;
+        
         Gizmos.color = new Color(1.0f, 1.0f, 1.0f, 0.1f);
         Gizmos.matrix = transform.localToWorldMatrix;
 
@@ -406,6 +409,7 @@ public class WFC : MonoBehaviour
                             newNode.Right = currNode.Front;
                             newNode.Front = currNode.Left;
                             newNode.Left = currNode.Back;
+                            newNode.SetRotation(90);
                             break;
                         case 1: // 180 degrees
                             RotateNodeVerticalFaces(new NodeFaceVertical[]{ newNode.Up, newNode.Down }, 2);
@@ -413,6 +417,7 @@ public class WFC : MonoBehaviour
                             newNode.Right = currNode.Left;
                             newNode.Front = currNode.Back;
                             newNode.Left = currNode.Right;
+                            newNode.SetRotation(180);
                             break;
                         case 2: // 270 degrees
                             RotateNodeVerticalFaces(new NodeFaceVertical[]{ newNode.Up, newNode.Down }, 3);
@@ -420,6 +425,7 @@ public class WFC : MonoBehaviour
                             newNode.Right = currNode.Back;
                             newNode.Front = currNode.Right;
                             newNode.Left = currNode.Front;
+                            newNode.SetRotation(270);
                             break;            
                     }
 
@@ -724,7 +730,7 @@ public class WFC : MonoBehaviour
                 {
                     Sample s = new Sample()
                     {
-                        sample = obj.transform.position + sample.sample,
+                        sample = obj.transform.localPosition + sample.sample,
                         triangleNormal = sample.triangleNormal
                     };
                     
