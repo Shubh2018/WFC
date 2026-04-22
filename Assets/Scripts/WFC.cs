@@ -464,7 +464,9 @@ public class WFC : MonoBehaviour
     public void ClearTiles(bool clearAll = false) 
     {
         _nodesToCollapse.Clear();
-        _meshSampler.Clear();
+
+        if(_meshSampler)
+            _meshSampler.Clear();
         
         if(clearAll) _nodesGenerated.Clear();
         _grid = null;
