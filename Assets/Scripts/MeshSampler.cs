@@ -211,12 +211,17 @@ public class MeshSampler : MonoBehaviour
         
         samples = samples.OrderBy(s => s.sample.y).ToList();
         
-        (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(samples);
-        
-        // SpawnFloorProps(minMesh, maxMesh);
-        // SpawnWallProps(minMesh, maxMesh);
-        
         return samples;
+    }
+
+    public void SpawnProps()
+    {
+        (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(_samplePoints);
+        
+        SpawnFloorProps(minMesh, maxMesh);
+        SpawnWallProps(minMesh, maxMesh);
+        
+        _samplePoints.Clear();
     }
 
     private float[] BuildTriangleAreaCDF(Vector3[] vertices, int[] triangles)

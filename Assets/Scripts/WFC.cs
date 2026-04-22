@@ -364,6 +364,7 @@ public class WFC : MonoBehaviour
     public void GenerateTiles()
     {
         _nodesGenerated.Clear();
+        _generatedSamples.Clear();
 
         int nodes = _nodes.Count;
         _meshSampler = GetComponent<MeshSampler>();
@@ -409,7 +410,6 @@ public class WFC : MonoBehaviour
                             newNode.Right = currNode.Front;
                             newNode.Front = currNode.Left;
                             newNode.Left = currNode.Back;
-                            newNode.SetRotation(90);
                             break;
                         case 1: // 180 degrees
                             RotateNodeVerticalFaces(new NodeFaceVertical[]{ newNode.Up, newNode.Down }, 2);
@@ -417,7 +417,6 @@ public class WFC : MonoBehaviour
                             newNode.Right = currNode.Left;
                             newNode.Front = currNode.Back;
                             newNode.Left = currNode.Right;
-                            newNode.SetRotation(180);
                             break;
                         case 2: // 270 degrees
                             RotateNodeVerticalFaces(new NodeFaceVertical[]{ newNode.Up, newNode.Down }, 3);
@@ -425,7 +424,6 @@ public class WFC : MonoBehaviour
                             newNode.Right = currNode.Back;
                             newNode.Front = currNode.Right;
                             newNode.Left = currNode.Front;
-                            newNode.SetRotation(270);
                             break;            
                     }
 
@@ -444,6 +442,7 @@ public class WFC : MonoBehaviour
             };
 
             MeshFilter filter = sampleData.nodeData.Prefab.GetComponent<MeshFilter>();
+            sampleData.nodeData.SetRotation(sampleData.nodeData.ClockwiseRotationSteps * 90.0f);
             
             for (int i = 0; i < 5; i++)
             {
@@ -730,7 +729,7 @@ public class WFC : MonoBehaviour
                 {
                     Sample s = new Sample()
                     {
-                        sample = obj.transform.localPosition + sample.sample,
+                        sample = obj.transform.position + sample.sample,
                         triangleNormal = sample.triangleNormal
                     };
                     
@@ -738,6 +737,7 @@ public class WFC : MonoBehaviour
                 }
                 
                 _meshSampler.AddSamples(selectedSamples);
+                _meshSampler.SpawnProps();
             }
         }
 

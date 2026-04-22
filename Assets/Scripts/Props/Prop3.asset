@@ -18,3 +18,4 @@ MonoBehaviour:
   _checkOrentation: 1
   _limitOnePerRoom: 1
   _propPlacement: 5
+  _propType: 1
