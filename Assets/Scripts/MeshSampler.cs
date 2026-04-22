@@ -25,6 +25,7 @@ public class MeshSampler : MonoBehaviour
     private readonly List<Sample> _wallSamples = new List<Sample>();
 
     private int safety = 10000;
+    private int _objectivesSpawned = 0;
     private Material[] _meshMaterials;
 
     private MeshCollider _collider;
@@ -65,6 +66,8 @@ public class MeshSampler : MonoBehaviour
 
     public void Clear()
     {
+        _objectivesSpawned = 0;
+        
         _floorSamples.Clear();  
         _wallSamples.Clear();
         _samplePoints.Clear();
@@ -217,6 +220,8 @@ public class MeshSampler : MonoBehaviour
     public void SpawnProps()
     {
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(_samplePoints);
+        
+        Debug.Log($"In SpawnProps: FloorSamples: {_floorSamples.Count} WallSamples: {_wallSamples.Count}");
         
         SpawnFloorProps(minMesh, maxMesh);
         SpawnWallProps(minMesh, maxMesh);
@@ -446,10 +451,12 @@ public class MeshSampler : MonoBehaviour
             
             random = Random.Range(0, toSpawn.FloorPrefabs.Count);
             filteredSamples.AddRange(FilterSamples(_floorSamples, toSpawn.FloorPrefabs[random].Placement, midPoint));
-            
-            Debug.Log($"{_floorSamples.Count}");
+
+            PropData prop = toSpawn.FloorPrefabs[random];
             
             sampleIndex = Random.Range(0, filteredSamples.Count);
+            
+            Debug.Log($"{_floorSamples.Count} : {sampleIndex}");
             
             Sample s = filteredSamples[sampleIndex];
             filteredSamples.RemoveAt(sampleIndex);
@@ -458,29 +465,35 @@ public class MeshSampler : MonoBehaviour
             Vector3 dir = midPoint - s.sample;
             dir.y = 0;
             
-            if (_props.ContainsKey(toSpawn.FloorPrefabs[random]))
-                propCount = _props[toSpawn.FloorPrefabs[random]];
+            if (_props.ContainsKey(prop))
+                propCount = _props[prop];
             else
-                _props.Add(toSpawn.FloorPrefabs[random], propCount);
+                _props.Add(prop, propCount);
 
-            if (propCount < toSpawn.FloorPrefabs[random].MaxCount)
+            if (propCount < prop.MaxCount)
             {
-                if(propCount >= 1 && toSpawn.FloorPrefabs[random].LimitOnePerRoom)
+                if(propCount >= 1 && prop.LimitOnePerRoom)
+                    continue;
+
+                if (prop.PropType == Prop.Objective && _objectivesSpawned >= 1)
                     continue;
                 
-                GameObject go = Instantiate(toSpawn.FloorPrefabs[random].Prop,
+                GameObject go = Instantiate(prop.Prop,
                     s.sample, Quaternion.identity);
                 
                 go.transform.parent = this.transform;
                 
-                if(toSpawn.FloorPrefabs[random].CheckOrientation)
+                if(prop.CheckOrientation)
                     go.transform.forward = dir;
+                
+                if (prop.PropType == Prop.Objective)
+                    _objectivesSpawned += 1;
                 
                 _spawnedObjects.Add(go);
 
                 propCount += 1;
 
-                _props[toSpawn.FloorPrefabs[random]] = propCount;
+                _props[prop] = propCount;
                 floorCount -= 1;
             }
             
