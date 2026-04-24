@@ -169,6 +169,9 @@ public class WFC : MonoBehaviour
     [SerializeField] private int _width;
     [SerializeField] private int _length;
     [SerializeField] private int _height;
+    
+    [SerializeField] private int _tileSize = 2;
+    
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
     [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
     [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
@@ -202,7 +205,9 @@ public class WFC : MonoBehaviour
     public int getLength => _length;
     public List<NodeData> getNodes => _nodes;
     public List<NodeData> getNodesGen => _nodesGenerated;
-
+    
+    public int TileSize => _tileSize;
+    
     // Gizmos Debug Settings
     // -- WFC
     public bool enableGizmosGrid = false;
@@ -715,8 +720,10 @@ public class WFC : MonoBehaviour
         // If this is a helper tile, it cannot be instantiated so return instead
         if (node.Prefab == null) return;
 
+        Vector3 pos = (tile.pos * _tileSize) + transform.position;
+        
         // Instantiate the tile
-        GameObject obj = Instantiate(node.Prefab, tile.pos + transform.position, Quaternion.Euler(0, rotationSteps * 90, 0));
+        GameObject obj = Instantiate(node.Prefab, pos, Quaternion.Euler(0, rotationSteps * 90, 0));
         obj.name = node.name; // Rename the node so we know what type has been spawned
         obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
 

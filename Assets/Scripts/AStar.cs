@@ -401,7 +401,7 @@ public class AStar : MonoBehaviour
                 foreach (Vector3Int offset in Utils.offsets3)
                 {
                     // Get node position
-                    Vector3Int nodePosition = currentNode.position + offset;
+                    Vector3Int nodePosition = (currentNode.position + offset);
 
                     // Make sure within range of the level
                     if (!Utils.CheckPosValid(nodePosition, _parent.getWidth, _parent.getHeight, _parent.getLength))
