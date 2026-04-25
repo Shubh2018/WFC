@@ -163,6 +163,8 @@ public class PathNode
     }
 }
 
+[RequireComponent(typeof(AStar))]
+[RequireComponent(typeof(MeshSampler))]
 public class WFC : MonoBehaviour
 {
     // Serilised Fields
