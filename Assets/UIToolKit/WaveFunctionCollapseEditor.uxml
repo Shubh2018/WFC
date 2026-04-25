@@ -1,4 +1,4 @@
-<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <ui:VisualElement name="VisualElement" style="flex-grow: 1;">
         <ui:TabView reorderable="false" focusable="false">
             <ui:Tab label="Nodes" closeable="false" tabindex="0" enabled="true">
@@ -38,6 +38,11 @@
                     <ui:Label text="Gen. Time (ms): 0" name="_generationTimeLabel"/>
                     <ui:Label text="" name="_doneLabel"/>
                 </ui:GroupBox>
+            </ui:Tab>
+            <ui:Tab label="Sampling" tabindex="3" enabled="true">
+                <ui:FloatField label="Radius" value="0.5" binding-path="_samplingRadius" name="Radius" data-source-path="_samplingRadius" tabindex="3"/>
+                <ui:IntegerField label="Tries" value="30" binding-path="_samplingTries" name="Tries" data-source-path="_samplingTries" tabindex="3"/>
+                <uie:PropertyField name="Objects" binding-path="_gameObjectsToSpawn" data-source-path="_gameObjectsToSpawn" label="Game Objects To Spawn" tabindex="3"/>
             </ui:Tab>
         </ui:TabView>
     </ui:VisualElement>

@@ -13,10 +13,10 @@ public class MeshSampler : MonoBehaviour
 {
     private List<MeshFilter> _meshFilter = new List<MeshFilter>();
 
-    [SerializeField] private float _radius;
-    [SerializeField] private int _tries = 30;
+    private float _radius;
+    private int _tries = 30;
 
-    [SerializeField] private Spawner _gameObjectsToSpawn;
+    private Spawner _gameObjectsToSpawn;
 
     private Dictionary<Mesh, int[]> _triangles;
     private Dictionary<Mesh, Vector3[]> _vertices;
@@ -59,6 +59,17 @@ public class MeshSampler : MonoBehaviour
         // SpawnProps();
     }
 
+    public void SetRadiusAndTries(float radius, int tries)
+    {
+        _radius = radius;
+        _tries = tries;
+    }
+
+    public void SetSpawnerData(Spawner spawner)
+    {
+        _gameObjectsToSpawn = new Spawner(spawner);
+    }
+
     public void AddSamples(List<Sample> samplePoints)
     {
         _samplePoints.AddRange(samplePoints);
@@ -89,21 +100,21 @@ public class MeshSampler : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        // Gizmos.color = Color.white;
-        //
-        // foreach (var floorPoint in _floorSamplesAll)
-        // {
-        //     Gizmos.DrawSphere(floorPoint.sample, 0.01f);
-        //     Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .05f);
-        // }
-        //
-        // Gizmos.color = Color.red;
-        //
-        // foreach (var wallPoint in _wallSamplesAll)
-        // {
-        //     Gizmos.DrawSphere(wallPoint.sample, 0.01f);
-        //     Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .05f);
-        // }
+        Gizmos.color = Color.white;
+        
+        foreach (var floorPoint in _floorSamplesAll)
+        {
+            Gizmos.DrawSphere(floorPoint.sample, 0.01f);
+            Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .05f);
+        }
+        
+        Gizmos.color = Color.red;
+        
+        foreach (var wallPoint in _wallSamplesAll)
+        {
+            Gizmos.DrawSphere(wallPoint.sample, 0.01f);
+            Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .05f);
+        }
         
         Gizmos.color = Color.red;
 
@@ -120,6 +131,8 @@ public class MeshSampler : MonoBehaviour
     
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
     {
+        Debug.Log($"{radius} : {tries}");
+        
         List<Sample> samples = new List<Sample>();
         List<int> active = new List<int>();
 
@@ -387,8 +400,8 @@ public class MeshSampler : MonoBehaviour
         _floorSamples.Clear();
         _samplesNearWalls.Clear();
 
-        _floorSamplesAll.Clear();
-        _wallSamplesAll.Clear();
+        // _floorSamplesAll.Clear();
+        // _wallSamplesAll.Clear();
         
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;

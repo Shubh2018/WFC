@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2649014497281527647}
   - component: {fileID: 5721613335181599853}
   - component: {fileID: 3231456974316567436}
+  - component: {fileID: 590423932815594213}
   m_Layer: 0
   m_Name: WFC
   m_TagString: Untagged
@@ -49,6 +50,7 @@ MonoBehaviour:
   _width: 10
   _length: 10
   _height: 2
+  _tileSize: 2
   _nodes:
   - {fileID: 11400000, guid: 847f6f4f5ecb7630eb6f10d3c19580f6, type: 2}
   - {fileID: 11400000, guid: 3b682f80ddc1c83d78043102ba3ea8bf, type: 2}
@@ -315,3 +317,26 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &590423932815594213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6795160518976951517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e37b9ec458f026249b982b0d4b16ade6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeshSampler
+  _radius: 0.5
+  _tries: 70
+  _gameObjectsToSpawn:
+    _wallPrefabs:
+    - {fileID: 11400000, guid: ceb8b7ddb7fd09b4991f337ed0bdc61b, type: 2}
+    _floorPrefabs:
+    - {fileID: 11400000, guid: 0fc0f4cbc368fb14783a3ae05d299593, type: 2}
+    - {fileID: 11400000, guid: 7d23f64b25419b24f890131caf41fe77, type: 2}
+    - {fileID: 11400000, guid: 3b86dc62ac32d99449a878693ff7f697, type: 2}
+    maxWallPropCountPerRoom: 1
+    maxFloorPropCountPerRoom: 1

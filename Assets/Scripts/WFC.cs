@@ -175,6 +175,10 @@ public class WFC : MonoBehaviour
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
     [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
     [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
+    [SerializeField] private Spawner _gameObjectsToSpawn;
+
+    [SerializeField] private float _samplingRadius = 0.5f;
+    [SerializeField] private int _samplingTries = 30;
     
     // List to save the samples before generation
     // currently saving 5 distinct sample data 
@@ -372,7 +376,10 @@ public class WFC : MonoBehaviour
         _generatedSamples.Clear();
 
         int nodes = _nodes.Count;
+        
         _meshSampler = GetComponent<MeshSampler>();
+        _meshSampler.SetRadiusAndTries(_samplingRadius, _samplingTries);
+        
 
         // Go through all created nodes and rotate those that need it
         for(int i = 0; i < nodes; i++) 
@@ -457,6 +464,8 @@ public class WFC : MonoBehaviour
             
             _generatedSamples.Add(sampleData);
         }
+        
+        _meshSampler.SetSpawnerData(_gameObjectsToSpawn);
     }
 
     private void RotateNodeVerticalFaces(NodeFaceVertical[] faces, int rotationAmount)

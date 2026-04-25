@@ -3,7 +3,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-[CustomEditor(typeof(MeshSampler))]
 public class MeshSampleEditor : Editor
 {
     public VisualTreeAsset _treeAsset;
@@ -32,11 +31,11 @@ public class MeshSampleEditor : Editor
 
         _treeAsset.CloneTree(root);
 
-        Button generateSampleButton = root.Q<Button>("Generate");
-        generateSampleButton.RegisterCallback<ClickEvent>(GenerateSamples);
-
-        Button clearSampleButton = root.Q<Button>("Clear");
-        clearSampleButton.RegisterCallback<ClickEvent>(ClearSamples);
+        // Button generateSampleButton = root.Q<Button>("Generate");
+        // generateSampleButton.RegisterCallback<ClickEvent>(GenerateSamples);
+        //
+        // Button clearSampleButton = root.Q<Button>("Clear");
+        // clearSampleButton.RegisterCallback<ClickEvent>(ClearSamples);
 
         return root;
     }
