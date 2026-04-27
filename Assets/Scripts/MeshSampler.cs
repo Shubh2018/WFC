@@ -100,6 +100,8 @@ public class MeshSampler : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        return;
+        
         Gizmos.color = Color.white;
         
         foreach (var floorPoint in _floorSamplesAll)
@@ -230,13 +232,11 @@ public class MeshSampler : MonoBehaviour
         return samples;
     }
 
-    public void SpawnProps()
+    public void SpawnProps(NodeData node)
     {
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(_samplePoints);
         
-        Debug.Log($"In SpawnProps: FloorSamples: {_floorSamples.Count} WallSamples: {_wallSamples.Count}");
-        
-        SpawnFloorProps(minMesh, maxMesh);
+        SpawnFloorProps(node, minMesh, maxMesh);
         SpawnWallProps(minMesh, maxMesh);
         
         _samplePoints.Clear();
@@ -444,17 +444,18 @@ public class MeshSampler : MonoBehaviour
                 }
             }
         }
-        
-        Debug.Log($"NearWall Samples: {_samplesNearWalls.Count} FloorSamples: {_floorSamples.Count}");
 
         return (min, max);
     }
 
-    private void SpawnFloorProps(Vector3 min, Vector3 max)
+    private void SpawnFloorProps(NodeData node, Vector3 min, Vector3 max)
     {
         Vector3 midPoint = (min + max) / 2;
         
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
+        
+        if (node.CantHaveObjective)
+            toSpawn.FloorPrefabs.RemoveAll((prop) => prop.PropType == Prop.Objective);
         
         int floorCount = toSpawn.MaxFloorPropCountPerRoom;
         
@@ -468,8 +469,8 @@ public class MeshSampler : MonoBehaviour
             int propCount = 0;
             
             random = Random.Range(0, toSpawn.FloorPrefabs.Count);
-
             PropData prop = toSpawn.FloorPrefabs[random];
+            
             filteredSamples.AddRange(FilterSamples(_floorSamples, prop.Type, prop.Placement, midPoint));
             
             sampleIndex = Random.Range(0, filteredSamples.Count);
@@ -499,11 +500,15 @@ public class MeshSampler : MonoBehaviour
                 
                 go.transform.parent = this.transform;
                 
+                // PropObject obj = go.GetComponent<PropObject>();
+                
                 if(prop.CheckOrientation)
                     go.transform.forward = dir;
                 
                 if (prop.PropType == Prop.Objective)
                     _objectivesSpawned += 1;
+                
+                // obj.CheckOverlaps();
                 
                 _spawnedObjects.Add(go);
 

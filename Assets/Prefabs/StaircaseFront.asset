@@ -15,6 +15,7 @@ MonoBehaviour:
   Prefab: {fileID: 7560950466503981987, guid: b8985d6bfb626e24793a9af136a2fe57, type: 3}
   Weight: 1
   IsStairPiece: 1
+  CantHaveObjective: 1
   ClockwiseRotationSteps: 0
   Up:
     name: 5

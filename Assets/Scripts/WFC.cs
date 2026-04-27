@@ -412,6 +412,9 @@ public class WFC : MonoBehaviour
                     newNode.Prefab = currNode.Prefab;
                     newNode.Weight = currNode.Weight;
                     newNode.ClockwiseRotationSteps = j + 1;
+                    newNode.CantHaveObjective = currNode.CantHaveObjective;
+                    newNode.IsStairPiece = currNode.IsStairPiece;
+                    
 
                     newNode.Up = currNode.Up;
                     newNode.Down = currNode.Down;
@@ -758,7 +761,7 @@ public class WFC : MonoBehaviour
                 }
                 
                 _meshSampler.AddSamples(selectedSamples);
-                _meshSampler.SpawnProps();
+                _meshSampler.SpawnProps(node);
             }
         }
 
