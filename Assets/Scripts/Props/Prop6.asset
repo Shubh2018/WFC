@@ -17,4 +17,5 @@ MonoBehaviour:
   _maxCount: 5
   _checkOrentation: 0
   _limitOnePerRoom: 0
-  _propPlacement: 5
+  _propPlacement: 6
+  _propType: 0

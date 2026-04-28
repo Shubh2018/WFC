@@ -6,34 +6,42 @@ public class PropObject : MonoBehaviour
 {
     [SerializeField] private Vector3 _center;
     [SerializeField] private float _length = 1f;
+    [SerializeField] private LayerMask _layerToCheck;
 
-    private float _step = 30.0f;
-
-    void Start()
-    {
-        CheckOverlaps();    
-    }
+    [SerializeField] private bool _enableScript = false;
+    
+    private float _step = 10.0f;
     
     public void CheckOverlaps()
     {
+        if (!_enableScript) return;
+        
         float currentAngle = 0;
 
         while (currentAngle < 360.0f)
         {
-            Debug.Log($"Inside CheckOverlap {this.transform.name}");
+            Ray ray = new Ray(transform.position + _center, transform.forward)
+            {
+                direction = Quaternion.AngleAxis(_step, Vector3.up) * transform.forward
+            };
             
-            Ray ray = new Ray(transform.position + _center, transform.forward);
-            ray.direction = Quaternion.AngleAxis(_step, Vector3.up) * transform.forward;
-            Debug.Log($"Has Hit: {Physics.Raycast(ray, out RaycastHit hit, _length, LayerMask.NameToLayer("Node"))}");
+            //Debug.Log($"Hit: {Physics.Raycast(ray, out RaycastHit hit, _length, LayerMask.GetMask("Node"))}");
             
-            // if ()
-            // {
-            //     Vector3 moveDirection = (ray.origin - hit.point).normalized;
-            //     
-            //     transform.position += moveDirection * 2;
-            //
-            //     Debug.Log($"Move {transform.name} in {moveDirection} direction");
-            // }
+            RaycastHit[] hits = Physics.RaycastAll(ray, _length, LayerMask.GetMask("Node"));
+            Debug.Log($"HitCount: {hits.Length}");
+
+            if (hits.Length > 0)
+            {
+                Debug.Log($"Hit: {transform.name} {hits[0].transform.name}");
+                Vector3 moveDirection = (ray.origin - hits[0].point).normalized;
+                
+                transform.position += moveDirection * 1.5f;
+                
+                Debug.Log($"Move {transform.name} in {moveDirection} direction");
+            }
+            
+            else
+                Debug.Log($"No Hits!");
             
             currentAngle += _step;
         }

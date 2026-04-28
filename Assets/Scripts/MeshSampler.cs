@@ -34,6 +34,7 @@ public class MeshSampler : MonoBehaviour
     private List<Sample> _samplePoints = new List<Sample>();
     private List<Sample> _pointsInside = new List<Sample>();
     private List<Sample> _samplesNearWalls = new List<Sample>();
+    private List<Sample> _samplesInMid = new List<Sample>();
     
     private List<Sample> _floorSamplesAll = new List<Sample>();
     private List<Sample> _wallSamplesAll = new List<Sample>();
@@ -237,7 +238,7 @@ public class MeshSampler : MonoBehaviour
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(_samplePoints);
         
         SpawnFloorProps(node, minMesh, maxMesh);
-        SpawnWallProps(minMesh, maxMesh);
+        SpawnWallProps(node, minMesh, maxMesh);
         
         _samplePoints.Clear();
     }
@@ -442,14 +443,23 @@ public class MeshSampler : MonoBehaviour
                 {
                     _samplesNearWalls.Add(_floorSamples[j]);
                 }
+
+                else
+                {
+                    _samplesInMid.Add(_floorSamples[j]);
+                }
             }
         }
+        
+        
 
         return (min, max);
     }
 
     private void SpawnFloorProps(NodeData node, Vector3 min, Vector3 max)
     {
+        if (node.IsStairPiece) return;
+        
         Vector3 midPoint = (min + max) / 2;
         
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
@@ -477,7 +487,7 @@ public class MeshSampler : MonoBehaviour
             
             Sample s = filteredSamples[sampleIndex];
             filteredSamples.RemoveAt(sampleIndex);
-            _floorSamples.Remove(s);
+            _floorSamples.RemoveAll((sample) => Vector3.Distance(sample.sample, s.sample) <= 1f);
             
             Vector3 dir = midPoint - s.sample;
             dir.y = 0;
@@ -500,15 +510,11 @@ public class MeshSampler : MonoBehaviour
                 
                 go.transform.parent = this.transform;
                 
-                // PropObject obj = go.GetComponent<PropObject>();
-                
                 if(prop.CheckOrientation)
                     go.transform.forward = dir;
                 
                 if (prop.PropType == Prop.Objective)
                     _objectivesSpawned += 1;
-                
-                // obj.CheckOverlaps();
                 
                 _spawnedObjects.Add(go);
 
@@ -527,7 +533,7 @@ public class MeshSampler : MonoBehaviour
         }
     }
 
-    private void SpawnWallProps(Vector3 min, Vector3 max)
+    private void SpawnWallProps(NodeData node, Vector3 min, Vector3 max)
     {
         Vector3 midPoint = (min + max) / 2;
         
@@ -592,6 +598,9 @@ public class MeshSampler : MonoBehaviour
         {
             case PropPlacement.NearWall:
                 return _samplesNearWalls;
+            
+            case PropPlacement.Mid:
+                return _samplesInMid;
             
             case PropPlacement.TopLeft:
                 return samplesToFilter.FindAll(s => (s.sample.z > mid.z && s.sample.x < mid.x));

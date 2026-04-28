@@ -14,7 +14,8 @@ public enum PropPlacement
     TopRight,
     BottomLeft,
     BottomRight,
-    NearWall
+    NearWall,
+    Mid
 }
 
 public enum Prop
