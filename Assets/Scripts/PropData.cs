@@ -38,6 +38,7 @@ public class PropData : ScriptableObject
     [SerializeField] private PropPlacement _propPlacement;
 
     [SerializeField] private Prop _propType;
+    [SerializeField] [Range(0, 1)] private float _spawnChance = 0.5f;
 
     public GameObject Prop => _prop;
     public PropType Type => _type;
@@ -48,4 +49,6 @@ public class PropData : ScriptableObject
     public PropPlacement Placement => _propPlacement;
     
     public Prop PropType => _propType;
+    
+    public float SpawnChance => _spawnChance;
 }

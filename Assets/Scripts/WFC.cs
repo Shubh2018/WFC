@@ -449,26 +449,26 @@ public class WFC : MonoBehaviour
             }
         }
         
-        foreach (var node in _nodesGenerated)
-        {
-            if(node.Prefab == null) continue;
-            
-            SampleData sampleData = new SampleData
-            {
-                nodeData = node
-            };
-
-            MeshFilter filter = sampleData.nodeData.Prefab.GetComponent<MeshFilter>();
-            sampleData.nodeData.SetRotation(sampleData.nodeData.ClockwiseRotationSteps * 90.0f);
-            
-            for (int i = 0; i < 5; i++)
-            {
-                sampleData.samples.Add(new Samples(_meshSampler.GetSamples(filter)));
-                // Debug.Log($"Samples {filter.name} {i}: {sampleData.samples[i].Count}");
-            }
-            
-            _generatedSamples.Add(sampleData);
-        }
+        // foreach (var node in _nodesGenerated)
+        // {
+        //     if(node.Prefab == null) continue;
+        //     
+        //     SampleData sampleData = new SampleData
+        //     {
+        //         nodeData = node
+        //     };
+        //
+        //     MeshFilter filter = sampleData.nodeData.Prefab.GetComponent<MeshFilter>();
+        //     sampleData.nodeData.SetRotation(sampleData.nodeData.ClockwiseRotationSteps * 90.0f);
+        //     
+        //     for (int i = 0; i < 5; i++)
+        //     {
+        //         sampleData.samples.Add(new Samples(_meshSampler.GetSamples(filter)));
+        //         // Debug.Log($"Samples {filter.name} {i}: {sampleData.samples[i].Count}");
+        //     }
+        //     
+        //     _generatedSamples.Add(sampleData);
+        // }
         
         _meshSampler.SetSpawnerData(_gameObjectsToSpawn);
     }
@@ -741,29 +741,33 @@ public class WFC : MonoBehaviour
         obj.name = node.name; // Rename the node so we know what type has been spawned
         obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
 
-        Debug.Log($"GeneratedSamples: {_generatedSamples.Count}");
-        foreach (var sData in _generatedSamples)
-        {
-            if (sData.nodeData == node)
-            {
-                List<Sample> selectedSamples = new List<Sample>();
-                int randomSampleSet = Random.Range(0, sData.samples.Count);
-
-                foreach (var sample in sData.samples[randomSampleSet].samples)
-                {
-                    Sample s = new Sample()
-                    {
-                        sample = obj.transform.position + sample.sample,
-                        triangleNormal = sample.triangleNormal
-                    };
-                    
-                    selectedSamples.Add(s);
-                }
-                
-                _meshSampler.AddSamples(selectedSamples);
-                _meshSampler.SpawnProps(node);
-            }
-        }
+        // Debug.Log($"GeneratedSamples: {_generatedSamples.Count}");
+        
+        _meshSampler.AddSamples(_meshSampler.GetSamples(obj.GetComponent<MeshFilter>()));
+        _meshSampler.SpawnProps(node, obj);
+        
+        // foreach (var sData in _generatedSamples)
+        // {
+        //     if (sData.nodeData == node)
+        //     {
+        //         List<Sample> selectedSamples = new List<Sample>();
+        //         int randomSampleSet = Random.Range(0, sData.samples.Count);
+        //
+        //         foreach (var sample in sData.samples[randomSampleSet].samples)
+        //         {
+        //             Sample s = new Sample()
+        //             {
+        //                 sample = obj.transform.localPosition + this.transform.InverseTransformPoint(sample.sample),
+        //                 triangleNormal = sample.triangleNormal
+        //             };
+        //             
+        //             selectedSamples.Add(s);
+        //         }
+        //         
+        //         _meshSampler.AddSamples(selectedSamples);
+        //         _meshSampler.SpawnProps(node);
+        //     }
+        // }
 
         // MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
         // _meshSampler.Generate(meshFilter);

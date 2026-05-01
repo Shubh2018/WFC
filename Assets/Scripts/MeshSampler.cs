@@ -73,6 +73,8 @@ public class MeshSampler : MonoBehaviour
 
     public void AddSamples(List<Sample> samplePoints)
     {
+        _samplePoints.Clear();
+        
         _samplePoints.AddRange(samplePoints);
     }
 
@@ -97,11 +99,13 @@ public class MeshSampler : MonoBehaviour
             DestroyImmediate(spawnedObject);
         
         _spawnedObjects.Clear();
+
+        Debug.Log($"FloorSamples: {_floorSamplesAll.Count}");
     }
 
     private void OnDrawGizmos()
     {
-        return;
+        // return;
         
         Gizmos.color = Color.white;
         
@@ -233,11 +237,11 @@ public class MeshSampler : MonoBehaviour
         return samples;
     }
 
-    public void SpawnProps(NodeData node)
+    public void SpawnProps(NodeData node, GameObject obj)
     {
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(_samplePoints);
         
-        SpawnFloorProps(node, minMesh, maxMesh);
+        SpawnFloorProps(node, obj, minMesh, maxMesh);
         SpawnWallProps(node, minMesh, maxMesh);
         
         _samplePoints.Clear();
@@ -407,8 +411,8 @@ public class MeshSampler : MonoBehaviour
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
         
-        float minDist = 1.5f;
-        float maxDist = 3.0f;
+        float minDist = 0;
+        float maxDist = 2f;
 
         foreach (var v in samples)
         {
@@ -438,10 +442,14 @@ public class MeshSampler : MonoBehaviour
         {
             for (int j = 0; j < _floorSamples.Count; j++)
             {
-                if (Vector3.Distance(_wallSamples[i].sample, _floorSamples[j].sample) > minDist &&
-                    Vector3.Distance(_wallSamples[i].sample, _floorSamples[j].sample) <= maxDist)
+                Vector3 floorSample = _floorSamples[j].sample;
+                floorSample.y = _wallSamples[i].sample.y;
+                
+                if (Vector3.Distance(_wallSamples[i].sample, floorSample) > minDist 
+                    && Vector3.Distance(_wallSamples[i].sample, floorSample) <= maxDist)
                 {
                     _samplesNearWalls.Add(_floorSamples[j]);
+                    _floorSamples.RemoveAt(j);
                 }
 
                 else
@@ -456,7 +464,7 @@ public class MeshSampler : MonoBehaviour
         return (min, max);
     }
 
-    private void SpawnFloorProps(NodeData node, Vector3 min, Vector3 max)
+    private void SpawnFloorProps(NodeData node, GameObject obj, Vector3 min, Vector3 max)
     {
         if (node.IsStairPiece) return;
         
@@ -487,7 +495,6 @@ public class MeshSampler : MonoBehaviour
             
             Sample s = filteredSamples[sampleIndex];
             filteredSamples.RemoveAt(sampleIndex);
-            _floorSamples.RemoveAll((sample) => Vector3.Distance(sample.sample, s.sample) <= 1f);
             
             Vector3 dir = midPoint - s.sample;
             dir.y = 0;
@@ -505,10 +512,10 @@ public class MeshSampler : MonoBehaviour
                 if (prop.PropType == Prop.Objective && _objectivesSpawned >= 1)
                     continue;
                 
-                GameObject go = Instantiate(prop.Prop,
-                    s.sample, Quaternion.identity);
+                GameObject go = Instantiate(prop.Prop, obj.transform);
+                go.transform.position = s.sample;
                 
-                go.transform.parent = this.transform;
+                // go.transform.parent = this.transform;
                 
                 if(prop.CheckOrientation)
                     go.transform.forward = dir;
@@ -560,6 +567,9 @@ public class MeshSampler : MonoBehaviour
             Sample s = filteredSamples[sampleIndex];
             filteredSamples.RemoveAt(sampleIndex);
             _wallSamples.Remove(s);
+
+            if (Random.Range(0, 1) > prop.SpawnChance)
+                continue;
             
             if (_props.ContainsKey(toSpawn.WallPrefabs[random]))
                 propCount = _props[toSpawn.WallPrefabs[random]];
