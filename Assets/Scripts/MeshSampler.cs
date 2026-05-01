@@ -138,8 +138,6 @@ public class MeshSampler : MonoBehaviour
     
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
     {
-        Debug.Log($"{radius} : {tries}");
-        
         List<Sample> samples = new List<Sample>();
         List<int> active = new List<int>();
 
@@ -242,7 +240,7 @@ public class MeshSampler : MonoBehaviour
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(_samplePoints);
         
         SpawnFloorProps(node, obj, minMesh, maxMesh);
-        SpawnWallProps(node, minMesh, maxMesh);
+        // SpawnWallProps(node, obj, minMesh, maxMesh);
         
         _samplePoints.Clear();
     }
@@ -458,8 +456,6 @@ public class MeshSampler : MonoBehaviour
                 }
             }
         }
-        
-        
 
         return (min, max);
     }
@@ -477,8 +473,8 @@ public class MeshSampler : MonoBehaviour
         
         int floorCount = toSpawn.MaxFloorPropCountPerRoom;
         
-        int sampleIndex = 0;
         int random = 0;
+        int sampleIndex = 0;
         
         List<Sample> filteredSamples = new List<Sample>();
         
@@ -515,8 +511,6 @@ public class MeshSampler : MonoBehaviour
                 GameObject go = Instantiate(prop.Prop, obj.transform);
                 go.transform.position = s.sample;
                 
-                // go.transform.parent = this.transform;
-                
                 if(prop.CheckOrientation)
                     go.transform.forward = dir;
                 
@@ -540,7 +534,7 @@ public class MeshSampler : MonoBehaviour
         }
     }
 
-    private void SpawnWallProps(NodeData node, Vector3 min, Vector3 max)
+    private void SpawnWallProps(NodeData node, GameObject go, Vector3 min, Vector3 max)
     {
         Vector3 midPoint = (min + max) / 2;
         
@@ -571,23 +565,22 @@ public class MeshSampler : MonoBehaviour
             if (Random.Range(0, 1) > prop.SpawnChance)
                 continue;
             
-            if (_props.ContainsKey(toSpawn.WallPrefabs[random]))
-                propCount = _props[toSpawn.WallPrefabs[random]];
+            if (_props.ContainsKey(prop))
+                propCount = _props[prop];
             else
-                _props.Add(toSpawn.WallPrefabs[random], propCount);
+                _props.Add(prop, propCount);
         
-            if (propCount < toSpawn.WallPrefabs[random].MaxCount)
+            if (propCount < prop.MaxCount)
             {
-                GameObject obj = Instantiate(toSpawn.WallPrefabs[random].Prop,
-                    s.sample, Quaternion.identity);
-                
-                obj.transform.parent = this.transform;
+                GameObject obj = Instantiate(prop.Prop, go.transform);
+
+                obj.transform.position = s.sample;
             
                 obj.transform.forward = s.triangleNormal;
             
                 propCount += 1;
             
-                _props[toSpawn.WallPrefabs[random]] = propCount;
+                _props[prop] = propCount;
             
                 _spawnedObjects.Add(obj);
                 wallCount -= 1;
