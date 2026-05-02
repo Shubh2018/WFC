@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework;
 
 public enum SurfaceType
 {
@@ -91,6 +92,7 @@ public class MeshSampler : MonoBehaviour
         _wallSamplesAll.Clear();
         
         _samplesNearWalls.Clear();
+        _samplesInMid.Clear();
 
         _meshFilter.Clear();
         _props.Clear();
@@ -105,7 +107,7 @@ public class MeshSampler : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        // return;
+        return;
         
         Gizmos.color = Color.white;
         
@@ -240,7 +242,7 @@ public class MeshSampler : MonoBehaviour
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(_samplePoints);
         
         SpawnFloorProps(node, obj, minMesh, maxMesh);
-        // SpawnWallProps(node, obj, minMesh, maxMesh);
+        SpawnWallProps(node, obj, minMesh, maxMesh);
         
         _samplePoints.Clear();
     }
@@ -409,7 +411,7 @@ public class MeshSampler : MonoBehaviour
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
         
-        float minDist = 0;
+        float minDist = 1f;
         float maxDist = 2f;
 
         foreach (var v in samples)
@@ -424,17 +426,17 @@ public class MeshSampler : MonoBehaviour
         }
 
         float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 1f;
-        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.75f; 
+        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.5f; 
         
         _floorSamples.AddRange(samples.FindAll(s => (s.sample.y < thresholdMin) && 
                                                     (Vector3.Dot(s.triangleNormal, Vector3.up) > 0 &&
                                                      (s.sample.x > min.x && s.sample.x < max.x) && (s.sample.z > min.z && s.sample.z < max.z))));
         
-        _floorSamplesAll.AddRange(_floorSamples);
+        // _floorSamplesAll.AddRange(_floorSamples);
         
         _wallSamples.AddRange(samples.FindAll(s => ((s.sample.y > thresholdMin && s.sample.y <= thresholdMax) 
                                                     && (s.sample.y > min.y && s.sample.y < max.y))));
-        _wallSamplesAll.AddRange(_wallSamples);
+        // _wallSamplesAll.AddRange(_wallSamples);
         
         for (int i = 0; i < _wallSamples.Count; i++)
         {
@@ -453,6 +455,7 @@ public class MeshSampler : MonoBehaviour
                 else
                 {
                     _samplesInMid.Add(_floorSamples[j]);
+                    Debug.Log($"In Sort Method: {_floorSamples[j].sample}");
                 }
             }
         }
@@ -486,6 +489,11 @@ public class MeshSampler : MonoBehaviour
             PropData prop = toSpawn.FloorPrefabs[random];
             
             filteredSamples.AddRange(FilterSamples(_floorSamples, prop.Type, prop.Placement, midPoint));
+
+            // foreach (var filtered in filteredSamples)
+            // {
+            //     Debug.Log($"In Filtered Samples: {filtered.sample}");
+            // }
             
             sampleIndex = Random.Range(0, filteredSamples.Count);
             
@@ -508,8 +516,9 @@ public class MeshSampler : MonoBehaviour
                 if (prop.PropType == Prop.Objective && _objectivesSpawned >= 1)
                     continue;
                 
-                GameObject go = Instantiate(prop.Prop, obj.transform);
-                go.transform.position = s.sample;
+                GameObject go = Instantiate(prop.Prop, obj.transform, false);
+                go.transform.localPosition = obj.transform.InverseTransformPoint(s.sample);
+                // Debug.Log($"{go.transform.name} : {s.sample}");
                 
                 if(prop.CheckOrientation)
                     go.transform.forward = dir;
@@ -575,7 +584,6 @@ public class MeshSampler : MonoBehaviour
                 GameObject obj = Instantiate(prop.Prop, go.transform);
 
                 obj.transform.position = s.sample;
-            
                 obj.transform.forward = s.triangleNormal;
             
                 propCount += 1;
@@ -597,29 +605,43 @@ public class MeshSampler : MonoBehaviour
 
     private List<Sample> FilterSamples(List<Sample> samplesToFilter, PropType propType, PropPlacement placement, Vector3 mid)
     {
+        List<Sample> filteredSamples;
+        
         switch (placement)
         {
             case PropPlacement.NearWall:
-                return _samplesNearWalls;
+                filteredSamples = new List<Sample>(_samplesNearWalls);
+                _samplesNearWalls.Clear();
+                break;
             
             case PropPlacement.Mid:
-                return _samplesInMid;
+                filteredSamples = new List<Sample>(_samplesInMid);
+                _samplesInMid.Clear();
+                break;
             
             case PropPlacement.TopLeft:
-                return samplesToFilter.FindAll(s => (s.sample.z > mid.z && s.sample.x < mid.x));
+                filteredSamples = new List<Sample>(samplesToFilter.FindAll(s => (s.sample.z > mid.z && s.sample.x < mid.x)));
+                break;
 
             case PropPlacement.TopRight:
-                return samplesToFilter.FindAll(s => (s.sample.z > mid.z && s.sample.x > mid.x));
+                filteredSamples = new List<Sample>(samplesToFilter.FindAll(s => (s.sample.z > mid.z && s.sample.x > mid.x)));
+                break;
             
             case PropPlacement.BottomLeft:
-                return samplesToFilter.FindAll(s => (s.sample.z < mid.z && s.sample.x < mid.x));
+                filteredSamples = new List<Sample>(samplesToFilter.FindAll(s => (s.sample.z < mid.z && s.sample.x < mid.x)));
+                break;
             
             case PropPlacement.BottomRight:
-                return samplesToFilter.FindAll(s => (s.sample.z < mid.z && s.sample.x > mid.x));
+                filteredSamples = new List<Sample>(samplesToFilter.FindAll(s => (s.sample.z < mid.z && s.sample.x > mid.x)));
+                break;
             
             default:
-                return samplesToFilter;
+                filteredSamples = new List<Sample>(samplesToFilter);
+                break;
         }
+
+        // samplesToFilter.Clear();
+        return filteredSamples;
     }
 }
 
