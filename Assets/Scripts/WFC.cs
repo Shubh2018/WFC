@@ -412,7 +412,7 @@ public class WFC : MonoBehaviour
                     newNode.Prefab = currNode.Prefab;
                     newNode.Weight = currNode.Weight;
                     newNode.ClockwiseRotationSteps = j + 1;
-                    newNode.CantHaveObjective = currNode.CantHaveObjective;
+                    newNode.CanHaveObjective = currNode.CanHaveObjective;
                     newNode.IsStairPiece = currNode.IsStairPiece;
                     
 

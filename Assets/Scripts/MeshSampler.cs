@@ -411,8 +411,8 @@ public class MeshSampler : MonoBehaviour
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
         
-        float minDist = 1f;
-        float maxDist = 2f;
+        float minDist = 2.5f;
+        float maxDist = 3.5f;
 
         foreach (var v in samples)
         {
@@ -471,13 +471,28 @@ public class MeshSampler : MonoBehaviour
         
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
         
-        if (node.CantHaveObjective)
-            toSpawn.FloorPrefabs.RemoveAll((prop) => prop.PropType == Prop.Objective);
-        
-        int floorCount = toSpawn.MaxFloorPropCountPerRoom;
-        
         int random = 0;
         int sampleIndex = 0;
+        
+        int floorCount = toSpawn.MaxFloorPropCountPerRoom;
+
+        if (node.CanHaveObjective)
+        {
+            List<PropData> props = toSpawn.FloorPrefabs.FindAll((prop) => prop.PropType == Prop.Objective);
+            random = Random.Range(0, props.Count);
+            PropData prop = props[random];
+
+            if (!(_objectivesSpawned >= 1))
+            {
+                GameObject go = Instantiate(prop.Prop, obj.transform, false);
+                go.transform.localPosition = Vector3.zero;
+                go.transform.forward = -obj.transform.right;
+                return;
+            }
+        }
+
+        else
+            toSpawn.FloorPrefabs.RemoveAll((prop) => prop.PropType == Prop.Objective);
         
         List<Sample> filteredSamples = new List<Sample>();
         
@@ -511,9 +526,6 @@ public class MeshSampler : MonoBehaviour
             if (propCount < prop.MaxCount)
             {
                 if(propCount >= 1 && prop.LimitOnePerRoom)
-                    continue;
-
-                if (prop.PropType == Prop.Objective && _objectivesSpawned >= 1)
                     continue;
                 
                 GameObject go = Instantiate(prop.Prop, obj.transform, false);
