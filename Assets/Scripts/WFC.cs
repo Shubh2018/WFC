@@ -193,6 +193,8 @@ public class WFC : MonoBehaviour
     
     private MeshSampler _meshSampler;
 
+    public string PropText { get; private set; } = "";
+
     // Private Variables
     NodeData[,,] _grid;
     List<Tile> _nodesToCollapse = new List<Tile>();
@@ -486,6 +488,7 @@ public class WFC : MonoBehaviour
 
     public void ClearTiles(bool clearAll = false) 
     {
+        PropText = "";
         _nodesToCollapse.Clear();
 
         if(_meshSampler)
@@ -636,6 +639,8 @@ public class WFC : MonoBehaviour
         st.Stop();
         collapseExecutionTime = st.ElapsedMilliseconds;
         doneFuncHook();
+
+        PropText = _meshSampler.CalculatePropCount();
         
         _generatedSamples.Clear();
     }

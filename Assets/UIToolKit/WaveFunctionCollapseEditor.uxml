@@ -44,6 +44,9 @@
                 <ui:IntegerField label="Tries" value="30" binding-path="_samplingTries" name="Tries" data-source-path="_samplingTries" tabindex="3"/>
                 <uie:PropertyField name="Objects" binding-path="_gameObjectsToSpawn" data-source-path="_gameObjectsToSpawn" label="Game Objects To Spawn" tabindex="3"/>
             </ui:Tab>
+            <ui:Tab label="Testing" tabindex="4" enabled="true">
+                <ui:Label text="Testing ..." name="TestLabel"/>
+            </ui:Tab>
         </ui:TabView>
     </ui:VisualElement>
     <ui:GroupBox name="_settingsBox" text="Debug Settings" style="border-top-width: 5px; border-right-width: 5px; border-bottom-width: 5px; border-left-width: 5px; border-left-color: rgb(48, 48, 48); border-right-color: rgb(48, 48, 48); border-top-color: rgb(48, 48, 48); border-bottom-color: rgb(48, 48, 48); padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px;">

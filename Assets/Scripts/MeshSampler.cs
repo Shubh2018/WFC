@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using System.Threading.Tasks;
+using UnityEngine.UI;
 
 public enum SurfaceType
 {
@@ -43,6 +45,9 @@ public class MeshSampler : MonoBehaviour
     private List<GameObject> _spawnedObjects = new List<GameObject>();
     
     private Dictionary<PropData, int> _props = new Dictionary<PropData, int>();
+
+    public string PropText { get; private set; }
+
 
     public void Generate(MeshFilter meshFilter)
     {
@@ -247,6 +252,20 @@ public class MeshSampler : MonoBehaviour
         _samplePoints.Clear();
     }
 
+    public string CalculatePropCount()
+    {
+        PropText += $"Prop List: \n";
+
+        foreach(var prop in _props)
+        {
+            PropText += $"{prop.Key.Prop.name}: {prop.Value} \n";
+        }
+
+        Debug.Log($"{PropText}");
+
+        return PropText;
+    }
+
     private float[] BuildTriangleAreaCDF(Vector3[] vertices, int[] triangles)
     {
         int count = triangles.Length / 3;
@@ -399,6 +418,8 @@ public class MeshSampler : MonoBehaviour
 
     private (Vector3, Vector3) SortSamplesInMesh(List<Sample> samples)
     {
+        PropText = "";
+
         _props.Clear();
         
         _wallSamples.Clear();

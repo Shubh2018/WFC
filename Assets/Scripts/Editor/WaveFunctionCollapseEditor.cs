@@ -7,6 +7,8 @@ public class WaveFunctionCollapseEditor : Editor
     public VisualTreeAsset editorVisualTree;
     private VisualElement rootTree;
     private WFC WaveFunctionCollapse;
+
+    private Label testText;
     
     public override VisualElement CreateInspectorGUI()
     {
@@ -114,6 +116,7 @@ public class WaveFunctionCollapseEditor : Editor
 
     private void ClearPath(ClickEvent evt)
     {
+        testText.text = "";
         WaveFunctionCollapse.ClearPath();
     }
 
@@ -132,12 +135,15 @@ public class WaveFunctionCollapseEditor : Editor
         SetSliderState("_collapseSpeedSlider", true);
         SetButtonState("_collapseTiles", false);
         SetLabelText("_doneLabel", "");
+        SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
     }
 
     private void PauseCollapseOfTiles(ClickEvent evt)
     {
         WaveFunctionCollapse.pauseGeneration = !WaveFunctionCollapse.pauseGeneration;
         SetButtonText("_pauseCollapse", WaveFunctionCollapse.pauseGeneration ? "Unpause" : "Pause");
+
+        SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
     }
 
     private void StopCollapseOfTiles(ClickEvent evt)
@@ -146,6 +152,8 @@ public class WaveFunctionCollapseEditor : Editor
         WaveFunctionCollapse.StopCollapse();
 
         ResetControls();
+
+        SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
     }
 
     private void FinishCollapseOfTiles(ClickEvent evt)
@@ -155,6 +163,7 @@ public class WaveFunctionCollapseEditor : Editor
         SetLabelText("_collapseSpeedLabel", $"Delay (s): {0}");
         ResetControls();
         SetButtonState("_collapseTiles", false);
+        SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
     }
 
     private void ResetControls()
