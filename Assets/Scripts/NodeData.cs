@@ -46,6 +46,7 @@ public class NodeData : ScriptableObject
     public int Weight;
     public bool IsStairPiece;
     public bool CanHaveObjective = false;
+    public bool Deadend = false;
     [HideInInspector] public int ClockwiseRotationSteps; // Set automatically as the tile is rotated
 
     public NodeFaceVertical Up;

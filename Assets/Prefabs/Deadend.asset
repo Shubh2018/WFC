@@ -16,6 +16,7 @@ MonoBehaviour:
   Weight: 1
   IsStairPiece: 0
   CanHaveObjective: 1
+  Deadend: 1
   ClockwiseRotationSteps: 0
   Up:
     name: 0

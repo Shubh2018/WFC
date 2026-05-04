@@ -217,6 +217,12 @@ public class MeshSampler : MonoBehaviour
                 active.Remove(active.Count - 1);
             }
         }
+        
+        for (int i = samples.Count - 1; i >= 0; i--)
+        {
+            if (!IsInside(samples[i], mesh.transform.position))
+                samples.RemoveAt(i);
+        }
 
         for (int i = 0; i < samples.Count; i++)
         {
@@ -224,12 +230,6 @@ public class MeshSampler : MonoBehaviour
             s.sample = mesh.transform.TransformPoint(s.sample);
             s.triangleNormal = mesh.transform.TransformDirection(s.triangleNormal);
             samples[i] = s;
-        }
-        
-        for (int i = samples.Count - 1; i >= 0; i--)
-        {
-            if (!IsInside(samples[i], mesh.transform.position))
-                samples.RemoveAt(i);
         }
         
         samples = samples.OrderBy(s => s.sample.y).ToList();
@@ -411,7 +411,7 @@ public class MeshSampler : MonoBehaviour
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
         
-        float minDist = 2.5f;
+        float minDist = 3f;
         float maxDist = 3.5f;
 
         foreach (var v in samples)
@@ -426,7 +426,7 @@ public class MeshSampler : MonoBehaviour
         }
 
         float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 1f;
-        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.5f; 
+        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.1f; 
         
         _floorSamples.AddRange(samples.FindAll(s => (s.sample.y < thresholdMin) && 
                                                     (Vector3.Dot(s.triangleNormal, Vector3.up) > 0 &&

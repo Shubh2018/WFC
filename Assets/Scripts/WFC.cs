@@ -129,11 +129,16 @@ public class PathNode
         return nodes.Find((NodeData node) => node.name == name);
     }
 
-    public List<NodeData> GetPotentialNodes()
+    public List<NodeData> GetPotentialNodes(int index, int pathCount)
     {
         List<NodeData> potentialNodes = new List<NodeData>(parent.getNodes);
         potentialNodes.AddRange(parent.getNodesGen);
 
+        if (index >= pathCount - 1)
+        {
+            potentialNodes.RemoveAll((node) => !node.Deadend);
+        }
+        
         // Check if this node is part of a staircase
         if (parent.path.CheckStaircaseOverlap(Vector3Int.FloorToInt(parent.path.CollapsedPath[pathIndicies[0]]))) 
             return new List<NodeData> { FindStairCaseNode(potentialNodes) };
@@ -381,7 +386,6 @@ public class WFC : MonoBehaviour
         
         _meshSampler = GetComponent<MeshSampler>();
         _meshSampler.SetRadiusAndTries(_samplingRadius, _samplingTries);
-        
 
         // Go through all created nodes and rotate those that need it
         for(int i = 0; i < nodes; i++) 
@@ -414,8 +418,8 @@ public class WFC : MonoBehaviour
                     newNode.ClockwiseRotationSteps = j + 1;
                     newNode.CanHaveObjective = currNode.CanHaveObjective;
                     newNode.IsStairPiece = currNode.IsStairPiece;
+                    newNode.Deadend = currNode.Deadend; 
                     
-
                     newNode.Up = currNode.Up;
                     newNode.Down = currNode.Down;
                     
@@ -574,7 +578,7 @@ public class WFC : MonoBehaviour
 
                 // Create a tile for the given point and filter its potential nodes
                 Tile tile = new Tile(this, point, true);
-                tile.potentialNodes = currNode.GetPotentialNodes();
+                tile.potentialNodes = currNode.GetPotentialNodes(i, path.CollapsedPath.Count);
 
                 // Add the tile as one to collapse and the point as already done
                 _nodesToCollapse.Add(tile);
