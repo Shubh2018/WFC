@@ -125,6 +125,7 @@ public class WaveFunctionCollapseEditor : Editor
         WaveFunctionCollapse.pauseGeneration = false;
         WaveFunctionCollapse.StartCollapse(() => {
             SetLabelText("_doneLabel", "Done...");
+            SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
             ResetControls();
         });
 
@@ -135,15 +136,12 @@ public class WaveFunctionCollapseEditor : Editor
         SetSliderState("_collapseSpeedSlider", true);
         SetButtonState("_collapseTiles", false);
         SetLabelText("_doneLabel", "");
-        SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
     }
 
     private void PauseCollapseOfTiles(ClickEvent evt)
     {
         WaveFunctionCollapse.pauseGeneration = !WaveFunctionCollapse.pauseGeneration;
         SetButtonText("_pauseCollapse", WaveFunctionCollapse.pauseGeneration ? "Unpause" : "Pause");
-
-        SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
     }
 
     private void StopCollapseOfTiles(ClickEvent evt)
@@ -152,8 +150,6 @@ public class WaveFunctionCollapseEditor : Editor
         WaveFunctionCollapse.StopCollapse();
 
         ResetControls();
-
-        SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
     }
 
     private void FinishCollapseOfTiles(ClickEvent evt)
@@ -163,7 +159,6 @@ public class WaveFunctionCollapseEditor : Editor
         SetLabelText("_collapseSpeedLabel", $"Delay (s): {0}");
         ResetControls();
         SetButtonState("_collapseTiles", false);
-        SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
     }
 
     private void ResetControls()

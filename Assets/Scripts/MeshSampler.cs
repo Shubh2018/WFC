@@ -45,9 +45,10 @@ public class MeshSampler : MonoBehaviour
     private List<GameObject> _spawnedObjects = new List<GameObject>();
     
     private Dictionary<PropData, int> _props = new Dictionary<PropData, int>();
+    private Dictionary<string, int> _propCount = new Dictionary<string, int>();
+    public Dictionary<string, int> PropCount => _propCount;
 
     public string PropText { get; private set; }
-
 
     public void Generate(MeshFilter meshFilter)
     {
@@ -250,20 +251,21 @@ public class MeshSampler : MonoBehaviour
         SpawnWallProps(node, obj, minMesh, maxMesh);
         
         _samplePoints.Clear();
+
+        AddPropToList();
     }
 
-    public string CalculatePropCount()
+    private void AddPropToList()
     {
         PropText += $"Prop List: \n";
 
         foreach(var prop in _props)
         {
-            PropText += $"{prop.Key.Prop.name}: {prop.Value} \n";
+            if(_propCount.ContainsKey(prop.Key.Prop.name))
+                _propCount[prop.Key.Prop.name] += prop.Value;
+            else
+                _propCount.Add(prop.Key.Prop.name, prop.Value);
         }
-
-        Debug.Log($"{PropText}");
-
-        return PropText;
     }
 
     private float[] BuildTriangleAreaCDF(Vector3[] vertices, int[] triangles)
@@ -476,7 +478,7 @@ public class MeshSampler : MonoBehaviour
                 else
                 {
                     _samplesInMid.Add(_floorSamples[j]);
-                    Debug.Log($"In Sort Method: {_floorSamples[j].sample}");
+                    // Debug.Log($"In Sort Method: {_floorSamples[j].sample}");
                 }
             }
         }
@@ -493,7 +495,7 @@ public class MeshSampler : MonoBehaviour
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
         
         int random = 0;
-        int sampleIndex = 0;
+        int propCount = 0;
         
         int floorCount = toSpawn.MaxFloorPropCountPerRoom;
 
@@ -502,12 +504,21 @@ public class MeshSampler : MonoBehaviour
             List<PropData> props = toSpawn.FloorPrefabs.FindAll((prop) => prop.PropType == Prop.Objective);
             random = Random.Range(0, props.Count);
             PropData prop = props[random];
+            
+            if (_props.TryGetValue(prop, out var value))
+                propCount = value;
+            else
+                _props.Add(prop, propCount);
 
             if (!(_objectivesSpawned >= 1))
             {
                 GameObject go = Instantiate(prop.Prop, obj.transform, false);
                 go.transform.localPosition = Vector3.zero;
                 go.transform.forward = -obj.transform.right;
+
+                propCount += 1;
+                _props[prop] = propCount;
+                
                 return;
             }
         }
@@ -519,7 +530,7 @@ public class MeshSampler : MonoBehaviour
         
         while (floorCount > 0 && toSpawn.FloorPrefabs.Count > 0)
         {
-            int propCount = 0;
+            propCount = 0;
             
             random = Random.Range(0, toSpawn.FloorPrefabs.Count);
             PropData prop = toSpawn.FloorPrefabs[random];
@@ -531,7 +542,7 @@ public class MeshSampler : MonoBehaviour
             //     Debug.Log($"In Filtered Samples: {filtered.sample}");
             // }
             
-            sampleIndex = Random.Range(0, filteredSamples.Count);
+            int sampleIndex = Random.Range(0, filteredSamples.Count);
             
             Sample s = filteredSamples[sampleIndex];
             filteredSamples.RemoveAt(sampleIndex);
@@ -539,8 +550,8 @@ public class MeshSampler : MonoBehaviour
             Vector3 dir = midPoint - s.sample;
             dir.y = 0;
             
-            if (_props.ContainsKey(prop))
-                propCount = _props[prop];
+            if (_props.TryGetValue(prop, out var value))
+                propCount = value;
             else
                 _props.Add(prop, propCount);
 
@@ -584,21 +595,18 @@ public class MeshSampler : MonoBehaviour
         
         int wallCount = toSpawn.MaxWallPropCountPerRoom;
         
-        int sampleIndex = 0;
-        int random = 0;
-        
         List<Sample> filteredSamples = new List<Sample>();
         
         while (wallCount > 0 && toSpawn.WallPrefabs.Count > 0)
         {
             int propCount = 0;
             
-            random = Random.Range(0, toSpawn.WallPrefabs.Count);
+            int random = Random.Range(0, toSpawn.WallPrefabs.Count);
             
             PropData prop = toSpawn.WallPrefabs[random];
             filteredSamples.AddRange(FilterSamples(_wallSamples, prop.Type, prop.Placement, midPoint));
             
-            sampleIndex = Random.Range(0, filteredSamples.Count);
+            int sampleIndex = Random.Range(0, filteredSamples.Count);
             
             Sample s = filteredSamples[sampleIndex];
             filteredSamples.RemoveAt(sampleIndex);
@@ -607,8 +615,8 @@ public class MeshSampler : MonoBehaviour
             if (Random.Range(0, 1) > prop.SpawnChance)
                 continue;
             
-            if (_props.ContainsKey(prop))
-                propCount = _props[prop];
+            if (_props.TryGetValue(prop, out var value))
+                propCount = value;
             else
                 _props.Add(prop, propCount);
         

@@ -633,14 +633,17 @@ public class WFC : MonoBehaviour
             }
         }
 
+        foreach (var prop in _meshSampler.PropCount)
+        {
+            PropText += $"{prop.Key}: {prop.Value} \n";
+        }
+        
         doneCollapse = true;
         doneCollapseLabel:;
 
         st.Stop();
         collapseExecutionTime = st.ElapsedMilliseconds;
         doneFuncHook();
-
-        PropText = _meshSampler.CalculatePropCount();
         
         _generatedSamples.Clear();
     }
