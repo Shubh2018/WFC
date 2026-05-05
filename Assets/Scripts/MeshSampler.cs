@@ -549,28 +549,35 @@ public class MeshSampler : MonoBehaviour
             
             Vector3 dir = midPoint - s.sample;
             dir.y = 0;
-            
-            if (_props.TryGetValue(prop, out var value))
-                propCount = value;
-            else
-                _props.Add(prop, propCount);
 
             if (propCount < prop.MaxCount)
             {
                 if(propCount >= 1 && prop.LimitOnePerRoom)
                     continue;
                 
-                GameObject go = Instantiate(prop.Prop, obj.transform, false);
-                go.transform.localPosition = obj.transform.InverseTransformPoint(s.sample);
+                PropObject propObj = Instantiate(prop.Prop, obj.transform, false).GetComponent<PropObject>();
+                propObj.transform.localPosition = obj.transform.InverseTransformPoint(s.sample);
+                propObj.IsOverlappingProp();
+
+                if(!propObj) continue;
+
+                if(propObj.IsOverlappingNode())
+                {
+                    Vector3 dirToMove = (obj.transform.localPosition - propObj.transform.localPosition).normalized;
+                    dirToMove.y = propObj.transform.localPosition.y;
+                    propObj.transform.localPosition += dirToMove * 2f;
+                    Debug.Log($"Moved {propObj.transform.name}");
+                }
+
                 // Debug.Log($"{go.transform.name} : {s.sample}");
                 
                 if(prop.CheckOrientation)
-                    go.transform.forward = dir;
+                    propObj.transform.forward = dir;
                 
                 if (prop.PropType == Prop.Objective)
                     _objectivesSpawned += 1;
                 
-                _spawnedObjects.Add(go);
+                _spawnedObjects.Add(propObj.gameObject);
 
                 propCount += 1;
 
@@ -582,6 +589,11 @@ public class MeshSampler : MonoBehaviour
             {
                 toSpawn.FloorPrefabs.RemoveAt(random);
             }
+
+            if (_props.TryGetValue(prop, out var value))
+                propCount = value;
+            else
+                _props.Add(prop, propCount);
             
             filteredSamples.Clear();
         }

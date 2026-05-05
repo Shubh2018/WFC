@@ -1,25 +1,36 @@
 using System;
+using System.Runtime.CompilerServices;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class PropObject : MonoBehaviour
 {
     [SerializeField] private Vector3 _center;
-    [SerializeField] private float _length = 1f;
-    [SerializeField] private LayerMask _layerToCheck;
-
-    [SerializeField] private bool _enableScript = false;
+    [SerializeField] private Vector3 _overlapDimensions;
+    [SerializeField] private LayerMask _propLayer;
+    [SerializeField] private LayerMask _nodeLayer;
     
-    private float _step = 10.0f;
-    
-    public void CheckOverlaps()
+    public void IsOverlappingProp()
     {
-        
+        Collider[] colliders = Physics.OverlapBox(this.transform.position + _center, _overlapDimensions / 2, Quaternion.identity, _propLayer);
+
+        if (colliders.Length <= 0) return;
+
+        Debug.Log($"Destroyed {this.gameObject.name}");
+        DestroyImmediate(this.gameObject);
+    }
+
+    public bool IsOverlappingNode()
+    {
+        Collider[] colliders = Physics.OverlapBox(this.transform.position + _center, _overlapDimensions / 2, Quaternion.identity, _nodeLayer);
+
+        return colliders.Length > 0;
     }
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawRay(transform.position + _center, transform.forward * _length);
+
+        Gizmos.DrawWireCube(this.transform.position + _center, _overlapDimensions);
     }
 }

@@ -119,6 +119,48 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &20429258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
+  m_Name: Corridor_90
+  m_EditorClassIdentifier: Assembly-CSharp::NodeData
+  Prefab: {fileID: 4608806688974668763, guid: 4bc560b761295bf45814036f2380791e, type: 3}
+  Weight: 2
+  IsStairPiece: 0
+  CanHaveObjective: 0
+  Deadend: 0
+  ClockwiseRotationSteps: 1
+  Up:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Down:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Left:
+    name: 2
+    symmetry: 1
+    type: 0
+  Right:
+    name: 2
+    symmetry: 1
+    type: 0
+  Front:
+    name: 3
+    symmetry: 1
+    type: 0
+  Back:
+    name: 3
+    symmetry: 1
+    type: 0
 --- !u!1 &94925545
 GameObject:
   m_ObjectHideFlags: 0
@@ -246,7 +288,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 94925545}
   m_Mesh: {fileID: 1231563143}
---- !u!114 &317490040
+--- !u!114 &147668835
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -256,14 +298,56 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseTopFront_90
+  m_Name: StaircaseFront_270
+  m_EditorClassIdentifier: Assembly-CSharp::NodeData
+  Prefab: {fileID: 7560950466503981987, guid: b8985d6bfb626e24793a9af136a2fe57, type: 3}
+  Weight: 1
+  IsStairPiece: 1
+  CanHaveObjective: 0
+  Deadend: 0
+  ClockwiseRotationSteps: 3
+  Up:
+    name: 5
+    invariantRotation: 1
+    rotationIndex: 0
+  Down:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Left:
+    name: 2
+    symmetry: 1
+    type: 0
+  Right:
+    name: 4
+    symmetry: 1
+    type: 0
+  Front:
+    name: 2
+    symmetry: 1
+    type: 0
+  Back:
+    name: 2
+    symmetry: 1
+    type: 0
+--- !u!114 &156119202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
+  m_Name: StaircaseTopFront_270
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 0}
   Weight: 1
   IsStairPiece: 1
   CanHaveObjective: 0
   Deadend: 0
-  ClockwiseRotationSteps: 1
+  ClockwiseRotationSteps: 3
   Up:
     name: 0
     invariantRotation: 1
@@ -273,11 +357,11 @@ MonoBehaviour:
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 4
+    name: 3
     symmetry: 1
     type: 0
   Right:
-    name: 3
+    name: 4
     symmetry: 1
     type: 0
   Front:
@@ -286,6 +370,48 @@ MonoBehaviour:
     type: 0
   Back:
     name: 2
+    symmetry: 1
+    type: 0
+--- !u!114 &217649677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
+  m_Name: Corner_90
+  m_EditorClassIdentifier: Assembly-CSharp::NodeData
+  Prefab: {fileID: 3705999419518530822, guid: 9ec73e733d114444b8f6cf6aa24d3bcd, type: 3}
+  Weight: 2
+  IsStairPiece: 0
+  CanHaveObjective: 0
+  Deadend: 0
+  ClockwiseRotationSteps: 1
+  Up:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 1
+  Down:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Left:
+    name: 3
+    symmetry: 1
+    type: 0
+  Right:
+    name: 2
+    symmetry: 1
+    type: 0
+  Front:
+    name: 2
+    symmetry: 1
+    type: 0
+  Back:
+    name: 3
     symmetry: 1
     type: 0
 --- !u!1 &330585543
@@ -425,7 +551,7 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!114 &332206561
+--- !u!114 &357982601
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -435,28 +561,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseTopEnd_90
+  m_Name: StaircaseEnd_270
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 0}
   Weight: 1
   IsStairPiece: 1
   CanHaveObjective: 0
   Deadend: 0
-  ClockwiseRotationSteps: 1
+  ClockwiseRotationSteps: 3
   Up:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Down:
     name: 5
     invariantRotation: 1
     rotationIndex: 0
+  Down:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
   Left:
-    name: 2
+    name: 4
     symmetry: 1
     type: 0
   Right:
-    name: 4
+    name: 3
     symmetry: 1
     type: 0
   Front:
@@ -672,7 +798,7 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!114 &457667274
+--- !u!114 &517477170
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -682,56 +808,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Corridor_90
-  m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 4608806688974668763, guid: 4bc560b761295bf45814036f2380791e, type: 3}
-  Weight: 2
-  IsStairPiece: 0
-  CanHaveObjective: 0
-  Deadend: 0
-  ClockwiseRotationSteps: 1
-  Up:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Down:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Left:
-    name: 2
-    symmetry: 1
-    type: 0
-  Right:
-    name: 2
-    symmetry: 1
-    type: 0
-  Front:
-    name: 3
-    symmetry: 1
-    type: 0
-  Back:
-    name: 3
-    symmetry: 1
-    type: 0
---- !u!114 &584701721
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseEnd_90
+  m_Name: StaircaseEnd_180
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 0}
   Weight: 1
   IsStairPiece: 1
   CanHaveObjective: 0
   Deadend: 0
-  ClockwiseRotationSteps: 1
+  ClockwiseRotationSteps: 2
   Up:
     name: 5
     invariantRotation: 1
@@ -741,22 +825,22 @@ MonoBehaviour:
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 3
+    name: 2
     symmetry: 1
     type: 0
   Right:
-    name: 4
+    name: 2
     symmetry: 1
     type: 0
   Front:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
   Back:
-    name: 2
+    name: 4
     symmetry: 1
     type: 0
---- !u!114 &717762591
+--- !u!114 &555328835
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -766,20 +850,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Junction_270
+  m_Name: StaircaseTopEnd_180
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 2247139124580133272, guid: 8f78911279cbc3049884a07935e5eba0, type: 3}
-  Weight: 2
-  IsStairPiece: 0
+  Prefab: {fileID: 0}
+  Weight: 1
+  IsStairPiece: 1
   CanHaveObjective: 0
   Deadend: 0
-  ClockwiseRotationSteps: 3
+  ClockwiseRotationSteps: 2
   Up:
     name: 0
     invariantRotation: 1
     rotationIndex: 0
   Down:
-    name: 0
+    name: 5
     invariantRotation: 1
     rotationIndex: 0
   Left:
@@ -787,18 +871,18 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   Right:
-    name: 3
+    name: 2
     symmetry: 1
     type: 0
   Front:
-    name: 3
+    name: 2
     symmetry: 1
     type: 0
   Back:
-    name: 3
+    name: 4
     symmetry: 1
     type: 0
---- !u!114 &821509153
+--- !u!114 &645810495
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -838,6 +922,48 @@ MonoBehaviour:
     type: 0
   Back:
     name: 3
+    symmetry: 1
+    type: 0
+--- !u!114 &783371738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
+  m_Name: StaircaseFront_180
+  m_EditorClassIdentifier: Assembly-CSharp::NodeData
+  Prefab: {fileID: 7560950466503981987, guid: b8985d6bfb626e24793a9af136a2fe57, type: 3}
+  Weight: 1
+  IsStairPiece: 1
+  CanHaveObjective: 0
+  Deadend: 0
+  ClockwiseRotationSteps: 2
+  Up:
+    name: 5
+    invariantRotation: 1
+    rotationIndex: 0
+  Down:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Left:
+    name: 2
+    symmetry: 1
+    type: 0
+  Right:
+    name: 2
+    symmetry: 1
+    type: 0
+  Front:
+    name: 4
+    symmetry: 1
+    type: 0
+  Back:
+    name: 2
     symmetry: 1
     type: 0
 --- !u!1 &832575517
@@ -935,7 +1061,7 @@ Transform:
   - {fileID: 406637123}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &844395900
+--- !u!114 &873060155
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -945,20 +1071,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Deadend_270
+  m_Name: StaircaseTopEnd_90
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 7544684519765922761, guid: d52dc16286b02e64b920588202b24786, type: 3}
+  Prefab: {fileID: 0}
   Weight: 1
-  IsStairPiece: 0
+  IsStairPiece: 1
   CanHaveObjective: 0
   Deadend: 0
-  ClockwiseRotationSteps: 3
+  ClockwiseRotationSteps: 1
   Up:
     name: 0
     invariantRotation: 1
     rotationIndex: 0
   Down:
-    name: 0
+    name: 5
     invariantRotation: 1
     rotationIndex: 0
   Left:
@@ -966,7 +1092,7 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   Right:
-    name: 2
+    name: 4
     symmetry: 1
     type: 0
   Front:
@@ -974,7 +1100,7 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   Back:
-    name: 3
+    name: 2
     symmetry: 1
     type: 0
 --- !u!1 &918314632
@@ -1089,132 +1215,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 94925547}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &969702329
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseTopEnd_270
-  m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 0}
-  Weight: 1
-  IsStairPiece: 1
-  CanHaveObjective: 0
-  Deadend: 0
-  ClockwiseRotationSteps: 3
-  Up:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Down:
-    name: 5
-    invariantRotation: 1
-    rotationIndex: 0
-  Left:
-    name: 4
-    symmetry: 1
-    type: 0
-  Right:
-    name: 2
-    symmetry: 1
-    type: 0
-  Front:
-    name: 2
-    symmetry: 1
-    type: 0
-  Back:
-    name: 2
-    symmetry: 1
-    type: 0
---- !u!114 &992366511
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Junction_180
-  m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 2247139124580133272, guid: 8f78911279cbc3049884a07935e5eba0, type: 3}
-  Weight: 2
-  IsStairPiece: 0
-  CanHaveObjective: 0
-  Deadend: 0
-  ClockwiseRotationSteps: 2
-  Up:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Down:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Left:
-    name: 3
-    symmetry: 1
-    type: 0
-  Right:
-    name: 3
-    symmetry: 1
-    type: 0
-  Front:
-    name: 3
-    symmetry: 1
-    type: 0
-  Back:
-    name: 2
-    symmetry: 1
-    type: 0
---- !u!114 &1015210790
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Deadend_90
-  m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 7544684519765922761, guid: d52dc16286b02e64b920588202b24786, type: 3}
-  Weight: 1
-  IsStairPiece: 0
-  CanHaveObjective: 0
-  Deadend: 0
-  ClockwiseRotationSteps: 1
-  Up:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Down:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Left:
-    name: 2
-    symmetry: 1
-    type: 0
-  Right:
-    name: 2
-    symmetry: 1
-    type: 0
-  Front:
-    name: 3
-    symmetry: 1
-    type: 0
-  Back:
-    name: 2
-    symmetry: 1
-    type: 0
 --- !u!1001 &1016651203
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1286,43 +1286,43 @@ PrefabInstance:
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[0]'
       value: 
-      objectReference: {fileID: 1890168514}
+      objectReference: {fileID: 217649677}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[1]'
       value: 
-      objectReference: {fileID: 2033615857}
+      objectReference: {fileID: 1478139776}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[2]'
       value: 
-      objectReference: {fileID: 1894052213}
+      objectReference: {fileID: 1582055864}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[3]'
       value: 
-      objectReference: {fileID: 457667274}
+      objectReference: {fileID: 20429258}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[4]'
       value: 
-      objectReference: {fileID: 821509153}
+      objectReference: {fileID: 645810495}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[5]'
       value: 
-      objectReference: {fileID: 992366511}
+      objectReference: {fileID: 2139043300}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[6]'
       value: 
-      objectReference: {fileID: 717762591}
+      objectReference: {fileID: 2135170056}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[7]'
       value: 
-      objectReference: {fileID: 1015210790}
+      objectReference: {fileID: 2075892384}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[8]'
       value: 
-      objectReference: {fileID: 1873583828}
+      objectReference: {fileID: 1606472479}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[9]'
       value: 
-      objectReference: {fileID: 844395900}
+      objectReference: {fileID: 1050133897}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: _gameObjectsToSpawn.Array.size
       value: 0
@@ -1330,51 +1330,51 @@ PrefabInstance:
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[10]'
       value: 
-      objectReference: {fileID: 1591279777}
+      objectReference: {fileID: 1890486973}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[11]'
       value: 
-      objectReference: {fileID: 1502694810}
+      objectReference: {fileID: 783371738}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[12]'
       value: 
-      objectReference: {fileID: 1507887290}
+      objectReference: {fileID: 147668835}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[13]'
       value: 
-      objectReference: {fileID: 584701721}
+      objectReference: {fileID: 1913097751}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[14]'
       value: 
-      objectReference: {fileID: 1057425664}
+      objectReference: {fileID: 517477170}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[15]'
       value: 
-      objectReference: {fileID: 1699522467}
+      objectReference: {fileID: 357982601}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[16]'
       value: 
-      objectReference: {fileID: 332206561}
+      objectReference: {fileID: 873060155}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[17]'
       value: 
-      objectReference: {fileID: 1037304547}
+      objectReference: {fileID: 555328835}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[18]'
       value: 
-      objectReference: {fileID: 969702329}
+      objectReference: {fileID: 1504331252}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[19]'
       value: 
-      objectReference: {fileID: 317490040}
+      objectReference: {fileID: 1288545917}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[20]'
       value: 
-      objectReference: {fileID: 1374677771}
+      objectReference: {fileID: 1956393768}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: '_nodesGenerated.Array.data[21]'
       value: 
-      objectReference: {fileID: 1137240705}
+      objectReference: {fileID: 156119202}
     - target: {fileID: 2649014497281527647, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: _gameObjectsToSpawn._wallPrefabs.Array.size
       value: 1
@@ -2025,7 +2025,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[52].x
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[52].y
@@ -2033,7 +2033,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[52].z
-      value: 7
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[53].x
@@ -2289,7 +2289,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[74].x
-      value: 7
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[74].y
@@ -2297,11 +2297,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[74].z
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[75].x
-      value: 6
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[75].y
@@ -2309,11 +2309,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[75].z
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[76].x
-      value: 6
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[76].y
@@ -2321,11 +2321,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[76].z
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[77].x
-      value: 5
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[77].y
@@ -2333,11 +2333,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[77].z
-      value: 1
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[78].x
-      value: 5
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[78].y
@@ -2345,11 +2345,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[78].z
-      value: 2
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[79].x
-      value: 4
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[79].y
@@ -2357,11 +2357,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[79].z
-      value: 2
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[80].x
-      value: 4
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[80].y
@@ -2369,11 +2369,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[80].z
-      value: 3
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[81].x
-      value: 3
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[81].y
@@ -2381,11 +2381,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[81].z
-      value: 3
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[82].x
-      value: 3
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[82].y
@@ -2393,11 +2393,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[82].z
-      value: 4
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[83].x
-      value: 2
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[83].y
@@ -2405,11 +2405,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[83].z
-      value: 4
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[84].x
-      value: 1
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[84].y
@@ -2417,11 +2417,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[84].z
-      value: 4
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[85].x
-      value: 1
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[85].y
@@ -2429,11 +2429,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[85].z
-      value: 5
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[86].x
-      value: 1
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[86].y
@@ -2441,11 +2441,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[86].z
-      value: 5
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[87].x
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[87].y
@@ -2453,11 +2453,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[87].z
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[88].x
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[88].y
@@ -2465,11 +2465,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[88].z
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[89].x
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[89].y
@@ -2477,11 +2477,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[89].z
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[90].x
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[90].y
@@ -2489,11 +2489,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[90].z
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[91].x
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[91].y
@@ -2501,11 +2501,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[91].z
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[92].x
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[92].y
@@ -2513,11 +2513,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[92].z
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[93].x
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[93].y
@@ -2525,11 +2525,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[93].z
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[94].x
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[94].y
@@ -2537,11 +2537,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[94].z
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[95].x
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[95].y
@@ -2549,11 +2549,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[95].z
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[96].x
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[96].y
@@ -2561,7 +2561,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[96].z
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[97].x
@@ -2577,23 +2577,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[98].x
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[98].y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[98].z
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[99].x
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[99].y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[99].z
@@ -2601,7 +2601,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[100].x
-      value: 4
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[100].y
@@ -2609,11 +2609,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[100].z
-      value: 8
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[101].x
-      value: 4
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[101].y
@@ -2621,11 +2621,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[101].z
-      value: 7
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[102].x
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[102].y
@@ -2633,7 +2633,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[102].z
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[103].x
@@ -2645,7 +2645,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[103].z
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[104].x
@@ -2657,7 +2657,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[104].z
-      value: 7
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[105].x
@@ -2669,7 +2669,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[105].z
-      value: 7
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[106].x
@@ -2681,7 +2681,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[106].z
-      value: 6
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[107].x
@@ -2693,7 +2693,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[107].z
-      value: 6
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[108].x
@@ -2701,11 +2701,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[108].y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[108].z
-      value: 7
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[109].x
@@ -2713,11 +2713,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[109].y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[109].z
-      value: 7
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3231456974316567436, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
       propertyPath: m_Positions.Array.data[110].x
@@ -3160,7 +3160,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: eb3163b3bdc950943a95e19f6c214525, type: 3}
---- !u!114 &1037304547
+--- !u!114 &1050133897
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3170,112 +3170,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseTopEnd_180
+  m_Name: Deadend_270
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 0}
+  Prefab: {fileID: 7544684519765922761, guid: d52dc16286b02e64b920588202b24786, type: 3}
   Weight: 1
-  IsStairPiece: 1
-  CanHaveObjective: 0
-  Deadend: 0
-  ClockwiseRotationSteps: 2
-  Up:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Down:
-    name: 5
-    invariantRotation: 1
-    rotationIndex: 0
-  Left:
-    name: 2
-    symmetry: 1
-    type: 0
-  Right:
-    name: 2
-    symmetry: 1
-    type: 0
-  Front:
-    name: 2
-    symmetry: 1
-    type: 0
-  Back:
-    name: 4
-    symmetry: 1
-    type: 0
---- !u!114 &1057425664
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseEnd_180
-  m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 0}
-  Weight: 1
-  IsStairPiece: 1
-  CanHaveObjective: 0
-  Deadend: 0
-  ClockwiseRotationSteps: 2
-  Up:
-    name: 5
-    invariantRotation: 1
-    rotationIndex: 0
-  Down:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Left:
-    name: 2
-    symmetry: 1
-    type: 0
-  Right:
-    name: 2
-    symmetry: 1
-    type: 0
-  Front:
-    name: 3
-    symmetry: 1
-    type: 0
-  Back:
-    name: 4
-    symmetry: 1
-    type: 0
---- !u!114 &1137240705
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseTopFront_270
-  m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 0}
-  Weight: 1
-  IsStairPiece: 1
-  CanHaveObjective: 0
-  Deadend: 0
+  IsStairPiece: 0
+  CanHaveObjective: 1
+  Deadend: 1
   ClockwiseRotationSteps: 3
   Up:
     name: 0
     invariantRotation: 1
     rotationIndex: 0
   Down:
-    name: 5
+    name: 0
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 3
+    name: 2
     symmetry: 1
     type: 0
   Right:
-    name: 4
+    name: 2
     symmetry: 1
     type: 0
   Front:
@@ -3283,7 +3199,7 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   Back:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
 --- !u!1 &1201504425
@@ -3704,7 +3620,7 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
---- !u!114 &1374677771
+--- !u!114 &1288545917
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3714,14 +3630,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseTopFront_180
+  m_Name: StaircaseTopFront_90
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 0}
   Weight: 1
   IsStairPiece: 1
   CanHaveObjective: 0
   Deadend: 0
-  ClockwiseRotationSteps: 2
+  ClockwiseRotationSteps: 1
   Up:
     name: 0
     invariantRotation: 1
@@ -3731,22 +3647,22 @@ MonoBehaviour:
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 2
-    symmetry: 1
-    type: 0
-  Right:
-    name: 2
-    symmetry: 1
-    type: 0
-  Front:
     name: 4
     symmetry: 1
     type: 0
-  Back:
+  Right:
     name: 3
     symmetry: 1
     type: 0
---- !u!114 &1502694810
+  Front:
+    name: 2
+    symmetry: 1
+    type: 0
+  Back:
+    name: 2
+    symmetry: 1
+    type: 0
+--- !u!114 &1478139776
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3756,24 +3672,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseFront_180
+  m_Name: Corner_180
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 7560950466503981987, guid: b8985d6bfb626e24793a9af136a2fe57, type: 3}
-  Weight: 1
-  IsStairPiece: 1
+  Prefab: {fileID: 3705999419518530822, guid: 9ec73e733d114444b8f6cf6aa24d3bcd, type: 3}
+  Weight: 2
+  IsStairPiece: 0
   CanHaveObjective: 0
   Deadend: 0
   ClockwiseRotationSteps: 2
   Up:
-    name: 5
+    name: 0
     invariantRotation: 1
-    rotationIndex: 0
+    rotationIndex: 1
   Down:
     name: 0
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
   Right:
@@ -3781,14 +3697,14 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   Front:
-    name: 4
+    name: 3
     symmetry: 1
     type: 0
   Back:
     name: 2
     symmetry: 1
     type: 0
---- !u!114 &1507887290
+--- !u!114 &1504331252
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3798,28 +3714,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseFront_270
+  m_Name: StaircaseTopEnd_270
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 7560950466503981987, guid: b8985d6bfb626e24793a9af136a2fe57, type: 3}
+  Prefab: {fileID: 0}
   Weight: 1
   IsStairPiece: 1
   CanHaveObjective: 0
   Deadend: 0
   ClockwiseRotationSteps: 3
   Up:
-    name: 5
-    invariantRotation: 1
-    rotationIndex: 0
-  Down:
     name: 0
     invariantRotation: 1
     rotationIndex: 0
+  Down:
+    name: 5
+    invariantRotation: 1
+    rotationIndex: 0
   Left:
-    name: 2
+    name: 4
     symmetry: 1
     type: 0
   Right:
-    name: 4
+    name: 2
     symmetry: 1
     type: 0
   Front:
@@ -3830,7 +3746,7 @@ MonoBehaviour:
     name: 2
     symmetry: 1
     type: 0
---- !u!114 &1591279777
+--- !u!114 &1582055864
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3840,16 +3756,58 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseFront_90
+  m_Name: Corner_270
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 7560950466503981987, guid: b8985d6bfb626e24793a9af136a2fe57, type: 3}
-  Weight: 1
-  IsStairPiece: 1
+  Prefab: {fileID: 3705999419518530822, guid: 9ec73e733d114444b8f6cf6aa24d3bcd, type: 3}
+  Weight: 2
+  IsStairPiece: 0
   CanHaveObjective: 0
   Deadend: 0
-  ClockwiseRotationSteps: 1
+  ClockwiseRotationSteps: 3
   Up:
-    name: 5
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 1
+  Down:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Left:
+    name: 2
+    symmetry: 1
+    type: 0
+  Right:
+    name: 3
+    symmetry: 1
+    type: 0
+  Front:
+    name: 3
+    symmetry: 1
+    type: 0
+  Back:
+    name: 2
+    symmetry: 1
+    type: 0
+--- !u!114 &1606472479
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
+  m_Name: Deadend_180
+  m_EditorClassIdentifier: Assembly-CSharp::NodeData
+  Prefab: {fileID: 7544684519765922761, guid: d52dc16286b02e64b920588202b24786, type: 3}
+  Weight: 1
+  IsStairPiece: 0
+  CanHaveObjective: 1
+  Deadend: 1
+  ClockwiseRotationSteps: 2
+  Up:
+    name: 0
     invariantRotation: 1
     rotationIndex: 0
   Down:
@@ -3857,11 +3815,11 @@ MonoBehaviour:
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 4
+    name: 2
     symmetry: 1
     type: 0
   Right:
-    name: 2
+    name: 3
     symmetry: 1
     type: 0
   Front:
@@ -3932,48 +3890,6 @@ Transform:
   - {fileID: 1894814422}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1699522467
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StaircaseEnd_270
-  m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 0}
-  Weight: 1
-  IsStairPiece: 1
-  CanHaveObjective: 0
-  Deadend: 0
-  ClockwiseRotationSteps: 3
-  Up:
-    name: 5
-    invariantRotation: 1
-    rotationIndex: 0
-  Down:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Left:
-    name: 4
-    symmetry: 1
-    type: 0
-  Right:
-    name: 3
-    symmetry: 1
-    type: 0
-  Front:
-    name: 2
-    symmetry: 1
-    type: 0
-  Back:
-    name: 2
-    symmetry: 1
-    type: 0
 --- !u!43 &1809873536
 Mesh:
   m_ObjectHideFlags: 0
@@ -4152,7 +4068,7 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
---- !u!114 &1873583828
+--- !u!114 &1890486973
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4162,66 +4078,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Deadend_180
+  m_Name: StaircaseFront_90
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 7544684519765922761, guid: d52dc16286b02e64b920588202b24786, type: 3}
+  Prefab: {fileID: 7560950466503981987, guid: b8985d6bfb626e24793a9af136a2fe57, type: 3}
   Weight: 1
-  IsStairPiece: 0
-  CanHaveObjective: 0
-  Deadend: 0
-  ClockwiseRotationSteps: 2
-  Up:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Down:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Left:
-    name: 2
-    symmetry: 1
-    type: 0
-  Right:
-    name: 3
-    symmetry: 1
-    type: 0
-  Front:
-    name: 2
-    symmetry: 1
-    type: 0
-  Back:
-    name: 2
-    symmetry: 1
-    type: 0
---- !u!114 &1890168514
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Corner_90
-  m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 3705999419518530822, guid: 9ec73e733d114444b8f6cf6aa24d3bcd, type: 3}
-  Weight: 2
-  IsStairPiece: 0
+  IsStairPiece: 1
   CanHaveObjective: 0
   Deadend: 0
   ClockwiseRotationSteps: 1
   Up:
-    name: 0
+    name: 5
     invariantRotation: 1
-    rotationIndex: 1
+    rotationIndex: 0
   Down:
     name: 0
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 3
+    name: 4
     symmetry: 1
     type: 0
   Right:
@@ -4230,48 +4104,6 @@ MonoBehaviour:
     type: 0
   Front:
     name: 2
-    symmetry: 1
-    type: 0
-  Back:
-    name: 3
-    symmetry: 1
-    type: 0
---- !u!114 &1894052213
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Corner_270
-  m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 3705999419518530822, guid: 9ec73e733d114444b8f6cf6aa24d3bcd, type: 3}
-  Weight: 2
-  IsStairPiece: 0
-  CanHaveObjective: 0
-  Deadend: 0
-  ClockwiseRotationSteps: 3
-  Up:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 1
-  Down:
-    name: 0
-    invariantRotation: 1
-    rotationIndex: 0
-  Left:
-    name: 2
-    symmetry: 1
-    type: 0
-  Right:
-    name: 3
-    symmetry: 1
-    type: 0
-  Front:
-    name: 3
     symmetry: 1
     type: 0
   Back:
@@ -4429,7 +4261,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1623198094}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2033615857
+--- !u!114 &1913097751
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4439,18 +4271,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Corner_180
+  m_Name: StaircaseEnd_90
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 3705999419518530822, guid: 9ec73e733d114444b8f6cf6aa24d3bcd, type: 3}
-  Weight: 2
-  IsStairPiece: 0
+  Prefab: {fileID: 0}
+  Weight: 1
+  IsStairPiece: 1
   CanHaveObjective: 0
   Deadend: 0
-  ClockwiseRotationSteps: 2
+  ClockwiseRotationSteps: 1
   Up:
-    name: 0
+    name: 5
     invariantRotation: 1
-    rotationIndex: 1
+    rotationIndex: 0
   Down:
     name: 0
     invariantRotation: 1
@@ -4460,15 +4292,57 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   Right:
-    name: 2
+    name: 4
     symmetry: 1
     type: 0
   Front:
-    name: 3
+    name: 2
     symmetry: 1
     type: 0
   Back:
     name: 2
+    symmetry: 1
+    type: 0
+--- !u!114 &1956393768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
+  m_Name: StaircaseTopFront_180
+  m_EditorClassIdentifier: Assembly-CSharp::NodeData
+  Prefab: {fileID: 0}
+  Weight: 1
+  IsStairPiece: 1
+  CanHaveObjective: 0
+  Deadend: 0
+  ClockwiseRotationSteps: 2
+  Up:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Down:
+    name: 5
+    invariantRotation: 1
+    rotationIndex: 0
+  Left:
+    name: 2
+    symmetry: 1
+    type: 0
+  Right:
+    name: 2
+    symmetry: 1
+    type: 0
+  Front:
+    name: 4
+    symmetry: 1
+    type: 0
+  Back:
+    name: 3
     symmetry: 1
     type: 0
 --- !u!1 &2044114384
@@ -4531,6 +4405,48 @@ MonoBehaviour:
   - {fileID: 1174532382986712, guid: 2454dbbdbc43b9b47adf808647c27b47, type: 3}
   - {fileID: 1171357727087618, guid: 978e4d7d17b64c3478d6ef12cd01d074, type: 3}
   - {fileID: 1405612168663392, guid: 9c4cb834410d1b94391e4eaaac010b19, type: 3}
+--- !u!114 &2075892384
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
+  m_Name: Deadend_90
+  m_EditorClassIdentifier: Assembly-CSharp::NodeData
+  Prefab: {fileID: 7544684519765922761, guid: d52dc16286b02e64b920588202b24786, type: 3}
+  Weight: 1
+  IsStairPiece: 0
+  CanHaveObjective: 1
+  Deadend: 1
+  ClockwiseRotationSteps: 1
+  Up:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Down:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Left:
+    name: 2
+    symmetry: 1
+    type: 0
+  Right:
+    name: 2
+    symmetry: 1
+    type: 0
+  Front:
+    name: 3
+    symmetry: 1
+    type: 0
+  Back:
+    name: 2
+    symmetry: 1
+    type: 0
 --- !u!1001 &2103764305
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4609,6 +4525,90 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3800499252937349473, guid: 4bc560b761295bf45814036f2380791e, type: 3}
   m_PrefabInstance: {fileID: 2103764305}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2135170056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
+  m_Name: Junction_270
+  m_EditorClassIdentifier: Assembly-CSharp::NodeData
+  Prefab: {fileID: 2247139124580133272, guid: 8f78911279cbc3049884a07935e5eba0, type: 3}
+  Weight: 2
+  IsStairPiece: 0
+  CanHaveObjective: 0
+  Deadend: 0
+  ClockwiseRotationSteps: 3
+  Up:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Down:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Left:
+    name: 2
+    symmetry: 1
+    type: 0
+  Right:
+    name: 3
+    symmetry: 1
+    type: 0
+  Front:
+    name: 3
+    symmetry: 1
+    type: 0
+  Back:
+    name: 3
+    symmetry: 1
+    type: 0
+--- !u!114 &2139043300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
+  m_Name: Junction_180
+  m_EditorClassIdentifier: Assembly-CSharp::NodeData
+  Prefab: {fileID: 2247139124580133272, guid: 8f78911279cbc3049884a07935e5eba0, type: 3}
+  Weight: 2
+  IsStairPiece: 0
+  CanHaveObjective: 0
+  Deadend: 0
+  ClockwiseRotationSteps: 2
+  Up:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Down:
+    name: 0
+    invariantRotation: 1
+    rotationIndex: 0
+  Left:
+    name: 3
+    symmetry: 1
+    type: 0
+  Right:
+    name: 3
+    symmetry: 1
+    type: 0
+  Front:
+    name: 3
+    symmetry: 1
+    type: 0
+  Back:
+    name: 2
+    symmetry: 1
+    type: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
