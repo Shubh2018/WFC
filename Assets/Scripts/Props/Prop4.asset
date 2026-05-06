@@ -18,3 +18,5 @@ MonoBehaviour:
   _checkOrentation: 0
   _limitOnePerRoom: 0
   _propPlacement: 5
+  _propType: 0
+  _spawnChance: 0.1

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 626187070522757240}
   - component: {fileID: 2755634150965147738}
   - component: {fileID: -3309056508310971335}
+  - component: {fileID: 640680981845428240}
   m_Layer: 0
   m_Name: Table.003
   m_TagString: Untagged
@@ -29,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -113,3 +114,23 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 2692889195491215165, guid: edcc86a903182d0429c0d7b2c727fec0, type: 3}
+--- !u!114 &640680981845428240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6967361487159559488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PropObject
+  _center: {x: 0, y: 0.5, z: 0}
+  _overlapDimensions: {x: 1.68, y: 1, z: 1.24}
+  _propLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  _nodeLayer:
+    serializedVersion: 2
+    m_Bits: 128
