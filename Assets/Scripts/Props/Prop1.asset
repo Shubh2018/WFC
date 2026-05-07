@@ -19,4 +19,4 @@ MonoBehaviour:
   _limitOnePerRoom: 0
   _propPlacement: 6
   _propType: 0
-  _spawnChance: 0.25
+  _spawnChance: 0.15

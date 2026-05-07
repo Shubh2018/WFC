@@ -486,7 +486,7 @@ public class MeshSampler : MonoBehaviour
         return (min, max);
     }
 
-    private void SpawnFloorProps(NodeData node, GameObject obj, Vector3 min, Vector3 max)
+    private void SpawnFloorProps(NodeData node, GameObject nodeObj, Vector3 min, Vector3 max)
     {
         if (node.IsStairPiece) return;
 
@@ -512,9 +512,9 @@ public class MeshSampler : MonoBehaviour
 
             if (!(_objectivesSpawned >= 1))
             {
-                GameObject go = Instantiate(prop.Prop, obj.transform, false);
-                go.transform.localPosition = Vector3.zero;
-                go.transform.forward = -obj.transform.right;
+                PropObject propObj = Instantiate(prop.Prop, nodeObj.transform, false).GetComponent<PropObject>();
+                propObj.transform.localPosition = Vector3.zero;
+                propObj.UpdateRotation();
 
                 propCount += 1;
                 _props[prop] = propCount;
@@ -528,8 +528,7 @@ public class MeshSampler : MonoBehaviour
 
         List<Sample> filteredSamples = new List<Sample>();
         filteredSamples.AddRange(_floorSamples);
-
-
+        
         while (floorCount > 0 && toSpawn.FloorPrefabs.Count > 0)
         {
             propCount = 0;
@@ -550,32 +549,24 @@ public class MeshSampler : MonoBehaviour
             Vector3 dir = midPoint - s.sample;
             dir.y = 0;
 
-            Debug.Log($"{sampleIndex} : {filteredSamples.Count}");
+            // Debug.Log($"{sampleIndex} : {filteredSamples.Count}");
 
             if (propCount < prop.MaxCount)
             {
-                if(propCount >= 1 && prop.LimitOnePerRoom)
-                    continue;
-
                 if(Random.Range(0, 1) > prop.SpawnChance)
                     continue;
 
-                PropObject propObj = Instantiate(prop.Prop, obj.transform, false).GetComponent<PropObject>();
-                propObj.transform.localPosition = obj.transform.InverseTransformPoint(s.sample);
+                PropObject propObj = Instantiate(prop.Prop, nodeObj.transform, false).GetComponent<PropObject>();
+                propObj.transform.localPosition = nodeObj.transform.InverseTransformPoint(s.sample);
+                propObj.transform.localEulerAngles =
+                    new Vector3(0, Random.Range(0, 360), 0);
                 propObj.IsOverlappingProp();
 
                 if(!propObj) continue;
-
-                if(propObj.IsOverlappingNode())
-                {
-                    Vector3 dirToMove = (obj.transform.localPosition - propObj.transform.localPosition).normalized;
-                    dirToMove.y = propObj.transform.localPosition.y;
-                    propObj.transform.localPosition += dirToMove * 2f;
-                    Debug.Log($"Moved {propObj.transform.name}");
-                }
+                
+                propObj.IsOverlappingNode();
 
                 // Debug.Log($"{go.transform.name} : {s.sample}");
-
                 if(prop.CheckOrientation)
                     propObj.transform.forward = dir;
 
@@ -587,7 +578,6 @@ public class MeshSampler : MonoBehaviour
 
                 propCount += 1;
 
-                _props[prop] = propCount;
                 floorCount -= 1;
             }
 
@@ -600,6 +590,9 @@ public class MeshSampler : MonoBehaviour
                 propCount = value;
             else
                 _props.Add(prop, propCount);
+            
+            _props[prop] = propCount;
+            
         }
 
         filteredSamples.Clear();
@@ -626,29 +619,24 @@ public class MeshSampler : MonoBehaviour
 
             int sampleIndex = Random.Range(0, filteredSamples.Count);
 
+            Debug.Log($"{sampleIndex} : {filteredSamples.Count}");
+            
             Sample s = filteredSamples[sampleIndex];
             _wallSamples.Remove(s);
-
+            
             if (Random.Range(0, 1) > prop.SpawnChance)
                 continue;
-
-            if (_props.TryGetValue(prop, out var value))
-                propCount = value;
-            else
-                _props.Add(prop, propCount);
-
+            
             if (propCount < prop.MaxCount)
             {
-                GameObject obj = Instantiate(prop.Prop, go.transform);
+                PropObject obj = Instantiate(prop.Prop, go.transform).GetComponent<PropObject>();
 
                 obj.transform.position = s.sample;
                 obj.transform.forward = s.triangleNormal;
 
                 propCount += 1;
-
-                _props[prop] = propCount;
-
-                _spawnedObjects.Add(obj);
+                
+                _spawnedObjects.Add(obj.gameObject);
                 filteredSamples.RemoveAt(sampleIndex);
 
                 wallCount -= 1;
@@ -658,6 +646,13 @@ public class MeshSampler : MonoBehaviour
             {
                 toSpawn.WallPrefabs.RemoveAt(random);
             }
+            
+            if (_props.TryGetValue(prop, out var value))
+                propCount = value;
+            else
+                _props.Add(prop, propCount);
+            
+            _props[prop] = propCount;
         }
 
         filteredSamples.Clear();

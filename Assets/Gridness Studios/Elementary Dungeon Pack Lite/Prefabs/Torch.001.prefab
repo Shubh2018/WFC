@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 935806930815462672}
   - component: {fileID: 8076866308431420103}
   - component: {fileID: 7769894917561011699}
+  - component: {fileID: 4812528741861764482}
   m_Layer: 0
   m_Name: Torch.001
   m_TagString: Untagged
@@ -92,6 +93,26 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &4812528741861764482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510141063021254879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PropObject
+  _center: {x: 0, y: 0, z: 0.25}
+  _overlapDimensions: {x: 0.4, y: 0.65, z: 0.3}
+  _propLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  _nodeLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &8712300021360254310
 GameObject:
   m_ObjectHideFlags: 0
@@ -227,6 +248,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 935806930815462672}
     m_Modifications:
+    - target: {fileID: 363946921170397246, guid: 4daecac5922e4cf46914efecc3de4129, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
     - target: {fileID: 5866797894309309924, guid: 4daecac5922e4cf46914efecc3de4129, type: 3}
       propertyPath: m_Name
       value: Fire_Effect

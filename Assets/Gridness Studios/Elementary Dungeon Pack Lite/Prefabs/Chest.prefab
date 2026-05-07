@@ -68,6 +68,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
   _center: {x: 0, y: 0.4, z: 0}
+  _rayCenter: {x: 0, y: 0.4, z: 0}
   _overlapDimensions: {x: 1.37, y: 0.5, z: 1.37}
   _propLayer:
     serializedVersion: 2
@@ -75,6 +76,7 @@ MonoBehaviour:
   _nodeLayer:
     serializedVersion: 2
     m_Bits: 128
+  _raycastLength: 1.5
 --- !u!1001 &6565948957760492833
 PrefabInstance:
   m_ObjectHideFlags: 0

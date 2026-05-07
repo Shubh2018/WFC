@@ -4,9 +4,12 @@ using UnityEngine;
 public class PropObject : MonoBehaviour
 {
     [SerializeField] private Vector3 _center;
+    [SerializeField] private Vector3 _rayCenter;
     [SerializeField] private Vector3 _overlapDimensions;
     [SerializeField] private LayerMask _propLayer;
     [SerializeField] private LayerMask _nodeLayer;
+
+    [SerializeField] private float _raycastLength = 1.5f;
     
     public void IsOverlappingProp()
     {
@@ -18,11 +21,43 @@ public class PropObject : MonoBehaviour
         DestroyImmediate(this.gameObject);
     }
 
-    public bool IsOverlappingNode()
+    public void UpdateRotation()
     {
-        Collider[] colliders = Physics.OverlapBox(this.transform.position + _center, _overlapDimensions / 2, Quaternion.identity, _nodeLayer);
+        float rotation = this.transform.localEulerAngles.y;
 
-        return colliders.Length > 0;
+        while (rotation <= 360)
+        {
+            if (Physics.Raycast(this.transform.position + _rayCenter, this.transform.forward, out RaycastHit hit,
+                    _raycastLength, _nodeLayer))
+            {
+                rotation += 90.0f;
+                this.transform.localEulerAngles = new Vector3(this.transform.localEulerAngles.x, rotation, this.transform.localEulerAngles.z);
+            }
+
+            else
+                break;
+        }
+    }
+
+    public void IsOverlappingNode()
+    {
+        float rotation = this.transform.localEulerAngles.y;
+        float step = 20.0f;
+
+        while (rotation <= 360)
+        {
+            rotation += step;
+            
+            if (Physics.Raycast(this.transform.position + _rayCenter, this.transform.forward, out RaycastHit hit,
+                    _raycastLength, _nodeLayer))
+            {
+                Vector3 dir = (hit.point - (this.transform.position + _rayCenter)).normalized;
+                this.transform.position -= dir * _raycastLength;
+                Debug.Log($"Moved {this.gameObject.name}");
+                
+                this.transform.localEulerAngles = new Vector3(this.transform.localEulerAngles.x, rotation, this.transform.localEulerAngles.z);
+            }
+        }
     }
 
     private void OnDrawGizmos()
@@ -30,5 +65,7 @@ public class PropObject : MonoBehaviour
         Gizmos.color = Color.red;
 
         Gizmos.DrawWireCube(this.transform.position + _center, _overlapDimensions);
+        
+        Gizmos.DrawRay(this.transform.position + _rayCenter, this.transform.forward * _raycastLength);
     }
 }
