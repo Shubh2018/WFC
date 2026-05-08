@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using System.Threading.Tasks;
+using UnityEditor.Build.Pipeline;
 using UnityEngine.UI;
 
 public enum SurfaceType
@@ -47,6 +48,8 @@ public class MeshSampler : MonoBehaviour
     private Dictionary<PropData, int> _props = new Dictionary<PropData, int>();
     private Dictionary<string, int> _propCount = new Dictionary<string, int>();
     public Dictionary<string, int> PropCount => _propCount;
+
+    private float _spawnChance = 0.3f;
 
     public string PropText { get; private set; }
 
@@ -434,8 +437,8 @@ public class MeshSampler : MonoBehaviour
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
 
-        float minDist = 3.5f;
-        float maxDist = 4f;
+        float minDist = 4f;
+        float maxDist = 4.5f;
 
         foreach (var v in samples)
         {
@@ -489,6 +492,7 @@ public class MeshSampler : MonoBehaviour
     private void SpawnFloorProps(NodeData node, GameObject nodeObj, Vector3 min, Vector3 max)
     {
         if (node.IsStairPiece) return;
+        if (Random.Range(0, 1) >= _spawnChance) return;
 
         Vector3 midPoint = (min + max) / 2;
 
@@ -529,8 +533,10 @@ public class MeshSampler : MonoBehaviour
         List<Sample> filteredSamples = new List<Sample>();
         filteredSamples.AddRange(_floorSamples);
         
-        while (floorCount > 0 && toSpawn.FloorPrefabs.Count > 0)
+        while (floorCount > 0 && toSpawn.FloorPrefabs.Count > 0 && filteredSamples.Count > 0)
         {
+            floorCount -= 1;
+            
             propCount = 0;
 
             random = Random.Range(0, toSpawn.FloorPrefabs.Count);
@@ -560,11 +566,11 @@ public class MeshSampler : MonoBehaviour
                 propObj.transform.localPosition = nodeObj.transform.InverseTransformPoint(s.sample);
                 propObj.transform.localEulerAngles =
                     new Vector3(0, Random.Range(0, 360), 0);
+                
+                propObj.IsOverlappingNode();
                 propObj.IsOverlappingProp();
 
                 if(!propObj) continue;
-                
-                propObj.IsOverlappingNode();
 
                 // Debug.Log($"{go.transform.name} : {s.sample}");
                 if(prop.CheckOrientation)
@@ -575,10 +581,13 @@ public class MeshSampler : MonoBehaviour
 
                 _spawnedObjects.Add(propObj.gameObject);
                 filteredSamples.RemoveAt(sampleIndex);
-
+                Debug.Log($"FilterdCount before deletion {filteredSamples.Count}");
+                filteredSamples.RemoveAll((sample) => Vector3.Distance(sample.sample, s.sample) < .65f);
+                Debug.Log($"FilterdCount after deletion {filteredSamples.Count}");
+                
                 propCount += 1;
 
-                floorCount -= 1;
+                // floorCount -= 1;
             }
 
             else
@@ -600,6 +609,8 @@ public class MeshSampler : MonoBehaviour
 
     private void SpawnWallProps(NodeData node, GameObject go, Vector3 min, Vector3 max)
     {
+        if (node.IsStairPiece) return;
+        
         Vector3 midPoint = (min + max) / 2;
 
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
@@ -609,7 +620,7 @@ public class MeshSampler : MonoBehaviour
         List<Sample> filteredSamples = new List<Sample>();
         filteredSamples.AddRange(_wallSamples);
 
-        while (wallCount > 0 && toSpawn.WallPrefabs.Count > 0)
+        while (wallCount > 0 && toSpawn.WallPrefabs.Count > 0 && filteredSamples.Count > 0)
         {
             int propCount = 0;
 
@@ -618,8 +629,6 @@ public class MeshSampler : MonoBehaviour
             PropData prop = toSpawn.WallPrefabs[random];
 
             int sampleIndex = Random.Range(0, filteredSamples.Count);
-
-            Debug.Log($"{sampleIndex} : {filteredSamples.Count}");
             
             Sample s = filteredSamples[sampleIndex];
             _wallSamples.Remove(s);
@@ -633,6 +642,8 @@ public class MeshSampler : MonoBehaviour
 
                 obj.transform.position = s.sample;
                 obj.transform.forward = s.triangleNormal;
+
+                if (!obj) continue;
 
                 propCount += 1;
                 

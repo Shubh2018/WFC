@@ -114,7 +114,7 @@ MonoBehaviour:
   _nodeLayer:
     serializedVersion: 2
     m_Bits: 128
-  _raycastLength: 0.6
+  _raycastLength: 0.8
 --- !u!65 &1380703169822639342
 BoxCollider:
   m_ObjectHideFlags: 0
