@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
   m_Name: Junction
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 919132149155446097, guid: ce70772daf41ac94e8b01e7e9002a2f8, type: 3}
+  Prefab: {fileID: 2247139124580133272, guid: 8f78911279cbc3049884a07935e5eba0, type: 3}
   Weight: 2
   IsStairPiece: 0
   CanHaveObjective: 0

@@ -581,9 +581,9 @@ public class MeshSampler : MonoBehaviour
 
                 _spawnedObjects.Add(propObj.gameObject);
                 filteredSamples.RemoveAt(sampleIndex);
-                Debug.Log($"FilterdCount before deletion {filteredSamples.Count}");
-                filteredSamples.RemoveAll((sample) => Vector3.Distance(sample.sample, s.sample) < .65f);
-                Debug.Log($"FilterdCount after deletion {filteredSamples.Count}");
+                // Debug.Log($"FilterdCount before deletion {filteredSamples.Count}");
+                filteredSamples.RemoveAll((sample) => Vector3.Distance(sample.sample, s.sample) < .75f);
+                // Debug.Log($"FilterdCount after deletion {filteredSamples.Count}");
                 
                 propCount += 1;
 
