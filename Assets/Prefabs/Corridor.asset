@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
   m_Name: Corridor
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 4608806688974668763, guid: 4bc560b761295bf45814036f2380791e, type: 3}
+  Prefab: {fileID: 919132149155446097, guid: 6479a50253f2df94ba7b0a364a0d6b84, type: 3}
   Weight: 2
   IsStairPiece: 0
+  CanHaveObjective: 0
+  Deadend: 0
   ClockwiseRotationSteps: 0
   Up:
     name: 0

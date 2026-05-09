@@ -177,7 +177,7 @@ public class WFC : MonoBehaviour
     [SerializeField] private int _length;
     [SerializeField] private int _height;
     
-    [SerializeField] private int _tileSize = 2;
+    [SerializeField] private Vector3Int _tileSize = Vector3Int.one;
     
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
     [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
@@ -219,7 +219,7 @@ public class WFC : MonoBehaviour
     public List<NodeData> getNodes => _nodes;
     public List<NodeData> getNodesGen => _nodesGenerated;
     
-    public int TileSize => _tileSize;
+    public Vector3Int TileSize => _tileSize;
     
     // Gizmos Debug Settings
     // -- WFC
