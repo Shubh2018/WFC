@@ -451,8 +451,10 @@ public class MeshSampler : MonoBehaviour
             max.z = Mathf.Max(max.z, v.sample.z);
         }
 
-        float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 1f;
-        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.1f;
+        float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 1.15f;
+        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.2f;
+
+        float mid = (Mathf.Abs((min.y + max.y) / 2) + max.y) / 2;
 
         _floorSamples.AddRange(samples.FindAll(s => (s.sample.y < thresholdMin) &&
                                                     (Vector3.Dot(s.triangleNormal, Vector3.up) > 0 &&
@@ -460,8 +462,10 @@ public class MeshSampler : MonoBehaviour
 
         // _floorSamplesAll.AddRange(_floorSamples);
 
-        _wallSamples.AddRange(samples.FindAll(s => ((s.sample.y > thresholdMin && s.sample.y <= thresholdMax)
-                                                    && (s.sample.y > min.y && s.sample.y < max.y))));
+        // _wallSamples.AddRange(samples.FindAll(s => ((s.sample.y > thresholdMin && s.sample.y <= thresholdMax)
+        //                                             && (s.sample.y > min.y && s.sample.y < max.y))));
+        
+        _wallSamples.AddRange(samples.FindAll(s => Mathf.Abs(mid - s.sample.y) < 0.1f));
         // _wallSamplesAll.AddRange(_wallSamples);
 
         for (int i = 0; i < _wallSamples.Count; i++)

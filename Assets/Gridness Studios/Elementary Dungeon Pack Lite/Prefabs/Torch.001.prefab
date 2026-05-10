@@ -110,11 +110,13 @@ MonoBehaviour:
   _overlapDimensions: {x: 0.6, y: 0.65, z: 0.4}
   _propLayer:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 256
   _nodeLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   _raycastLength: 1.5
+  _lamp: 1
+  _radius: 0.75
 --- !u!1 &8712300021360254310
 GameObject:
   m_ObjectHideFlags: 0

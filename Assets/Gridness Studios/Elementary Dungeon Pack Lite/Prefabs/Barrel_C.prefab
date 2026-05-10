@@ -127,15 +127,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
   _center: {x: 0, y: 0.5, z: 0}
-  _rayCenter: {x: 0, y: 0.2, z: 0}
+  _rayCenter: {x: 0, y: 0.05, z: 0}
   _overlapDimensions: {x: 0.7, y: 0.8, z: 0.7}
   _propLayer:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 384
   _nodeLayer:
     serializedVersion: 2
     m_Bits: 128
-  _raycastLength: 0.5
+  _raycastLength: 0.65
+  _lamp: 0
+  _radius: 0.1
 --- !u!54 &-2677419581700156472
 Rigidbody:
   m_ObjectHideFlags: 0

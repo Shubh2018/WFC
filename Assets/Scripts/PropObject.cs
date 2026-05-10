@@ -10,15 +10,31 @@ public class PropObject : MonoBehaviour
     [SerializeField] private LayerMask _nodeLayer;
 
     [SerializeField] private float _raycastLength = 1.5f;
+
+    [SerializeField] private bool _lamp = false;
+    [SerializeField] private float _radius = 0.1f;
     
     public void IsOverlappingProp()
     {
-        Collider[] colliders = Physics.OverlapBox(this.transform.position + _center, _overlapDimensions / 2, Quaternion.identity, _propLayer);
+        if (!_lamp)
+        {
+           Collider[] colliders = Physics.OverlapBox(this.transform.position + _center, _overlapDimensions / 2, this.transform.rotation, _propLayer);
+   
+           if (colliders.Length <= 0) return;
+   
+           Debug.Log($"Destroyed {this.gameObject.name}");
+           DestroyImmediate(this.gameObject); 
+        }
 
-        if (colliders.Length <= 0) return;
-
-        Debug.Log($"Destroyed {this.gameObject.name}");
-        DestroyImmediate(this.gameObject);
+        else
+        {
+            Collider[] colliders = Physics.OverlapSphere(this.transform.position + _center, _radius, _propLayer);
+            
+            if(colliders.Length <= 0) return;
+            
+            Debug.Log($"Destroyed {this.gameObject.name}");
+            DestroyImmediate(this.gameObject); 
+        }
     }
 
     public void UpdateRotation()
@@ -63,9 +79,11 @@ public class PropObject : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-
-        Gizmos.DrawWireCube(this.transform.position + _center, _overlapDimensions);
         
+        if(_lamp)
+            Gizmos.DrawWireSphere(this.transform.position + _center, _radius);
+        
+        Gizmos.DrawWireCube(this.transform.position + _center, _overlapDimensions);
         Gizmos.DrawRay(this.transform.position + _rayCenter, this.transform.forward * _raycastLength);
     }
 }

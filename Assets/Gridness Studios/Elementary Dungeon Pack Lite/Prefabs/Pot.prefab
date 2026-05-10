@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5437570048452155097}
   - component: {fileID: 2968984832891307277}
   - component: {fileID: -4103083956130403137}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Pot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -127,15 +127,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
   _center: {x: 0, y: 0.3, z: 0}
-  _rayCenter: {x: 0, y: 0.1, z: 0}
+  _rayCenter: {x: 0, y: 0.025, z: 0}
   _overlapDimensions: {x: 0.4, y: 0.5, z: 0.4}
   _propLayer:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 384
   _nodeLayer:
     serializedVersion: 2
     m_Bits: 128
   _raycastLength: 0.25
+  _lamp: 0
+  _radius: 0.1
 --- !u!54 &-4103083956130403137
 Rigidbody:
   m_ObjectHideFlags: 0
