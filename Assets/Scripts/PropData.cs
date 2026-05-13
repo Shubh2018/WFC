@@ -7,17 +7,6 @@ public enum PropType
     Ceiling
 };
 
-public enum PropPlacement
-{
-    NoPreference,
-    TopLeft,
-    TopRight,
-    BottomLeft,
-    BottomRight,
-    NearWall,
-    Mid
-}
-
 public enum Prop
 {
     Decoration,
@@ -35,7 +24,6 @@ public class PropData : ScriptableObject
 
     [SerializeField] private bool _checkOrentation;
     [SerializeField] private bool _limitOnePerRoom;
-    [SerializeField] private PropPlacement _propPlacement;
 
     [SerializeField] private Prop _propType;
     [SerializeField] [Range(0, 1)] private float _spawnChance = 0.5f;
@@ -46,8 +34,6 @@ public class PropData : ScriptableObject
 
     public bool CheckOrientation => _checkOrentation;
     public bool LimitOnePerRoom => _limitOnePerRoom;
-    public PropPlacement Placement => _propPlacement;
-    
     public Prop PropType => _propType;
     
     public float SpawnChance => _spawnChance;

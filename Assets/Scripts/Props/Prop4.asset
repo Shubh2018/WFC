@@ -12,11 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 329470fa9586577499096c183eba9254, type: 3}
   m_Name: Prop4
   m_EditorClassIdentifier: Assembly-CSharp::PropData
-  _prop: {fileID: 6967361487159559488, guid: c533c10f37d12c941bf5dfea26e26cac, type: 3}
+  _prop: {fileID: 836683784093283753, guid: 237f7219ddf7c064e85f5158a48f6bbc, type: 3}
   _type: 0
   _maxCount: 5
   _checkOrentation: 0
   _limitOnePerRoom: 0
-  _propPlacement: 5
   _propType: 0
-  _spawnChance: 0.1
+  _spawnChance: 0.8
