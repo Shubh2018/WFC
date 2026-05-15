@@ -491,8 +491,11 @@ public class WFC : MonoBehaviour
         PropText = "";
         _nodesToCollapse.Clear();
 
-        if(_meshSampler)
+        if (_meshSampler)
+        {
             _meshSampler.Clear();
+            _meshSampler.PropCount.Clear();
+        }
         
         if(clearAll) _nodesGenerated.Clear();
         _grid = null;
@@ -535,6 +538,8 @@ public class WFC : MonoBehaviour
 
     public IEnumerator CollapseTiles(Action doneFuncHook)
     {
+        int overlaps = 0;
+        
         //StartCollapseLabel:
         ClearTiles();
         
@@ -628,14 +633,26 @@ public class WFC : MonoBehaviour
 
                 yield return new WaitForSeconds(collapseWaitTime);
 
-                CollapseTile(tile); 
+                overlaps += CollapseTile(tile); 
                 _nodesToCollapse.RemoveAt(tileChosenIndex);
             }
         }
 
+        int totalProps = 0;
+        
         foreach (var prop in _meshSampler.PropCount)
         {
             PropText += $"{prop.Key}: {prop.Value} \n";
+            totalProps += prop.Value;
+        }
+
+        PropText += $"Overlaps: {overlaps}\n";
+        PropText += $"Totalprops: {totalProps}\n\n";
+
+        if (totalProps != 0)
+        {
+            PropText += $"OverlapPercentage: {((float)(overlaps) / (float)(totalProps)) * 100f}%\n";
+            PropText += $"Quality Score: {1 - ((float)(overlaps) / (float)(totalProps))}\n";
         }
         
         doneCollapse = true;
@@ -734,8 +751,10 @@ public class WFC : MonoBehaviour
         return idx;
     }
 
-    private void CollapseTile(Tile tile)
+    private int CollapseTile(Tile tile)
     {
+        int overlaps = 0;
+        
         NodeData node = _grid[tile.pos.x, tile.pos.y, tile.pos.z];
         int rotationSteps = node.ClockwiseRotationSteps;
 
@@ -744,7 +763,7 @@ public class WFC : MonoBehaviour
             t.shouldBeUpdated = true;
 
         // If this is a helper tile, it cannot be instantiated so return instead
-        if (node.Prefab == null) return;
+        if (node.Prefab == null) return 0;
 
         Vector3 pos = (tile.pos * _tileSize) + transform.position;
         
@@ -777,9 +796,11 @@ public class WFC : MonoBehaviour
                 }
                 
                 _meshSampler.AddSamples(selectedSamples);
-                _meshSampler.SpawnProps(node, obj);
+                overlaps += _meshSampler.SpawnProps(node, obj);
             }
         }
+
+        return overlaps;
 
         // MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
         // _meshSampler.Generate(meshFilter);

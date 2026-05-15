@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 9118708492287326264}
   - component: {fileID: -3185712928625305912}
   - component: {fileID: -5805111504026453631}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Book_Holy_C
   m_TagString: Untagged
   m_Icon: {fileID: 0}

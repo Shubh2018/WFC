@@ -246,16 +246,20 @@ public class MeshSampler : MonoBehaviour
         return samples;
     }
 
-    public void SpawnProps(NodeData node, GameObject obj)
+    public int SpawnProps(NodeData node, GameObject obj)
     {
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(_samplePoints);
 
-        SpawnFloorProps(node, obj, minMesh, maxMesh);
-        SpawnWallProps(node, obj, minMesh, maxMesh);
+        int overlapCount = 0;
+
+        overlapCount += SpawnFloorProps(node, obj, minMesh, maxMesh);
+        overlapCount += SpawnWallProps(node, obj, minMesh, maxMesh);
 
         _samplePoints.Clear();
 
         AddPropToList();
+        
+        return overlapCount;
     }
 
     private void AddPropToList()
@@ -497,10 +501,12 @@ public class MeshSampler : MonoBehaviour
         return (min, max);
     }
 
-    private void SpawnFloorProps(NodeData node, GameObject nodeObj, Vector3 min, Vector3 max)
+    private int SpawnFloorProps(NodeData node, GameObject nodeObj, Vector3 min, Vector3 max)
     {
-        if (node.IsStairPiece) return;
-        if (Random.Range(0, 1) >= _spawnChance) return;
+        int overlapCount = 0;
+        
+        if (node.IsStairPiece) return 0;
+        if (Random.Range(0, 1) >= _spawnChance) return 0;
 
         Vector3 midPoint = (min + max) / 2;
 
@@ -531,7 +537,7 @@ public class MeshSampler : MonoBehaviour
                 propCount += 1;
                 _props[prop] = propCount;
 
-                return;
+                return 0;
             }
         }
 
@@ -575,8 +581,8 @@ public class MeshSampler : MonoBehaviour
                 propObj.transform.localEulerAngles =
                     new Vector3(0, Random.Range(0, 360), 0);
                 
-                // propObj.IsOverlappingNode();
-                // propObj.IsOverlappingProp();
+                // overlapCount += propObj.IsOverlappingNode();
+                overlapCount += propObj.IsOverlappingProp();
 
                 if(!propObj) continue;
 
@@ -613,11 +619,15 @@ public class MeshSampler : MonoBehaviour
         }
 
         filteredSamples.Clear();
+
+        return overlapCount;
     }
 
-    private void SpawnWallProps(NodeData node, GameObject go, Vector3 min, Vector3 max)
+    private int SpawnWallProps(NodeData node, GameObject go, Vector3 min, Vector3 max)
     {
-        if (node.IsStairPiece) return;
+        int overlapCount = 0;
+        
+        if (node.IsStairPiece) return 0;
         
         Vector3 midPoint = (min + max) / 2;
 
@@ -651,6 +661,8 @@ public class MeshSampler : MonoBehaviour
                 obj.transform.position = s.sample;
                 obj.transform.forward = s.triangleNormal;
 
+                overlapCount += obj.IsOverlappingProp();
+
                 if (!obj) continue;
 
                 propCount += 1;
@@ -675,6 +687,8 @@ public class MeshSampler : MonoBehaviour
         }
 
         filteredSamples.Clear();
+
+        return overlapCount;
     }
 
     // private List<Sample> FilterSamples(List<Sample> samplesToFilter, PropPlacement placement, Vector3 mid)

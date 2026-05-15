@@ -14,27 +14,35 @@ public class PropObject : MonoBehaviour
     [SerializeField] private bool _lamp = false;
     [SerializeField] private float _radius = 0.1f;
     
-    public void IsOverlappingProp()
+    public int IsOverlappingProp()
     {
+        int overlapCount = 0;
+        
         if (!_lamp)
         {
            Collider[] colliders = Physics.OverlapBox(this.transform.position + _center, _overlapDimensions / 2, this.transform.rotation, _propLayer);
    
-           if (colliders.Length <= 0) return;
-   
-           Debug.Log($"Destroyed {this.gameObject.name}");
-           DestroyImmediate(this.gameObject); 
+           if (colliders.Length <= 0) return 0;
+
+           overlapCount += 2;
+           
+           // Debug.Log($"Destroyed {this.gameObject.name}");
+           // DestroyImmediate(this.gameObject); 
         }
 
         else
         {
             Collider[] colliders = Physics.OverlapSphere(this.transform.position + _center, _radius, _propLayer);
             
-            if(colliders.Length <= 0) return;
+            if(colliders.Length <= 0) return 0;
+
+            overlapCount += 1;
             
-            Debug.Log($"Destroyed {this.gameObject.name}");
-            DestroyImmediate(this.gameObject); 
+            // Debug.Log($"Destroyed {this.gameObject.name}");
+            // DestroyImmediate(this.gameObject); 
         }
+        
+        return overlapCount;
     }
 
     public void UpdateRotation()

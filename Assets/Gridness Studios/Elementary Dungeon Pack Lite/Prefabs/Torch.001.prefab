@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8076866308431420103}
   - component: {fileID: 7769894917561011699}
   - component: {fileID: 4812528741861764482}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Torch.001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -128,7 +128,7 @@ GameObject:
   - component: {fileID: 7206927362178746234}
   - component: {fileID: 4220554822487122790}
   - component: {fileID: 5189220728421582819}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -259,6 +259,10 @@ PrefabInstance:
     - target: {fileID: 5866797894309309924, guid: 4daecac5922e4cf46914efecc3de4129, type: 3}
       propertyPath: m_Name
       value: Fire_Effect
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866797894309309924, guid: 4daecac5922e4cf46914efecc3de4129, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 9100074794992775766, guid: 4daecac5922e4cf46914efecc3de4129, type: 3}
       propertyPath: m_RootOrder
