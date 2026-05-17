@@ -80,7 +80,15 @@ public class WaveFunctionCollapseEditor : Editor
         togglePathDelay.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
             WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, togglePathField.value, togglePathFinding.value, evt.newValue)
         );
-
+        
+        TextField textField = rootTree.Q<TextField>("FileName");
+        
+        Button createFileButton = rootTree.Q<Button>("CreateFile");
+        createFileButton.RegisterCallback<ClickEvent>((ClickEvent evt) =>
+        {
+            TestData.CreateFile(textField.text);
+        });
+        
         SetGenLabels(0, 0.0, 1.0f);
         
         return rootTree;

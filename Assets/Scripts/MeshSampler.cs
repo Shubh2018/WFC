@@ -512,6 +512,24 @@ public class MeshSampler : MonoBehaviour
 
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
 
+        // switch (node.nodeType)
+        // {
+        //     case NodeData.NodeType.None: 
+        //         Debug.Log($"NodeType : None");
+        //         break;
+        //     
+        //     case NodeData.NodeType.Study:
+        //         Debug.Log($"NodeType : Study");
+        //         break;
+        //     
+        //     case NodeData.NodeType.Objective:
+        //         Debug.Log($"NodeType : Objective");
+        //         break;
+        //     
+        //     default:
+        //         break;
+        // }
+
         int random = 0;
         int propCount = 0;
 

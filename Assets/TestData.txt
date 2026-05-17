@@ -1,0 +1,28 @@
+Book_Holy_C: 65 
+Cauldron: 61 
+Sand_B: 69 
+Torch.001: 115 
+Chest: 61 
+Pot: 52 
+Barrel_C: 51 
+Overlaps: 336
+Totalprops: 474
+
+OverlapPercentage: 70.88608%
+Quality Score: 0.2911392
+
+
+Cauldron: 50 
+Barrel_C: 54 
+Chest: 61 
+Torch.001: 112 
+Pot: 65 
+Sand_B: 58 
+Book_Holy_C: 52 
+Overlaps: 340
+Totalprops: 452
+
+OverlapPercentage: 75.22124%
+Quality Score: 0.2477876
+
+

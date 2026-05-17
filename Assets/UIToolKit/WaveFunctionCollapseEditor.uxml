@@ -46,6 +46,8 @@
             </ui:Tab>
             <ui:Tab label="Testing" tabindex="4" enabled="true">
                 <ui:Label text="Testing ..." name="TestLabel"/>
+                <ui:TextField label="FileName" placeholder-text="enter file name" name="FileName"/>
+                <ui:Button text="Create File" name="CreateFile"/>
             </ui:Tab>
         </ui:TabView>
     </ui:VisualElement>

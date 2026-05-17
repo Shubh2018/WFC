@@ -42,11 +42,19 @@ public class NodeFaceVertical : NodeFace
 [CreateAssetMenu(fileName = "Node", menuName = "WFC/Node")]
 public class NodeData : ScriptableObject
 {
+    public enum NodeType
+    {
+        None,
+        Study,
+        Objective
+    };
+    
     public GameObject Prefab;
     public int Weight;
     public bool IsStairPiece;
     public bool CanHaveObjective = false;
     public bool IsDeadEnd = false;
+    public NodeType nodeType;
     [HideInInspector] public int ClockwiseRotationSteps; // Set automatically as the tile is rotated
 
     public NodeFaceVertical Up;

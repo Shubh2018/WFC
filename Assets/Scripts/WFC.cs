@@ -421,6 +421,8 @@ public class WFC : MonoBehaviour
                     newNode.CanHaveObjective = currNode.CanHaveObjective;
                     newNode.IsStairPiece = currNode.IsStairPiece;
                     newNode.IsDeadEnd = currNode.IsDeadEnd; 
+                    int nodeType = Random.Range(0, 3);
+                    newNode.nodeType = (NodeData.NodeType)nodeType;
                     
                     newNode.Up = currNode.Up;
                     newNode.Down = currNode.Down;
@@ -654,6 +656,8 @@ public class WFC : MonoBehaviour
             PropText += $"OverlapPercentage: {((float)(overlaps) / (float)(totalProps)) * 100f}%\n";
             PropText += $"Quality Score: {1 - ((float)(overlaps) / (float)(totalProps))}\n";
         }
+        
+        TestData.SaveData(PropText);
         
         doneCollapse = true;
         doneCollapseLabel:;
