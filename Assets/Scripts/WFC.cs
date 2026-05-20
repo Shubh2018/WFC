@@ -284,8 +284,6 @@ public class WFC : MonoBehaviour
 
     public void OnDrawGizmos()
     {
-        return;
-        
         Gizmos.color = new Color(1.0f, 1.0f, 1.0f, 0.1f);
         Gizmos.matrix = transform.localToWorldMatrix;
 
@@ -297,8 +295,9 @@ public class WFC : MonoBehaviour
                 {
                     for (int j = 0; j < _length; j++)
                     {
-                        if (enableGizmosGrid) Gizmos.DrawWireCube(new Vector3(i, k + 0.5f, j), Vector3.one);
-                        if (enableGizmosCoords) Handles.Label(new Vector3(i - 0.5f, k ,j - 0.5f) + transform.position, $"({i}, {j}, {k})");
+                        Vector3Int tilePos = _tileSize * new Vector3Int(i, k, j);
+                        if (enableGizmosGrid) Gizmos.DrawWireCube(tilePos + new Vector3(0.0f, _tileSize.y * 0.5f, 0.0f), _tileSize);
+                        if (enableGizmosCoords) Handles.Label(tilePos -  new Vector3(_tileSize.x * 0.5f, 0 ,_tileSize.z * 0.5f) + transform.position, $"({i}, {j}, {k})");
                     }
                 }
             }
@@ -306,16 +305,18 @@ public class WFC : MonoBehaviour
             if (!doneCollapse)
             {
                 Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
-                Gizmos.DrawWireCube(activeCollapsningTile - new Vector3(0.0f, -0.5f, 0.0f), Vector3.one);
+                Gizmos.DrawWireCube(activeCollapsningTile * _tileSize - new Vector3(0.0f, _tileSize.y * -0.5f, 0.0f), _tileSize);
             }
         }
 
         if (enableGizmosPathPoints)
         {
+            float sphereSize = (TileSize.x + TileSize.z) / 2 * 0.05f;
+
             foreach (Vector3Int point in _pathPoints)
             {
                 Gizmos.color = Color.orange;
-                Gizmos.DrawSphere(point, 0.1f);
+                Gizmos.DrawSphere(point * _tileSize, sphereSize);
             }
         }
 
@@ -327,23 +328,26 @@ public class WFC : MonoBehaviour
                 {
                     if (index >= path.CollapsedPath.Count) continue;
 
+                    Vector3 pos = Vector3.Scale(path.CollapsedPath[index], TileSize);
+                    Vector3 offset = Vector3.Scale(new Vector3(0.49f, 0.0f, 0.49f), TileSize);
+
                     Gizmos.color = point.data.Up != NodeFace.Name.None ? Color.green : Color.red;
-                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Up
+                    Gizmos.DrawLine(pos + offset, pos + Vector3.Scale(offset, new Vector3Int(-1, 1, -1))); // Up
 
                     Gizmos.color = point.data.Down != NodeFace.Name.None ? Color.green : Color.red;
-                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f)); // Down
+                    Gizmos.DrawLine(pos + Vector3.Scale(offset, new Vector3Int(-1, 1, 1)), pos + Vector3.Scale(offset, new Vector3Int(1, 1, -1))); // Down
 
                     Gizmos.color = point.data.Front != NodeFace.Name.None ? Color.green : Color.red;
-                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f)); // Left
+                    Gizmos.DrawLine(pos + offset, pos + Vector3.Scale(offset, new Vector3Int(-1, 1, 1))); // Left
 
                     Gizmos.color = point.data.Back != NodeFace.Name.None ? Color.green : Color.red;
-                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Right
+                    Gizmos.DrawLine(pos + Vector3.Scale(offset, new Vector3Int(1, 1, -1)), pos + Vector3.Scale(offset, new Vector3Int(-1, 1, -1))); // Right
 
                     Gizmos.color = point.data.Left != NodeFace.Name.None ? Color.green : Color.red;
-                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(-0.49f, 0.0f, -0.49f)); // Forward
+                    Gizmos.DrawLine(pos + Vector3.Scale(offset, new Vector3Int(-1, 1, 1)), pos + Vector3.Scale(offset, new Vector3Int(-1, 1, -1))); // Forward
 
                     Gizmos.color = point.data.Right != NodeFace.Name.None ? Color.green : Color.red;
-                    Gizmos.DrawLine(path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, 0.49f), path.CollapsedPath[index] + new Vector3(0.49f, 0.0f, -0.49f)); // Back
+                    Gizmos.DrawLine(pos + offset, pos + Vector3.Scale(offset, new Vector3Int(1, 1, -1))); // Back
                 }
             }
         }
@@ -358,20 +362,21 @@ public class WFC : MonoBehaviour
                     {
                         if (!_grid[x, y, z]) continue;
                         NodeData node = _grid[x, y, z];
+                        Vector3Int tilePos = _tileSize * new Vector3Int(x, y, z);
 
                         if (enableGizmosFacesText)
                         {
-                            Handles.Label(new Vector3(x - 0.4f, y + 0.5f, z) + transform.position, $"{node.Left.name}");
-                            Handles.Label(new Vector3(x + 0.4f, y + 0.5f, z) + transform.position, $"{node.Right.name}");
-                            Handles.Label(new Vector3(x, y + 0.5f, z + 0.4f) + transform.position, $"{node.Front.name}");
-                            Handles.Label(new Vector3(x, y + 0.5f, z - 0.4f) + transform.position, $"{node.Back.name}");
-                            Handles.Label(new Vector3(x, y + 0.5f, z - 0.4f) + transform.position, $"{node.Back.name}");
-                            Handles.Label(new Vector3(x, y + 0.1f, z) + transform.position, $"{node.Down.name}");
-                            Handles.Label(new Vector3(x, y + 0.9f, z) + transform.position, $"{node.Up.name}");
+                            Handles.Label(tilePos + new Vector3(_tileSize.x * -0.4f, _tileSize.y * 0.5f, 0.0f) + transform.position, $"{node.Left.name}");
+                            Handles.Label(tilePos + new Vector3(_tileSize.x * 0.4f, _tileSize.y * 0.5f, 0.0f) + transform.position, $"{node.Right.name}");
+                            Handles.Label(tilePos + new Vector3(0.0f, _tileSize.y * 0.5f, _tileSize.z * 0.4f) + transform.position, $"{node.Front.name}");
+                            Handles.Label(tilePos + new Vector3(0.0f, _tileSize.y * 0.5f, _tileSize.z * -0.4f) + transform.position, $"{node.Back.name}");
+                            Handles.Label(tilePos + new Vector3(0.0f, _tileSize.y * 0.5f, _tileSize.z * -0.4f) + transform.position, $"{node.Back.name}");
+                            Handles.Label(tilePos + new Vector3(0.0f, _tileSize.y * 0.1f, 0.0f) + transform.position, $"{node.Down.name}");
+                            Handles.Label(tilePos + new Vector3(0.0f, _tileSize.y * 0.9f, 0.0f) + transform.position, $"{node.Up.name}");
                         }
 
                         if (enableGizmosNodeName)
-                            Handles.Label(new Vector3(x, y + 0.5f, z) + transform.position, $"{node.name}");
+                            Handles.Label(tilePos + new Vector3(0.0f, _tileSize.y * 0.5f, 0.0f) + transform.position, $"{node.name}");
                     }
                 }
             }
@@ -794,14 +799,11 @@ public class WFC : MonoBehaviour
                 int randomSampleSet = Random.Range(0, sData.samples.Count);
         
                 foreach (var sample in sData.samples[randomSampleSet].samples)
-                {
-                    Sample s = new Sample()
-                    {
+                {                    
+                    selectedSamples.Add(new Sample() {
                         sample = obj.transform.localPosition + sample.sample,
                         triangleNormal = sample.triangleNormal
-                    };
-                    
-                    selectedSamples.Add(s);
+                    });
                 }
                 
                 _meshSampler.AddSamples(selectedSamples);

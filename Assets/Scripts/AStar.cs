@@ -69,34 +69,38 @@ public class StairCase
     }
 
     // Draws the gizmo box for the staircase
-    public void DrawGizmoBox()
+    public void DrawGizmoBox(WFC parent)
     {
         Gizmos.color = Color.orange;
 
-        Vector3 size = topCorner.x != topExit.x ? new Vector3Int(2, 2, 1) : new Vector3Int(1, 2, 2);
-        Vector3 center = ((Vector3) (bottomEntrance + bottomStairs + topCorner + topExit)) / 4.0f + new Vector3(0, 0.5f, 0);
+        Vector3 size = parent.TileSize * (topCorner.x != topExit.x ? new Vector3Int(2, 2, 1) : new Vector3Int(1, 2, 2));
+        Vector3 center = ((Vector3) (parent.TileSize * (bottomEntrance + bottomStairs + topCorner + topExit))) / 4.0f + new Vector3(0, parent.TileSize.y * 0.5f, 0);
 
         Gizmos.DrawWireCube(center, size);
     }
 
     // Draws the gizmo points for the staircase pieces
-    public void DrawGizmoPoints()
+    public void DrawGizmoPoints(WFC parent)
     {
+        // Misc
+        Vector3 offset = new Vector3(0.0f, parent.TileSize.y * 0.5f, 0.0f);
+        float sphereSize = (parent.TileSize.x + parent.TileSize.z) / 2 * 0.05f;
+
         // Lowest entrance point
         Gizmos.color = Color.black;
-        Gizmos.DrawSphere(bottomEntrance + new Vector3(0.0f, 0.5f, 0.0f), 0.05f);
+        Gizmos.DrawSphere(parent.TileSize * bottomEntrance + offset, sphereSize);
 
         // Lowest stairs point
         Gizmos.color = Color.purple;
-        Gizmos.DrawSphere(bottomStairs + new Vector3(0.0f, 0.5f, 0.0f), 0.05f);
+        Gizmos.DrawSphere(parent.TileSize * bottomStairs + offset, sphereSize);
 
         // Top exit point
         Gizmos.color = Color.white;
-        Gizmos.DrawSphere(topExit + new Vector3(0.0f, 0.5f, 0.0f), 0.05f);
+        Gizmos.DrawSphere(parent.TileSize * topExit + offset, sphereSize);
 
         // Top corner point
         Gizmos.color = Color.red;
-        Gizmos.DrawSphere(topCorner + new Vector3(0.0f, 0.5f, 0.0f), 0.05f);
+        Gizmos.DrawSphere(parent.TileSize * topCorner + offset, sphereSize);
     }
 }
 
@@ -133,8 +137,8 @@ public class AStar : MonoBehaviour
             // Draw the staircases
             foreach (StairCase staircase in staircases)
             {
-                staircase.DrawGizmoBox();
-                staircase.DrawGizmoPoints();
+                staircase.DrawGizmoBox(_parent);
+                staircase.DrawGizmoPoints(_parent);
             }
         }
 
@@ -146,20 +150,20 @@ public class AStar : MonoBehaviour
             {
                 Gizmos.DrawLineList(new Vector3[8]{
                     // Line #1
-                    new Vector3(-0.5f, height, -0.5f),
-                    new Vector3(_parent.getWidth - 0.5f, height, -0.5f),
+                    Vector3.Scale(new Vector3(-0.5f, height, -0.5f), _parent.TileSize),
+                    Vector3.Scale(new Vector3(_parent.getWidth - 0.5f, height, -0.5f), _parent.TileSize),
 
                     // Line #2
-                    new Vector3(_parent.getWidth - 0.5f, height, -0.5f),
-                    new Vector3(_parent.getWidth - 0.5f, height, _parent.getLength - 0.5f),
+                    Vector3.Scale(new Vector3(_parent.getWidth - 0.5f, height, -0.5f), _parent.TileSize),
+                    Vector3.Scale(new Vector3(_parent.getWidth - 0.5f, height, _parent.getLength - 0.5f), _parent.TileSize),
 
                     // Line #3
-                    new Vector3(_parent.getWidth - 0.5f, height, _parent.getLength - 0.5f),
-                    new Vector3(-0.5f, height, _parent.getLength - 0.5f),
+                    Vector3.Scale(new Vector3(_parent.getWidth - 0.5f, height, _parent.getLength - 0.5f), _parent.TileSize),
+                    Vector3.Scale(new Vector3(-0.5f, height, _parent.getLength - 0.5f), _parent.TileSize),
 
                     // Line #4
-                    new Vector3(-0.5f, height, _parent.getLength - 0.5f),
-                    new Vector3(-0.5f, height, -0.5f)
+                    Vector3.Scale(new Vector3(-0.5f, height, _parent.getLength - 0.5f), _parent.TileSize),
+                    Vector3.Scale(new Vector3(-0.5f, height, -0.5f), _parent.TileSize)
                 });
             }
         }
@@ -171,7 +175,7 @@ public class AStar : MonoBehaviour
 
             foreach(Node node in openList)
             {
-                Gizmos.DrawWireCube(node.position, Vector3.one);
+                Gizmos.DrawWireCube(_parent.TileSize * node.position, Vector3.Scale(Vector3.one, _parent.TileSize));
             }
         }
 
@@ -182,7 +186,7 @@ public class AStar : MonoBehaviour
 
             foreach(Node node in closedList)
             {
-                Gizmos.DrawWireCube(node.position, Vector3.one);
+                Gizmos.DrawWireCube(_parent.TileSize * node.position, Vector3.Scale(Vector3.one, _parent.TileSize));
             }
         }
     }
@@ -481,7 +485,7 @@ public class AStar : MonoBehaviour
         }
 
         lineRenderer.positionCount = constructedPath.Count + tempPath.Count;
-        lineRenderer.SetPositions(constructedPath.Concat(tempPath).Select(p => p + transform.position).ToArray());
+        lineRenderer.SetPositions(constructedPath.Concat(tempPath).Select(p => Vector3.Scale(p + transform.position, _parent.TileSize)).ToArray());
     }
 
     public bool CheckStaircaseOverlap(Vector3Int pos)
