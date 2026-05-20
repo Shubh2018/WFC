@@ -1,0 +1,1400 @@
+Barrel_C: 50 
+Sand_B: 53 
+Book_Holy_C: 56 
+Torch.001: 104 
+Chest: 53 
+Cauldron: 57 
+Pot: 54 
+Overlaps: 347
+Totalprops: 427
+
+OverlapPercentage: 81.26464%
+Quality Score: 0.1873536
+
+
+Barrel_C: 61 
+Pot: 76 
+Sand_B: 65 
+Cauldron: 54 
+Torch.001: 121 
+Book_Holy_C: 55 
+Chest: 58 
+Overlaps: 409
+Totalprops: 490
+
+OverlapPercentage: 83.46939%
+Quality Score: 0.1653061
+
+
+Pot: 55 
+Torch.001: 113 
+Chest: 62 
+Cauldron: 68 
+Sand_B: 58 
+Book_Holy_C: 44 
+Barrel_C: 58 
+Overlaps: 413
+Totalprops: 458
+
+OverlapPercentage: 90.17467%
+Quality Score: 0.09825327
+
+
+Cauldron: 70 
+Barrel_C: 60 
+Chest: 83 
+Torch.001: 121 
+Book_Holy_C: 64 
+Pot: 53 
+Sand_B: 59 
+Overlaps: 388
+Totalprops: 510
+
+OverlapPercentage: 76.07843%
+Quality Score: 0.2392157
+
+
+Chest: 55 
+Barrel_C: 59 
+Pot: 54 
+Torch.001: 98 
+Book_Holy_C: 50 
+Cauldron: 43 
+Sand_B: 48 
+Overlaps: 326
+Totalprops: 407
+
+OverlapPercentage: 80.09828%
+Quality Score: 0.1990172
+
+
+Chest: 54 
+Pot: 48 
+Sand_B: 60 
+Book_Holy_C: 55 
+Torch.001: 112 
+Cauldron: 62 
+Barrel_C: 58 
+Overlaps: 394
+Totalprops: 449
+
+OverlapPercentage: 87.75056%
+Quality Score: 0.1224944
+
+
+Pot: 80 
+Barrel_C: 54 
+Torch.001: 125 
+Cauldron: 65 
+Sand_B: 61 
+Book_Holy_C: 64 
+Chest: 63 
+Overlaps: 439
+Totalprops: 512
+
+OverlapPercentage: 85.74219%
+Quality Score: 0.1425781
+
+
+Pot: 52 
+Book_Holy_C: 61 
+Cauldron: 49 
+Torch.001: 109 
+Sand_B: 57 
+Barrel_C: 62 
+Chest: 59 
+Overlaps: 353
+Totalprops: 449
+
+OverlapPercentage: 78.61916%
+Quality Score: 0.2138085
+
+
+Cauldron: 58 
+Barrel_C: 56 
+Book_Holy_C: 51 
+Torch.001: 100 
+Sand_B: 50 
+Pot: 50 
+Chest: 47 
+Overlaps: 363
+Totalprops: 412
+
+OverlapPercentage: 88.1068%
+Quality Score: 0.118932
+
+
+Sand_B: 51 
+Barrel_C: 61 
+Pot: 61 
+Torch.001: 109 
+Cauldron: 60 
+Chest: 55 
+Book_Holy_C: 59 
+Overlaps: 368
+Totalprops: 456
+
+OverlapPercentage: 80.70175%
+Quality Score: 0.1929825
+
+
+Pot: 56 
+Barrel_C: 55 
+Cauldron: 55 
+Torch.001: 103 
+Sand_B: 46 
+Book_Holy_C: 56 
+Chest: 56 
+Overlaps: 354
+Totalprops: 427
+
+OverlapPercentage: 82.90398%
+Quality Score: 0.1709602
+
+
+Book_Holy_C: 53 
+Cauldron: 45 
+Chest: 58 
+Torch.001: 108 
+Pot: 53 
+Barrel_C: 61 
+Sand_B: 60 
+Overlaps: 386
+Totalprops: 438
+
+OverlapPercentage: 88.12785%
+Quality Score: 0.1187215
+
+
+Chest: 44 
+Pot: 49 
+Barrel_C: 58 
+Torch.001: 109 
+Sand_B: 61 
+Cauldron: 56 
+Book_Holy_C: 70 
+Overlaps: 373
+Totalprops: 447
+
+OverlapPercentage: 83.44519%
+Quality Score: 0.1655481
+
+
+Cauldron: 56 
+Chest: 55 
+Pot: 49 
+Book_Holy_C: 57 
+Torch.001: 110 
+Barrel_C: 59 
+Sand_B: 65 
+Overlaps: 360
+Totalprops: 451
+
+OverlapPercentage: 79.82262%
+Quality Score: 0.2017738
+
+
+Pot: 61 
+Barrel_C: 54 
+Torch.001: 109 
+Cauldron: 47 
+Book_Holy_C: 55 
+Sand_B: 54 
+Chest: 61 
+Overlaps: 375
+Totalprops: 441
+
+OverlapPercentage: 85.03401%
+Quality Score: 0.1496599
+
+
+Pot: 51 
+Cauldron: 50 
+Book_Holy_C: 56 
+Barrel_C: 57 
+Torch.001: 108 
+Chest: 59 
+Sand_B: 55 
+Overlaps: 357
+Totalprops: 436
+
+OverlapPercentage: 81.88074%
+Quality Score: 0.1811927
+
+
+Chest: 60 
+Book_Holy_C: 61 
+Barrel_C: 60 
+Torch.001: 116 
+Cauldron: 63 
+Sand_B: 45 
+Pot: 56 
+Overlaps: 415
+Totalprops: 461
+
+OverlapPercentage: 90.02169%
+Quality Score: 0.09978308
+
+
+Sand_B: 74 
+Barrel_C: 67 
+Chest: 54 
+Book_Holy_C: 49 
+Torch.001: 119 
+Pot: 68 
+Cauldron: 60 
+Overlaps: 418
+Totalprops: 491
+
+OverlapPercentage: 85.13239%
+Quality Score: 0.1486762
+
+
+Chest: 50 
+Book_Holy_C: 54 
+Pot: 49 
+Barrel_C: 60 
+Torch.001: 102 
+Cauldron: 55 
+Sand_B: 50 
+Overlaps: 382
+Totalprops: 420
+
+OverlapPercentage: 90.95238%
+Quality Score: 0.09047619
+
+
+Pot: 63 
+Chest: 54 
+Sand_B: 53 
+Torch.001: 111 
+Barrel_C: 55 
+Cauldron: 54 
+Book_Holy_C: 64 
+Overlaps: 401
+Totalprops: 454
+
+OverlapPercentage: 88.32599%
+Quality Score: 0.1167401
+
+
+Book_Holy_C: 49 
+Sand_B: 65 
+Pot: 65 
+Barrel_C: 51 
+Torch.001: 107 
+Cauldron: 54 
+Chest: 61 
+Overlaps: 383
+Totalprops: 452
+
+OverlapPercentage: 84.73451%
+Quality Score: 0.1526549
+
+
+Barrel_C: 63 
+Chest: 58 
+Sand_B: 65 
+Torch.001: 110 
+Book_Holy_C: 52 
+Cauldron: 59 
+Pot: 55 
+Overlaps: 343
+Totalprops: 462
+
+OverlapPercentage: 74.24242%
+Quality Score: 0.2575758
+
+
+Cauldron: 47 
+Book_Holy_C: 59 
+Sand_B: 58 
+Torch.001: 108 
+Chest: 59 
+Barrel_C: 53 
+Pot: 61 
+Overlaps: 375
+Totalprops: 445
+
+OverlapPercentage: 84.26966%
+Quality Score: 0.1573034
+
+
+Cauldron: 55 
+Sand_B: 65 
+Pot: 59 
+Torch.001: 116 
+Barrel_C: 54 
+Chest: 66 
+Book_Holy_C: 69 
+Overlaps: 397
+Totalprops: 484
+
+OverlapPercentage: 82.0248%
+Quality Score: 0.1797521
+
+
+Chest: 65 
+Sand_B: 62 
+Cauldron: 64 
+Torch.001: 114 
+Pot: 56 
+Barrel_C: 48 
+Book_Holy_C: 61 
+Overlaps: 405
+Totalprops: 470
+
+OverlapPercentage: 86.17021%
+Quality Score: 0.1382979
+
+
+Barrel_C: 55 
+Pot: 53 
+Chest: 46 
+Torch.001: 106 
+Book_Holy_C: 54 
+Sand_B: 63 
+Cauldron: 59 
+Overlaps: 354
+Totalprops: 436
+
+OverlapPercentage: 81.19266%
+Quality Score: 0.1880734
+
+
+Sand_B: 47 
+Chest: 53 
+Barrel_C: 53 
+Pot: 49 
+Torch.001: 107 
+Cauldron: 70 
+Book_Holy_C: 67 
+Overlaps: 405
+Totalprops: 446
+
+OverlapPercentage: 90.80717%
+Quality Score: 0.09192825
+
+
+Book_Holy_C: 63 
+Sand_B: 60 
+Cauldron: 52 
+Barrel_C: 58 
+Torch.001: 107 
+Pot: 55 
+Chest: 42 
+Overlaps: 363
+Totalprops: 437
+
+OverlapPercentage: 83.06636%
+Quality Score: 0.1693364
+
+
+Cauldron: 55 
+Chest: 60 
+Pot: 51 
+Book_Holy_C: 58 
+Torch.001: 109 
+Barrel_C: 52 
+Sand_B: 56 
+Overlaps: 374
+Totalprops: 441
+
+OverlapPercentage: 84.80726%
+Quality Score: 0.1519274
+
+
+Pot: 49 
+Chest: 54 
+Sand_B: 51 
+Torch.001: 95 
+Book_Holy_C: 51 
+Cauldron: 43 
+Barrel_C: 49 
+Overlaps: 320
+Totalprops: 392
+
+OverlapPercentage: 81.63265%
+Quality Score: 0.1836735
+
+
+Sand_B: 56 
+Pot: 53 
+Torch.001: 103 
+Barrel_C: 62 
+Chest: 46 
+Book_Holy_C: 48 
+Cauldron: 59 
+Overlaps: 350
+Totalprops: 427
+
+OverlapPercentage: 81.96722%
+Quality Score: 0.1803279
+
+
+Sand_B: 60 
+Pot: 60 
+Barrel_C: 56 
+Book_Holy_C: 69 
+Torch.001: 118 
+Chest: 57 
+Cauldron: 64 
+Overlaps: 426
+Totalprops: 484
+
+OverlapPercentage: 88.01653%
+Quality Score: 0.1198347
+
+
+Chest: 62 
+Cauldron: 62 
+Torch.001: 108 
+Sand_B: 52 
+Barrel_C: 55 
+Book_Holy_C: 57 
+Pot: 55 
+Overlaps: 375
+Totalprops: 451
+
+OverlapPercentage: 83.14856%
+Quality Score: 0.1685144
+
+
+Sand_B: 58 
+Chest: 56 
+Cauldron: 59 
+Torch.001: 125 
+Barrel_C: 75 
+Book_Holy_C: 71 
+Pot: 62 
+Overlaps: 444
+Totalprops: 506
+
+OverlapPercentage: 87.74703%
+Quality Score: 0.1225296
+
+
+Sand_B: 65 
+Barrel_C: 71 
+Chest: 60 
+Book_Holy_C: 55 
+Torch.001: 119 
+Cauldron: 69 
+Pot: 46 
+Overlaps: 419
+Totalprops: 485
+
+OverlapPercentage: 86.39175%
+Quality Score: 0.1360825
+
+
+Barrel_C: 57 
+Pot: 52 
+Sand_B: 62 
+Torch.001: 105 
+Book_Holy_C: 58 
+Cauldron: 49 
+Chest: 54 
+Overlaps: 350
+Totalprops: 437
+
+OverlapPercentage: 80.09153%
+Quality Score: 0.1990847
+
+
+Sand_B: 51 
+Barrel_C: 48 
+Pot: 52 
+Torch.001: 103 
+Chest: 60 
+Book_Holy_C: 56 
+Cauldron: 50 
+Overlaps: 363
+Totalprops: 420
+
+OverlapPercentage: 86.42857%
+Quality Score: 0.1357143
+
+
+Barrel_C: 62 
+Sand_B: 64 
+Chest: 62 
+Torch.001: 122 
+Pot: 66 
+Cauldron: 66 
+Book_Holy_C: 66 
+Overlaps: 458
+Totalprops: 508
+
+OverlapPercentage: 90.15748%
+Quality Score: 0.09842519
+
+
+Sand_B: 60 
+Pot: 59 
+Torch.001: 112 
+Cauldron: 49 
+Book_Holy_C: 61 
+Barrel_C: 55 
+Chest: 54 
+Overlaps: 378
+Totalprops: 450
+
+OverlapPercentage: 84%
+Quality Score: 0.16
+
+
+Book_Holy_C: 53 
+Sand_B: 47 
+Torch.001: 106 
+Pot: 55 
+Cauldron: 60 
+Barrel_C: 62 
+Chest: 53 
+Overlaps: 401
+Totalprops: 436
+
+OverlapPercentage: 91.97248%
+Quality Score: 0.08027523
+
+
+Pot: 58 
+Sand_B: 58 
+Cauldron: 51 
+Barrel_C: 43 
+Torch.001: 106 
+Chest: 63 
+Book_Holy_C: 61 
+Overlaps: 345
+Totalprops: 440
+
+OverlapPercentage: 78.40909%
+Quality Score: 0.2159091
+
+
+Pot: 59 
+Chest: 51 
+Barrel_C: 66 
+Torch.001: 106 
+Sand_B: 51 
+Cauldron: 60 
+Book_Holy_C: 45 
+Overlaps: 432
+Totalprops: 438
+
+OverlapPercentage: 98.63013%
+Quality Score: 0.01369863
+
+
+Book_Holy_C: 58 
+Pot: 53 
+Torch.001: 107 
+Sand_B: 55 
+Barrel_C: 63 
+Chest: 63 
+Cauldron: 51 
+Overlaps: 373
+Totalprops: 450
+
+OverlapPercentage: 82.88889%
+Quality Score: 0.1711111
+
+
+Book_Holy_C: 54 
+Barrel_C: 51 
+Cauldron: 52 
+Chest: 46 
+Torch.001: 98 
+Pot: 57 
+Sand_B: 54 
+Overlaps: 345
+Totalprops: 412
+
+OverlapPercentage: 83.73786%
+Quality Score: 0.1626214
+
+
+Pot: 47 
+Sand_B: 50 
+Chest: 56 
+Torch.001: 103 
+Barrel_C: 50 
+Cauldron: 60 
+Book_Holy_C: 62 
+Overlaps: 329
+Totalprops: 428
+
+OverlapPercentage: 76.86916%
+Quality Score: 0.2313084
+
+
+Chest: 61 
+Sand_B: 51 
+Barrel_C: 59 
+Book_Holy_C: 53 
+Torch.001: 104 
+Pot: 50 
+Cauldron: 52 
+Overlaps: 338
+Totalprops: 430
+
+OverlapPercentage: 78.60465%
+Quality Score: 0.2139535
+
+
+Book_Holy_C: 56 
+Barrel_C: 50 
+Sand_B: 62 
+Torch.001: 113 
+Chest: 68 
+Pot: 60 
+Cauldron: 52 
+Overlaps: 403
+Totalprops: 461
+
+OverlapPercentage: 87.41866%
+Quality Score: 0.1258135
+
+
+Sand_B: 55 
+Cauldron: 53 
+Pot: 63 
+Book_Holy_C: 59 
+Torch.001: 108 
+Barrel_C: 57 
+Chest: 59 
+Overlaps: 378
+Totalprops: 454
+
+OverlapPercentage: 83.25991%
+Quality Score: 0.1674009
+
+
+Cauldron: 59 
+Book_Holy_C: 65 
+Sand_B: 52 
+Pot: 61 
+Torch.001: 110 
+Chest: 51 
+Barrel_C: 66 
+Overlaps: 392
+Totalprops: 464
+
+OverlapPercentage: 84.48276%
+Quality Score: 0.1551724
+
+
+Sand_B: 72 
+Chest: 54 
+Cauldron: 52 
+Torch.001: 113 
+Book_Holy_C: 68 
+Barrel_C: 69 
+Pot: 49 
+Overlaps: 365
+Totalprops: 477
+
+OverlapPercentage: 76.51991%
+Quality Score: 0.2348008
+
+
+Pot: 57 
+Book_Holy_C: 59 
+Sand_B: 62 
+Cauldron: 64 
+Torch.001: 117 
+Barrel_C: 63 
+Chest: 62 
+Overlaps: 451
+Totalprops: 484
+
+OverlapPercentage: 93.18182%
+Quality Score: 0.06818182
+
+
+Cauldron: 45 
+Pot: 48 
+Book_Holy_C: 53 
+Torch.001: 99 
+Chest: 49 
+Barrel_C: 50 
+Sand_B: 59 
+Overlaps: 308
+Totalprops: 403
+
+OverlapPercentage: 76.4268%
+Quality Score: 0.235732
+
+
+Book_Holy_C: 60 
+Pot: 61 
+Barrel_C: 66 
+Torch.001: 118 
+Cauldron: 63 
+Chest: 57 
+Sand_B: 58 
+Overlaps: 440
+Totalprops: 483
+
+OverlapPercentage: 91.09731%
+Quality Score: 0.08902691
+
+
+Cauldron: 55 
+Pot: 55 
+Torch.001: 106 
+Sand_B: 60 
+Book_Holy_C: 56 
+Barrel_C: 55 
+Chest: 51 
+Overlaps: 356
+Totalprops: 438
+
+OverlapPercentage: 81.27854%
+Quality Score: 0.1872146
+
+
+Sand_B: 52 
+Barrel_C: 56 
+Pot: 49 
+Torch.001: 100 
+Book_Holy_C: 53 
+Chest: 50 
+Cauldron: 48 
+Overlaps: 349
+Totalprops: 408
+
+OverlapPercentage: 85.53922%
+Quality Score: 0.1446078
+
+
+Cauldron: 48 
+Sand_B: 56 
+Book_Holy_C: 64 
+Torch.001: 106 
+Chest: 56 
+Barrel_C: 61 
+Pot: 55 
+Overlaps: 323
+Totalprops: 446
+
+OverlapPercentage: 72.42152%
+Quality Score: 0.2757848
+
+
+Pot: 59 
+Sand_B: 56 
+Chest: 53 
+Torch.001: 100 
+Barrel_C: 49 
+Cauldron: 43 
+Book_Holy_C: 51 
+Overlaps: 308
+Totalprops: 411
+
+OverlapPercentage: 74.93917%
+Quality Score: 0.2506083
+
+
+Barrel_C: 41 
+Chest: 38 
+Torch.001: 87 
+Pot: 46 
+Cauldron: 55 
+Book_Holy_C: 42 
+Sand_B: 44 
+Overlaps: 315
+Totalprops: 353
+
+OverlapPercentage: 89.23513%
+Quality Score: 0.1076487
+
+
+Book_Holy_C: 51 
+Barrel_C: 62 
+Chest: 67 
+Torch.001: 115 
+Sand_B: 59 
+Cauldron: 56 
+Pot: 60 
+Overlaps: 439
+Totalprops: 470
+
+OverlapPercentage: 93.40426%
+Quality Score: 0.06595745
+
+
+Cauldron: 53 
+Sand_B: 55 
+Pot: 50 
+Torch.001: 102 
+Book_Holy_C: 53 
+Barrel_C: 51 
+Chest: 43 
+Overlaps: 316
+Totalprops: 407
+
+OverlapPercentage: 77.64128%
+Quality Score: 0.2235872
+
+
+Pot: 51 
+Book_Holy_C: 54 
+Barrel_C: 50 
+Chest: 51 
+Torch.001: 102 
+Cauldron: 50 
+Sand_B: 65 
+Overlaps: 352
+Totalprops: 423
+
+OverlapPercentage: 83.21513%
+Quality Score: 0.1678487
+
+
+Chest: 59 
+Cauldron: 53 
+Torch.001: 106 
+Barrel_C: 48 
+Pot: 62 
+Book_Holy_C: 45 
+Sand_B: 61 
+Overlaps: 367
+Totalprops: 434
+
+OverlapPercentage: 84.56221%
+Quality Score: 0.1543779
+
+
+Book_Holy_C: 64 
+Pot: 54 
+Barrel_C: 47 
+Torch.001: 105 
+Cauldron: 58 
+Chest: 60 
+Sand_B: 52 
+Overlaps: 356
+Totalprops: 440
+
+OverlapPercentage: 80.90909%
+Quality Score: 0.1909091
+
+
+Book_Holy_C: 50 
+Barrel_C: 50 
+Pot: 62 
+Cauldron: 50 
+Torch.001: 112 
+Sand_B: 65 
+Chest: 65 
+Overlaps: 389
+Totalprops: 454
+
+OverlapPercentage: 85.68282%
+Quality Score: 0.1431718
+
+
+Book_Holy_C: 61 
+Barrel_C: 58 
+Chest: 56 
+Pot: 56 
+Torch.001: 107 
+Sand_B: 58 
+Cauldron: 49 
+Overlaps: 351
+Totalprops: 445
+
+OverlapPercentage: 78.8764%
+Quality Score: 0.211236
+
+
+Cauldron: 65 
+Book_Holy_C: 60 
+Torch.001: 120 
+Barrel_C: 59 
+Pot: 58 
+Sand_B: 65 
+Chest: 53 
+Overlaps: 428
+Totalprops: 480
+
+OverlapPercentage: 89.16666%
+Quality Score: 0.1083333
+
+
+Pot: 55 
+Barrel_C: 64 
+Sand_B: 66 
+Torch.001: 121 
+Chest: 59 
+Book_Holy_C: 58 
+Cauldron: 64 
+Overlaps: 416
+Totalprops: 487
+
+OverlapPercentage: 85.42094%
+Quality Score: 0.1457905
+
+
+Book_Holy_C: 66 
+Pot: 68 
+Chest: 52 
+Torch.001: 113 
+Barrel_C: 58 
+Sand_B: 51 
+Cauldron: 64 
+Overlaps: 393
+Totalprops: 472
+
+OverlapPercentage: 83.26271%
+Quality Score: 0.1673729
+
+
+Chest: 66 
+Pot: 51 
+Barrel_C: 56 
+Torch.001: 107 
+Book_Holy_C: 58 
+Cauldron: 69 
+Sand_B: 48 
+Overlaps: 371
+Totalprops: 455
+
+OverlapPercentage: 81.53846%
+Quality Score: 0.1846154
+
+
+Barrel_C: 50 
+Cauldron: 66 
+Chest: 58 
+Torch.001: 113 
+Book_Holy_C: 49 
+Pot: 58 
+Sand_B: 61 
+Overlaps: 426
+Totalprops: 455
+
+OverlapPercentage: 93.62637%
+Quality Score: 0.06373627
+
+
+Cauldron: 49 
+Pot: 56 
+Sand_B: 56 
+Torch.001: 107 
+Chest: 62 
+Barrel_C: 59 
+Book_Holy_C: 59 
+Overlaps: 380
+Totalprops: 448
+
+OverlapPercentage: 84.82143%
+Quality Score: 0.1517857
+
+
+Sand_B: 61 
+Barrel_C: 55 
+Pot: 71 
+Chest: 50 
+Torch.001: 110 
+Cauldron: 60 
+Book_Holy_C: 52 
+Overlaps: 369
+Totalprops: 459
+
+OverlapPercentage: 80.39216%
+Quality Score: 0.1960784
+
+
+Cauldron: 49 
+Pot: 65 
+Chest: 54 
+Torch.001: 107 
+Book_Holy_C: 61 
+Barrel_C: 56 
+Sand_B: 51 
+Overlaps: 363
+Totalprops: 443
+
+OverlapPercentage: 81.94131%
+Quality Score: 0.1805869
+
+
+Sand_B: 55 
+Pot: 66 
+Torch.001: 112 
+Book_Holy_C: 64 
+Barrel_C: 59 
+Cauldron: 54 
+Chest: 52 
+Overlaps: 392
+Totalprops: 462
+
+OverlapPercentage: 84.84849%
+Quality Score: 0.1515152
+
+
+Cauldron: 62 
+Barrel_C: 61 
+Chest: 65 
+Torch.001: 124 
+Sand_B: 68 
+Book_Holy_C: 76 
+Pot: 57 
+Overlaps: 409
+Totalprops: 513
+
+OverlapPercentage: 79.7271%
+Quality Score: 0.202729
+
+
+Sand_B: 62 
+Pot: 56 
+Cauldron: 46 
+Torch.001: 113 
+Book_Holy_C: 63 
+Chest: 58 
+Barrel_C: 62 
+Overlaps: 373
+Totalprops: 460
+
+OverlapPercentage: 81.08696%
+Quality Score: 0.1891304
+
+
+Sand_B: 59 
+Chest: 45 
+Cauldron: 59 
+Torch.001: 109 
+Barrel_C: 53 
+Book_Holy_C: 60 
+Pot: 65 
+Overlaps: 357
+Totalprops: 450
+
+OverlapPercentage: 79.33334%
+Quality Score: 0.2066667
+
+
+Book_Holy_C: 61 
+Barrel_C: 63 
+Cauldron: 59 
+Torch.001: 112 
+Sand_B: 41 
+Chest: 63 
+Pot: 56 
+Overlaps: 408
+Totalprops: 455
+
+OverlapPercentage: 89.67033%
+Quality Score: 0.1032967
+
+
+Book_Holy_C: 60 
+Cauldron: 65 
+Torch.001: 110 
+Barrel_C: 58 
+Sand_B: 76 
+Pot: 44 
+Chest: 51 
+Overlaps: 379
+Totalprops: 464
+
+OverlapPercentage: 81.68104%
+Quality Score: 0.1831897
+
+
+Cauldron: 55 
+Pot: 57 
+Barrel_C: 67 
+Sand_B: 58 
+Torch.001: 113 
+Book_Holy_C: 57 
+Chest: 65 
+Overlaps: 377
+Totalprops: 472
+
+OverlapPercentage: 79.87288%
+Quality Score: 0.2012712
+
+
+Sand_B: 54 
+Book_Holy_C: 48 
+Cauldron: 54 
+Chest: 49 
+Torch.001: 96 
+Pot: 49 
+Barrel_C: 46 
+Overlaps: 326
+Totalprops: 396
+
+OverlapPercentage: 82.32323%
+Quality Score: 0.1767677
+
+
+Pot: 58 
+Chest: 66 
+Torch.001: 119 
+Cauldron: 68 
+Barrel_C: 67 
+Sand_B: 55 
+Book_Holy_C: 64 
+Overlaps: 382
+Totalprops: 497
+
+OverlapPercentage: 76.86117%
+Quality Score: 0.2313883
+
+
+Cauldron: 57 
+Book_Holy_C: 64 
+Chest: 57 
+Torch.001: 111 
+Sand_B: 53 
+Barrel_C: 62 
+Pot: 53 
+Overlaps: 355
+Totalprops: 457
+
+OverlapPercentage: 77.68053%
+Quality Score: 0.2231947
+
+
+Sand_B: 54 
+Cauldron: 61 
+Torch.001: 114 
+Book_Holy_C: 60 
+Pot: 65 
+Chest: 59 
+Barrel_C: 56 
+Overlaps: 383
+Totalprops: 469
+
+OverlapPercentage: 81.66312%
+Quality Score: 0.1833689
+
+
+Sand_B: 54 
+Pot: 54 
+Torch.001: 114 
+Barrel_C: 59 
+Cauldron: 53 
+Book_Holy_C: 60 
+Chest: 60 
+Overlaps: 393
+Totalprops: 454
+
+OverlapPercentage: 86.56387%
+Quality Score: 0.1343612
+
+
+Cauldron: 47 
+Chest: 59 
+Pot: 52 
+Torch.001: 101 
+Sand_B: 44 
+Barrel_C: 55 
+Book_Holy_C: 56 
+Overlaps: 348
+Totalprops: 414
+
+OverlapPercentage: 84.05797%
+Quality Score: 0.1594203
+
+
+Book_Holy_C: 64 
+Pot: 63 
+Sand_B: 58 
+Torch.001: 120 
+Cauldron: 63 
+Chest: 58 
+Barrel_C: 60 
+Overlaps: 434
+Totalprops: 486
+
+OverlapPercentage: 89.30042%
+Quality Score: 0.1069959
+
+
+Sand_B: 54 
+Barrel_C: 66 
+Cauldron: 67 
+Chest: 68 
+Torch.001: 120 
+Pot: 68 
+Book_Holy_C: 55 
+Overlaps: 467
+Totalprops: 498
+
+OverlapPercentage: 93.7751%
+Quality Score: 0.062249
+
+
+Book_Holy_C: 58 
+Cauldron: 56 
+Sand_B: 64 
+Torch.001: 116 
+Barrel_C: 52 
+Chest: 59 
+Pot: 57 
+Overlaps: 413
+Totalprops: 462
+
+OverlapPercentage: 89.39394%
+Quality Score: 0.1060606
+
+
+Book_Holy_C: 53 
+Chest: 64 
+Sand_B: 72 
+Torch.001: 119 
+Barrel_C: 57 
+Pot: 65 
+Cauldron: 57 
+Overlaps: 413
+Totalprops: 487
+
+OverlapPercentage: 84.80493%
+Quality Score: 0.1519507
+
+
+Sand_B: 53 
+Pot: 58 
+Torch.001: 109 
+Cauldron: 58 
+Chest: 59 
+Book_Holy_C: 62 
+Barrel_C: 53 
+Overlaps: 386
+Totalprops: 452
+
+OverlapPercentage: 85.39823%
+Quality Score: 0.1460177
+
+
+Sand_B: 57 
+Book_Holy_C: 59 
+Cauldron: 61 
+Chest: 66 
+Torch.001: 114 
+Barrel_C: 54 
+Pot: 57 
+Overlaps: 370
+Totalprops: 468
+
+OverlapPercentage: 79.05983%
+Quality Score: 0.2094017
+
+
+Barrel_C: 51 
+Book_Holy_C: 47 
+Cauldron: 57 
+Torch.001: 110 
+Chest: 53 
+Sand_B: 66 
+Pot: 54 
+Overlaps: 353
+Totalprops: 438
+
+OverlapPercentage: 80.59361%
+Quality Score: 0.1940639
+
+
+Chest: 57 
+Barrel_C: 45 
+Cauldron: 51 
+Torch.001: 101 
+Book_Holy_C: 59 
+Sand_B: 54 
+Pot: 52 
+Overlaps: 335
+Totalprops: 419
+
+OverlapPercentage: 79.95227%
+Quality Score: 0.2004773
+
+
+Book_Holy_C: 53 
+Cauldron: 67 
+Barrel_C: 61 
+Torch.001: 113 
+Chest: 60 
+Pot: 62 
+Sand_B: 60 
+Overlaps: 408
+Totalprops: 476
+
+OverlapPercentage: 85.71429%
+Quality Score: 0.1428571
+
+
+Cauldron: 46 
+Pot: 43 
+Sand_B: 56 
+Torch.001: 100 
+Book_Holy_C: 52 
+Chest: 48 
+Barrel_C: 54 
+Overlaps: 351
+Totalprops: 399
+
+OverlapPercentage: 87.96992%
+Quality Score: 0.1203008
+
+
+Pot: 57 
+Sand_B: 60 
+Torch.001: 123 
+Barrel_C: 71 
+Cauldron: 65 
+Book_Holy_C: 59 
+Chest: 62 
+Overlaps: 433
+Totalprops: 497
+
+OverlapPercentage: 87.12273%
+Quality Score: 0.1287726
+
+
+Book_Holy_C: 56 
+Cauldron: 58 
+Barrel_C: 51 
+Pot: 56 
+Torch.001: 110 
+Chest: 70 
+Sand_B: 55 
+Overlaps: 356
+Totalprops: 456
+
+OverlapPercentage: 78.07018%
+Quality Score: 0.2192982
+
+
+Book_Holy_C: 59 
+Cauldron: 48 
+Chest: 61 
+Torch.001: 104 
+Pot: 55 
+Sand_B: 45 
+Barrel_C: 56 
+Overlaps: 349
+Totalprops: 428
+
+OverlapPercentage: 81.54205%
+Quality Score: 0.1845794
+
+
+Book_Holy_C: 50 
+Cauldron: 50 
+Torch.001: 108 
+Chest: 56 
+Sand_B: 60 
+Pot: 61 
+Barrel_C: 50 
+Overlaps: 379
+Totalprops: 435
+
+OverlapPercentage: 87.12643%
+Quality Score: 0.1287356
+
+

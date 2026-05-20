@@ -540,131 +540,136 @@ public class WFC : MonoBehaviour
 
     public IEnumerator CollapseTiles(Action doneFuncHook)
     {
-        int overlaps = 0;
-        
-        //StartCollapseLabel:
-        ClearTiles();
-        
-        Stopwatch st = new Stopwatch();
-        st.Start();
-
-        UnityEngine.Debug.Log("Collapse Tiles...");
-
-        doneCollapse = false;
-        _grid = new NodeData[_width, _height, _length];
-
-        _nodesToCollapse.Clear();
-
-        // Start generating tiles with their potential nodes for the path points
-        if (pathNodes.Count > 0)
+        for (int k = 0; k < 2; k++)
         {
-            List<Vector3Int> points = new List<Vector3Int>(); // Used to check for duplicates
+            int overlaps = 0;
+            
+            //StartCollapseLabel:
+            ClearTiles();
+            
+            Stopwatch st = new Stopwatch();
+            st.Start();
 
-            for (int i = 0; i < path.CollapsedPath.Count; i++)
+            UnityEngine.Debug.Log("Collapse Tiles...");
+
+            doneCollapse = false;
+            _grid = new NodeData[_width, _height, _length];
+
+            _nodesToCollapse.Clear();
+
+            // Start generating tiles with their potential nodes for the path points
+            if (pathNodes.Count > 0)
             {
-                // Current point
-                Vector3Int point = Vector3Int.FloorToInt(path.CollapsedPath[i]);
+                List<Vector3Int> points = new List<Vector3Int>(); // Used to check for duplicates
 
-                // If this point has already been generated, continue
-                if (points.FindIndex(p => p.x == point.x && p.y == point.y && p.z == point.z) >= 0) continue;
-
-                PathNode currNode = null;
-
-                foreach(PathNode node in pathNodes)
+                for (int i = 0; i < path.CollapsedPath.Count; i++)
                 {
-                    if (node.CheckContainsPos(i))
+                    // Current point
+                    Vector3Int point = Vector3Int.FloorToInt(path.CollapsedPath[i]);
+
+                    // If this point has already been generated, continue
+                    if (points.FindIndex(p => p.x == point.x && p.y == point.y && p.z == point.z) >= 0) continue;
+
+                    PathNode currNode = null;
+
+                    foreach(PathNode node in pathNodes)
                     {
-                        currNode = node;
-                        break;
+                        if (node.CheckContainsPos(i))
+                        {
+                            currNode = node;
+                            break;
+                        }
                     }
+
+                    // If a point is not connected to a node it is a bug
+                    if (currNode == null)
+                    {
+                        UnityEngine.Debug.LogWarning($"path point {i} does not have a related path node!");
+                        goto doneCollapseLabel;
+                    }
+
+                    // Create a tile for the given point and filter its potential nodes
+                    Tile tile = new Tile(this, point, true);
+                    tile.potentialNodes = currNode.GetPotentialNodes(i, path.CollapsedPath.Count);
+
+                    // Add the tile as one to collapse and the point as already done
+                    _nodesToCollapse.Add(tile);
+                    points.Add(point);
                 }
+            } else _nodesToCollapse.Add(new Tile(this, Vector3Int.zero, true));
 
-                // If a point is not connected to a node it is a bug
-                if (currNode == null)
-                {
-                    UnityEngine.Debug.LogWarning($"path point {i} does not have a related path node!");
-                    goto doneCollapseLabel;
-                }
-
-                // Create a tile for the given point and filter its potential nodes
-                Tile tile = new Tile(this, point, true);
-                tile.potentialNodes = currNode.GetPotentialNodes(i, path.CollapsedPath.Count);
-
-                // Add the tile as one to collapse and the point as already done
-                _nodesToCollapse.Add(tile);
-                points.Add(point);
-            }
-        } else _nodesToCollapse.Add(new Tile(this, Vector3Int.zero, true));
-
-        // The dungeon might have multiple floors
-        for (int story = 0; story < _height; story++)
-        {
-            // Continue to collapse tiles on the current floor
-            while(_nodesToCollapse.Count > 0)
+            // The dungeon might have multiple floors
+            for (int story = 0; story < _height; story++)
             {
-                // Either pause or stop generation based on value
-                yield return new WaitUntil(() => !pauseGeneration);
-
-                int tilesCount = _nodesToCollapse.Count;
-
-                for (int i = 0; i < tilesCount; i++)
-                    CheckNeighbors(_nodesToCollapse[i]);
-                
-                int tileChosenIndex = CheckEntropy(tilesCount);
-                Tile tile = _nodesToCollapse[tileChosenIndex];
-
-                if(tile.potentialNodes.Count < 1)
+                // Continue to collapse tiles on the current floor
+                while(_nodesToCollapse.Count > 0)
                 {
-                    _grid[tile.pos.x, tile.pos.y, tile.pos.z] = _nodes[0];
-                    UnityEngine.Debug.LogWarning($"Cannot Collapse on {tile.pos.x}, {tile.pos.y}, {tile.pos.z}");
+                    // Either pause or stop generation based on value
+                    yield return new WaitUntil(() => !pauseGeneration);
+
+                    int tilesCount = _nodesToCollapse.Count;
+
+                    for (int i = 0; i < tilesCount; i++)
+                        CheckNeighbors(_nodesToCollapse[i]);
+                    
+                    int tileChosenIndex = CheckEntropy(tilesCount);
+                    Tile tile = _nodesToCollapse[tileChosenIndex];
+
+                    if(tile.potentialNodes.Count < 1)
+                    {
+                        _grid[tile.pos.x, tile.pos.y, tile.pos.z] = _nodes[0];
+                        UnityEngine.Debug.LogWarning($"Cannot Collapse on {tile.pos.x}, {tile.pos.y}, {tile.pos.z}");
+
+                        activeCollapsningTile = tile.pos;
+                        goto doneCollapseLabel;
+                    }
+
+                    else
+                    {
+                        // Choose a node based on weight
+                        double[] nodeWeights = CalculateNodesWeights(tile.potentialNodes);
+                        int chosenTileIdx = ChooseWeightedTile(nodeWeights, new System.Random());
+
+                        _grid[tile.pos.x, tile.pos.y, tile.pos.z] = tile.potentialNodes[chosenTileIdx];
+                    }
 
                     activeCollapsningTile = tile.pos;
-                    goto doneCollapseLabel;
+
+                    yield return new WaitForSeconds(collapseWaitTime);
+
+                    overlaps += CollapseTile(tile); 
+                    _nodesToCollapse.RemoveAt(tileChosenIndex);
                 }
-
-                else
-                {
-                    // Choose a node based on weight
-                    double[] nodeWeights = CalculateNodesWeights(tile.potentialNodes);
-                    int chosenTileIdx = ChooseWeightedTile(nodeWeights, new System.Random());
-
-                    _grid[tile.pos.x, tile.pos.y, tile.pos.z] = tile.potentialNodes[chosenTileIdx];
-                }
-
-                activeCollapsningTile = tile.pos;
-
-                yield return new WaitForSeconds(collapseWaitTime);
-
-                overlaps += CollapseTile(tile); 
-                _nodesToCollapse.RemoveAt(tileChosenIndex);
             }
+
+            int totalProps = 0;
+            
+            foreach (var prop in _meshSampler.PropCount)
+            {
+                PropText += $"{prop.Key}: {prop.Value} \n";
+                totalProps += prop.Value;
+            }
+
+            PropText += $"Overlaps: {overlaps}\n";
+            PropText += $"Totalprops: {totalProps}\n\n";
+
+            if (totalProps != 0)
+            {
+                PropText += $"OverlapPercentage: {((float)(overlaps) / (float)(totalProps)) * 100f}%\n";
+                PropText += $"Quality Score: {1 - ((float)(overlaps) / (float)(totalProps))}\n";
+            }
+            
+            TestData.SaveData(PropText);
+            
+            doneCollapse = true;
+            doneCollapseLabel:;
+
+            st.Stop();
+            collapseExecutionTime = st.ElapsedMilliseconds;
+            doneFuncHook();
+
+            yield return new WaitForSeconds(.1f);
         }
-
-        int totalProps = 0;
-        
-        foreach (var prop in _meshSampler.PropCount)
-        {
-            PropText += $"{prop.Key}: {prop.Value} \n";
-            totalProps += prop.Value;
-        }
-
-        PropText += $"Overlaps: {overlaps}\n";
-        PropText += $"Totalprops: {totalProps}\n\n";
-
-        if (totalProps != 0)
-        {
-            PropText += $"OverlapPercentage: {((float)(overlaps) / (float)(totalProps)) * 100f}%\n";
-            PropText += $"Quality Score: {1 - ((float)(overlaps) / (float)(totalProps))}\n";
-        }
-        
-        TestData.SaveData(PropText);
-        
-        doneCollapse = true;
-        doneCollapseLabel:;
-
-        st.Stop();
-        collapseExecutionTime = st.ElapsedMilliseconds;
-        doneFuncHook();
         
         _generatedSamples.Clear();
     }
