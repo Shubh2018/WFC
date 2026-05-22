@@ -147,17 +147,17 @@ public class MeshSampler : MonoBehaviour
         return SampleMesh(mesh, _radius, _tries);
     }
 
-    private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
+    private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries) // Method to sample the meshes. Return a list of Sample
     {
         List<Sample> samples = new List<Sample>();
         List<int> active = new List<int>();
 
-        float[] cdf = BuildTriangleAreaCDF(mesh.sharedMesh.vertices, mesh.sharedMesh.triangles);
-        (Vector3 min, Vector3 max) = BuildBoundingBox(mesh.sharedMesh.vertices);
+        float[] cdf = BuildTriangleAreaCDF(mesh.sharedMesh.vertices, mesh.sharedMesh.triangles);  // Builds mesh triangles' CDF.
+        (Vector3 min, Vector3 max) = BuildBoundingBox(mesh.sharedMesh.vertices); // Builds the bound box of the mesh
 
-        (Vector3[,,] grid, float cellSize, int gx, int gy, int gz) = InitializeGrid(min, max, radius);
+        (Vector3[,,] grid, float cellSize, int gx, int gy, int gz) = InitializeGrid(min, max, radius); // Initializes the grid to store the references to samples
 
-        int triangleIndex = SampleTriangleIndexFromCDF(cdf);
+        int triangleIndex = SampleTriangleIndexFromCDF(cdf);    // returns a random triangle, based on its area
 
         int[] triangles = mesh.sharedMesh.triangles;
         Vector3[] vertices = mesh.sharedMesh.vertices;
@@ -166,8 +166,8 @@ public class MeshSampler : MonoBehaviour
         int i1 = triangles[triangleIndex * 3 + 1];
         int i2 = triangles[triangleIndex * 3 + 2];
 
-        Vector3 p = SamplePointInTriangle(vertices[i0], vertices[i1], vertices[i2]);
-        InsertSampleToGrid(p, grid, min, cellSize);
+        Vector3 p = SamplePointInTriangle(vertices[i0], vertices[i1], vertices[i2]); // Samples point ina triangle based on its barycentric coordinates
+        InsertSampleToGrid(p, grid, min, cellSize); // Inserts the sample in the grids.
 
         Sample sample = new Sample()
         {

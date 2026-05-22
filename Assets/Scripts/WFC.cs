@@ -545,7 +545,7 @@ public class WFC : MonoBehaviour
 
     public IEnumerator CollapseTiles(Action doneFuncHook)
     {
-        for (int k = 0; k < 2; k++)
+        for (int k = 0; k < 10; k++)
         {
             int overlaps = 0;
             

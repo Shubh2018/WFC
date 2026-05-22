@@ -1,0 +1,168 @@
+Sand_B: 62 
+Barrel_C: 58 
+Torch.001: 109 
+Book_Holy_C: 60 
+Cauldron: 46 
+Pot: 50 
+Chest: 59 
+Overlaps: 363
+Totalprops: 444
+
+OverlapPercentage: 81.75676%
+Quality Score: 0.1824324
+
+
+Book_Holy_C: 65 
+Sand_B: 58 
+Pot: 62 
+Torch.001: 117 
+Cauldron: 63 
+Barrel_C: 66 
+Chest: 61 
+Overlaps: 384
+Totalprops: 492
+
+OverlapPercentage: 78.04878%
+Quality Score: 0.2195122
+
+
+Chest: 64 
+Book_Holy_C: 74 
+Torch.001: 132 
+Pot: 74 
+Barrel_C: 66 
+Cauldron: 74 
+Sand_B: 65 
+Overlaps: 485
+Totalprops: 549
+
+OverlapPercentage: 88.34244%
+Quality Score: 0.1165756
+
+
+Pot: 67 
+Barrel_C: 72 
+Sand_B: 71 
+Torch.001: 140 
+Book_Holy_C: 71 
+Cauldron: 72 
+Chest: 74 
+Overlaps: 482
+Totalprops: 567
+
+OverlapPercentage: 85.00882%
+Quality Score: 0.1499118
+
+
+Pot: 66 
+Barrel_C: 65 
+Book_Holy_C: 66 
+Torch.001: 126 
+Chest: 69 
+Sand_B: 56 
+Cauldron: 69 
+Overlaps: 444
+Totalprops: 517
+
+OverlapPercentage: 85.88008%
+Quality Score: 0.1411992
+
+
+Book_Holy_C: 30 
+Barrel_C: 35 
+Torch.001: 65 
+Sand_B: 35 
+Pot: 34 
+Cauldron: 35 
+Chest: 30 
+Overlaps: 256
+Totalprops: 264
+
+OverlapPercentage: 96.9697%
+Quality Score: 0.03030303
+
+
+Pot: 61 
+Barrel_C: 78 
+Cauldron: 60 
+Torch.001: 122 
+Book_Holy_C: 66 
+Sand_B: 53 
+Chest: 63 
+Overlaps: 452
+Totalprops: 503
+
+OverlapPercentage: 89.86083%
+Quality Score: 0.1013917
+
+
+Sand_B: 67 
+Pot: 65 
+Cauldron: 62 
+Torch.001: 123 
+Barrel_C: 59 
+Book_Holy_C: 64 
+Chest: 66 
+Overlaps: 391
+Totalprops: 506
+
+OverlapPercentage: 77.27273%
+Quality Score: 0.2272727
+
+
+Book_Holy_C: 57 
+Cauldron: 77 
+Pot: 63 
+Torch.001: 128 
+Sand_B: 56 
+Chest: 73 
+Barrel_C: 71 
+Overlaps: 499
+Totalprops: 525
+
+OverlapPercentage: 95.04762%
+Quality Score: 0.04952381
+
+
+Chest: 64 
+Sand_B: 72 
+Book_Holy_C: 66 
+Torch.001: 123 
+Cauldron: 57 
+Barrel_C: 61 
+Pot: 68 
+Overlaps: 399
+Totalprops: 511
+
+OverlapPercentage: 78.08219%
+Quality Score: 0.2191781
+
+
+Cauldron: 63 
+Chest: 62 
+Book_Holy_C: 63 
+Barrel_C: 59 
+Torch.001: 122 
+Pot: 66 
+Sand_B: 66 
+Overlaps: 416
+Totalprops: 501
+
+OverlapPercentage: 83.03394%
+Quality Score: 0.1696607
+
+
+Chest: 32 
+Barrel_C: 40 
+Pot: 31 
+Torch.001: 63 
+Book_Holy_C: 32 
+Sand_B: 32 
+Cauldron: 28 
+Overlaps: 229
+Totalprops: 258
+
+OverlapPercentage: 88.75969%
+Quality Score: 0.1124031
+
+
