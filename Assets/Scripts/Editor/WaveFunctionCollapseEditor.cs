@@ -83,11 +83,15 @@ public class WaveFunctionCollapseEditor : Editor
         
         TextField textField = rootTree.Q<TextField>("FileName");
         
+        IntegerField intField = rootTree.Q<IntegerField>("LevelCount");
+        
         Button createFileButton = rootTree.Q<Button>("CreateFile");
         createFileButton.RegisterCallback<ClickEvent>((ClickEvent evt) =>
         {
             TestData.CreateFile(textField.text);
         });
+        
+        intField.RegisterCallback<ChangeEvent<int>>((ChangeEvent<int> evt) => WaveFunctionCollapse.SetLevelCount(evt.newValue));
         
         SetGenLabels(0, 0.0, 1.0f);
         

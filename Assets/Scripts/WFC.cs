@@ -186,6 +186,8 @@ public class WFC : MonoBehaviour
 
     [SerializeField] private float _samplingRadius = 0.5f;
     [SerializeField] private int _samplingTries = 30;
+
+    [SerializeField] private int _levelCount = 0;
     
     // List to save the samples before generation
     // currently saving 5 distinct sample data 
@@ -382,6 +384,8 @@ public class WFC : MonoBehaviour
             }
         }
     }
+    
+    public void SetLevelCount(int count) => _levelCount = count;
 
     // Generate new tiles by creating new ones by rotating the current ones
     public void GenerateTiles()
@@ -545,7 +549,9 @@ public class WFC : MonoBehaviour
 
     public IEnumerator CollapseTiles(Action doneFuncHook)
     {
-        for (int k = 0; k < 10; k++)
+        float qualityScore = 0;
+        
+        for (int k = 0; k < _levelCount; k++)
         {
             int overlaps = 0;
             
@@ -657,11 +663,14 @@ public class WFC : MonoBehaviour
 
             PropText += $"Overlaps: {overlaps}\n";
             PropText += $"Totalprops: {totalProps}\n\n";
-
+            
             if (totalProps != 0)
             {
-                PropText += $"OverlapPercentage: {((float)(overlaps) / (float)(totalProps)) * 100f}%\n";
-                PropText += $"Quality Score: {1 - ((float)(overlaps) / (float)(totalProps))}\n";
+                // PropText += $"OverlapPercentage: {((float)(overlaps) / (float)(totalProps)) * 100f}%\n";
+                float score = 1 - ((float)(overlaps) / (float)(totalProps));
+                PropText += $"Quality Score: {score}\n";
+
+                qualityScore += score;
             }
             
             TestData.SaveData(PropText);
@@ -675,6 +684,10 @@ public class WFC : MonoBehaviour
 
             yield return new WaitForSeconds(.1f);
         }
+
+        PropText = $"\n\nAverage Qaulity Score: {qualityScore / _levelCount}";
+        
+        TestData.SaveData(PropText);
         
         _generatedSamples.Clear();
     }

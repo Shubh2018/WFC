@@ -21,6 +21,7 @@
                 <ui:ListView name="_pathPoints" show-foldout-header="true" show-add-remove-footer="true" header-title="Path Points" data-source-type="WFC, Assembly-CSharp" data-source-path="_pathPoints" binding-path="_pathPoints"/>
             </ui:Tab>
             <ui:Tab label="Collapse" tabindex="2" enabled="true">
+                <ui:IntegerField label="LevelCount&#x9;" value="1" name="LevelCount" binding-path="_levelCount"/>
                 <ui:GroupBox name="CollapseGroup" style="flex-direction: column; flex-grow: 0; justify-content: space-evenly; align-content: stretch; align-self: center;">
                     <ui:Button text="Start Collapse" name="_collapseTiles" data-source-type="WFC, Assembly-CSharp" style="flex-direction: row; flex-wrap: nowrap; align-content: stretch; align-self: center; justify-content: space-evenly;"/>
                 </ui:GroupBox>
