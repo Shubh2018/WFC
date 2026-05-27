@@ -267,6 +267,17 @@ public class WFC : MonoBehaviour
         if (collapseTilesRoutine != null) StopCoroutine(collapseTilesRoutine);
     }
 
+    public void StartCollapseTesting(Action doneFuncHook)
+    {
+        collapseTilesRoutine = CollapseTilesTesting(doneFuncHook, _levelCount);
+        StartCoroutine(collapseTilesRoutine);
+    }
+
+    public void StopCollapseTesting()
+    {
+        StopCollapse();
+    }
+
     // Used with the Unity VisualElement editor to save transitive information to the AStar object
     public void SavePathSettings(bool pathState, bool pathPointsState, bool pathStaircases, bool pathField, bool pathFinding, bool pathDelay)
     {
@@ -282,6 +293,18 @@ public class WFC : MonoBehaviour
         // Toggle rendering of the LineRenderer used to display the A* path
         LineRenderer lr = gameObject.GetComponent<LineRenderer>();
         if (lr) lr.enabled = pathState;
+    }
+
+    // Used with the Unity VisualElement editor to save transitive information to the Mesh Sampler object
+    public void SavePDSSettings(bool pdsFloorSamples, bool pdsWallSamples, bool pdsSamplePoints, float samplesRenderDistance)
+    {
+        // If the mesh sampler object exist, toggle its settings
+        if (_meshSampler) {
+            _meshSampler.enableGizmosFloorSamples = pdsFloorSamples;
+            _meshSampler.enableGizmosWallSamples = pdsWallSamples;
+            _meshSampler.enableGizmosSamplePoints = pdsSamplePoints;
+            _meshSampler.samplesRenderDistance = samplesRenderDistance;
+        }
     }
 
     public void OnDrawGizmos()
@@ -548,10 +571,120 @@ public class WFC : MonoBehaviour
     }
 
     public IEnumerator CollapseTiles(Action doneFuncHook)
+    {       
+        //StartCollapseLabel:
+        ClearTiles();
+        
+        Stopwatch st = new Stopwatch();
+        st.Start();
+
+        UnityEngine.Debug.Log("Collapse Tiles...");
+
+        doneCollapse = false;
+        _grid = new NodeData[_width, _height, _length];
+
+        _nodesToCollapse.Clear();
+
+        // Start generating tiles with their potential nodes for the path points
+        if (pathNodes.Count > 0)
+        {
+            List<Vector3Int> points = new List<Vector3Int>(); // Used to check for duplicates
+
+            for (int i = 0; i < path.CollapsedPath.Count; i++)
+            {
+                // Current point
+                Vector3Int point = Vector3Int.FloorToInt(path.CollapsedPath[i]);
+
+                // If this point has already been generated, continue
+                if (points.FindIndex(p => p.x == point.x && p.y == point.y && p.z == point.z) >= 0) continue;
+
+                PathNode currNode = null;
+
+                foreach(PathNode node in pathNodes)
+                {
+                    if (node.CheckContainsPos(i))
+                    {
+                        currNode = node;
+                        break;
+                    }
+                }
+
+                // If a point is not connected to a node it is a bug
+                if (currNode == null)
+                {
+                    UnityEngine.Debug.LogWarning($"path point {i} does not have a related path node!");
+                    goto doneCollapseLabel;
+                }
+
+                // Create a tile for the given point and filter its potential nodes
+                Tile tile = new Tile(this, point, true);
+                tile.potentialNodes = currNode.GetPotentialNodes(i, path.CollapsedPath.Count);
+
+                // Add the tile as one to collapse and the point as already done
+                _nodesToCollapse.Add(tile);
+                points.Add(point);
+            }
+        } else _nodesToCollapse.Add(new Tile(this, Vector3Int.zero, true));
+
+        // The dungeon might have multiple floors
+        for (int story = 0; story < _height; story++)
+        {
+            // Continue to collapse tiles on the current floor
+            while(_nodesToCollapse.Count > 0)
+            {
+                // Either pause or stop generation based on value
+                yield return new WaitUntil(() => !pauseGeneration);
+
+                int tilesCount = _nodesToCollapse.Count;
+
+                for (int i = 0; i < tilesCount; i++)
+                    CheckNeighbors(_nodesToCollapse[i]);
+                
+                int tileChosenIndex = CheckEntropy(tilesCount);
+                Tile tile = _nodesToCollapse[tileChosenIndex];
+
+                if(tile.potentialNodes.Count < 1)
+                {
+                    _grid[tile.pos.x, tile.pos.y, tile.pos.z] = _nodes[0];
+                    UnityEngine.Debug.LogWarning($"Cannot Collapse on {tile.pos.x}, {tile.pos.y}, {tile.pos.z}");
+
+                    activeCollapsningTile = tile.pos;
+                    goto doneCollapseLabel;
+                }
+
+                else
+                {
+                    // Choose a node based on weight
+                    double[] nodeWeights = CalculateNodesWeights(tile.potentialNodes);
+                    int chosenTileIdx = ChooseWeightedTile(nodeWeights, new System.Random());
+
+                    _grid[tile.pos.x, tile.pos.y, tile.pos.z] = tile.potentialNodes[chosenTileIdx];
+                }
+
+                activeCollapsningTile = tile.pos;
+
+                yield return new WaitForSeconds(collapseWaitTime);
+
+                CollapseTile(tile); 
+                _nodesToCollapse.RemoveAt(tileChosenIndex);
+            }
+        }
+        
+        doneCollapse = true;
+        doneCollapseLabel:;
+
+        st.Stop();
+        collapseExecutionTime = st.ElapsedMilliseconds;
+        doneFuncHook();
+
+        yield return new WaitForSeconds(.1f);
+    }
+
+    public IEnumerator CollapseTilesTesting(Action doneFuncHook, int levelCount)
     {
         float qualityScore = 0;
         
-        for (int k = 0; k < _levelCount; k++)
+        for (int k = 0; k < levelCount; k++)
         {
             int overlaps = 0;
             
@@ -688,8 +821,6 @@ public class WFC : MonoBehaviour
         PropText = $"\n\nAverage Qaulity Score: {qualityScore / _levelCount}";
         
         TestData.SaveData(PropText);
-        
-        _generatedSamples.Clear();
     }
 
     private double[] CalculateNodesWeights(List<NodeData> nodes) {

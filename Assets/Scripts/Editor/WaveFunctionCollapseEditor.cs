@@ -54,7 +54,7 @@ public class WaveFunctionCollapseEditor : Editor
         Slider collapseSpeedSlider = rootTree.Q<Slider>("_collapseSpeedSlider");
         collapseSpeedSlider.RegisterCallback<ChangeEvent<float>>(UpdateCollapseTime);
 
-        // Debug Settings
+        // Debug Settings (A*)
         Toggle togglePathLine = rootTree.Q<Toggle>("_togglePath");
         Toggle togglePathPoints = rootTree.Q<Toggle>("_togglePathPoints");
         Toggle togglePathStairs = rootTree.Q<Toggle>("_togglePathStairs");
@@ -80,10 +80,51 @@ public class WaveFunctionCollapseEditor : Editor
         togglePathDelay.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
             WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, togglePathField.value, togglePathFinding.value, evt.newValue)
         );
+
+        // Debug Settings (PDS)
+        Toggle togglePDSFloorSamples = rootTree.Q<Toggle>("_togglePDSFloorSamples");
+        Toggle togglePDSWallSamples = rootTree.Q<Toggle>("_togglePDSWallSamples");
+        Toggle togglePDSSamplePoints = rootTree.Q<Toggle>("_togglePDSSamplePoints");
+        Slider sliderPDSSamplesRenderDistance = rootTree.Q<Slider>("_sliderPDSSamplesRenderDistance");
         
+        togglePDSFloorSamples.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+            WaveFunctionCollapse.SavePDSSettings(evt.newValue, togglePDSWallSamples.value, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
+        );
+
+        togglePDSWallSamples.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+            WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, evt.newValue, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
+        );
+
+        togglePDSSamplePoints.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => {
+            if (evt.newValue) {
+                WaveFunctionCollapse.SavePDSSettings(false, false, true, sliderPDSSamplesRenderDistance.value);
+                togglePDSFloorSamples.value = false;
+                togglePDSFloorSamples.SetEnabled(false);
+                togglePDSWallSamples.value = false;
+                togglePDSWallSamples.SetEnabled(false);
+            }
+
+            else {
+                WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, false, sliderPDSSamplesRenderDistance.value);
+                togglePDSFloorSamples.SetEnabled(true);
+                togglePDSWallSamples.SetEnabled(true);
+            }
+        });
+
+        sliderPDSSamplesRenderDistance.RegisterCallback<ChangeEvent<float>>((ChangeEvent<float> evt) =>
+            WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, togglePDSSamplePoints.value, evt.newValue)
+        );
+        
+        // Testing tab
         TextField textField = rootTree.Q<TextField>("FileName");
         
         IntegerField intField = rootTree.Q<IntegerField>("LevelCount");
+
+        Button collapseTilesTestingButton = rootTree.Q<Button>("_collapseTilesTest");
+        collapseTilesTestingButton.RegisterCallback<ClickEvent>(CollapseTilesTesting);
+
+        Button stopTestingButton = rootTree.Q<Button>("_stopTesting");
+        stopTestingButton.RegisterCallback<ClickEvent>(StopTesting);
         
         Button createFileButton = rootTree.Q<Button>("CreateFile");
         createFileButton.RegisterCallback<ClickEvent>((ClickEvent evt) =>
@@ -136,8 +177,6 @@ public class WaveFunctionCollapseEditor : Editor
     {
         WaveFunctionCollapse.pauseGeneration = false;
         WaveFunctionCollapse.StartCollapse(() => {
-            SetLabelText("_doneLabel", "Done...");
-            SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
             ResetControls();
         });
 
@@ -148,6 +187,34 @@ public class WaveFunctionCollapseEditor : Editor
         SetSliderState("_collapseSpeedSlider", true);
         SetButtonState("_collapseTiles", false);
         SetLabelText("_doneLabel", "");
+    }
+
+    private void CollapseTilesTesting(ClickEvent evt)
+    {
+        WaveFunctionCollapse.pauseGeneration = false;
+        WaveFunctionCollapse.StartCollapseTesting(() => {
+            SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
+            SetButtonState("_collapseTilesTest", true);
+            SetButtonState("CreateFile", true);
+            SetButtonState("_stopTesting", false);
+        });
+
+        SetButtonState("_collapseTilesTest", false);
+        SetButtonState("CreateFile", false);
+        SetButtonState("_stopTesting", true);
+        SetLabelText("TestLabel", "testing...");
+    }
+
+    private void StopTesting(ClickEvent evt)
+    {
+        WaveFunctionCollapse.pauseGeneration = false;
+        WaveFunctionCollapse.StopCollapseTesting();
+
+        SetButtonState("_collapseTilesTest", true);
+        SetButtonState("CreateFile", true);
+        SetButtonState("_stopTesting", false);
+
+        SetLabelText("TestLabel", "testing stopped manually...");
     }
 
     private void PauseCollapseOfTiles(ClickEvent evt)

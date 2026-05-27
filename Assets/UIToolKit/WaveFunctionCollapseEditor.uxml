@@ -21,7 +21,6 @@
                 <ui:ListView name="_pathPoints" show-foldout-header="true" show-add-remove-footer="true" header-title="Path Points" data-source-type="WFC, Assembly-CSharp" data-source-path="_pathPoints" binding-path="_pathPoints"/>
             </ui:Tab>
             <ui:Tab label="Collapse" tabindex="2" enabled="true">
-                <ui:IntegerField label="LevelCount&#x9;" value="1" name="LevelCount" binding-path="_levelCount"/>
                 <ui:GroupBox name="CollapseGroup" style="flex-direction: column; flex-grow: 0; justify-content: space-evenly; align-content: stretch; align-self: center;">
                     <ui:Button text="Start Collapse" name="_collapseTiles" data-source-type="WFC, Assembly-CSharp" style="flex-direction: row; flex-wrap: nowrap; align-content: stretch; align-self: center; justify-content: space-evenly;"/>
                 </ui:GroupBox>
@@ -46,9 +45,14 @@
                 <uie:PropertyField name="Objects" binding-path="_gameObjectsToSpawn" data-source-path="_gameObjectsToSpawn" label="Game Objects To Spawn" tabindex="3"/>
             </ui:Tab>
             <ui:Tab label="Testing" tabindex="4" enabled="true">
-                <ui:Label text="Testing ..." name="TestLabel"/>
                 <ui:TextField label="FileName" placeholder-text="enter file name" name="FileName"/>
-                <ui:Button text="Create File" name="CreateFile"/>
+                <ui:IntegerField label="LevelCount&#x9;" value="1" name="LevelCount" binding-path="_levelCount"/>
+                <ui:GroupBox name="TestingGroup" style="flex-direction: row; flex-grow: 0; justify-content: space-evenly; align-content: stretch; align-self: center;">
+                    <ui:Button text="Start Testing" name="_collapseTilesTest" data-source-type="WFC, Assembly-CSharp" style="flex-direction: row; flex-wrap: nowrap; align-content: stretch; align-self: center; justify-content: space-evenly;"/>
+                    <ui:Button text="Create File" name="CreateFile"/>
+                    <ui:Button text="Stop Testing" name="_stopTesting" data-source-type="WFC, Assembly-CSharp" enabled="false" style="flex-direction: row; flex-wrap: nowrap; align-content: stretch; align-self: center; justify-content: space-evenly;"/>
+                </ui:GroupBox>
+                <ui:Label text="" name="TestLabel" enabled="true"/>
             </ui:Tab>
         </ui:TabView>
     </ui:VisualElement>
@@ -68,6 +72,12 @@
                 <ui:Toggle label="Enable Field" name="_togglePathField" value="false" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPathField" binding-path="enableGizmosPathField"/>
                 <ui:Toggle label="Enable Pathfinding" name="_togglePathFinding" value="true" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosPathFinding" binding-path="enableGizmosPathFinding"/>
                 <ui:Toggle label="Enable Delay" name="_togglePathDelay" value="true" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosDelay" binding-path="enableGizmosDelay"/>
+            </ui:GroupBox>
+            <ui:GroupBox text="PDS" name="GroupBox" style="padding-right: 5px; padding-left: 5px; border-left-color: rgb(48, 48, 48); border-right-color: rgb(48, 48, 48); border-top-color: rgb(48, 48, 48); border-bottom-color: rgb(48, 48, 48); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px;">
+                <ui:Toggle label="Enable Floor Points" name="_togglePDSFloorSamples" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosFloorSamples" binding-path="enableGizmosFloorSamples" value="false" toggle-on-label-click="true"/>
+                <ui:Toggle label="Enable Wall Points" name="_togglePDSWallSamples" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosWallSamples" binding-path="enableGizmosWallSamples" value="false"/>
+                <ui:Toggle label="Enable Samples" name="_togglePDSSamplePoints" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosSamplePoints" binding-path="enableGizmosSamplePoints" value="true"/>
+                <ui:Slider label="Samples Render Distance" value="20" high-value="50" name="_sliderPDSSamplesRenderDistance" style="flex-direction: column;"/>
             </ui:GroupBox>
         </ui:ScrollView>
     </ui:GroupBox>

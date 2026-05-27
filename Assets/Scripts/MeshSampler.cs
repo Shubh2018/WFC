@@ -42,6 +42,7 @@ public class MeshSampler : MonoBehaviour
 
     private List<Sample> _floorSamplesAll = new List<Sample>();
     private List<Sample> _wallSamplesAll = new List<Sample>();
+    private List<Sample> _samplePointsAll = new List<Sample>();
 
     private List<GameObject> _spawnedObjects = new List<GameObject>();
 
@@ -52,6 +53,12 @@ public class MeshSampler : MonoBehaviour
     private float _spawnChance = 0.3f;
 
     public string PropText { get; private set; }
+
+    // Debug Settings
+    public bool enableGizmosFloorSamples = false;
+    public bool enableGizmosWallSamples = false;
+    public bool enableGizmosSamplePoints = false;
+    public float samplesRenderDistance = 20;
 
     public void Generate(MeshFilter meshFilter)
     {
@@ -84,7 +91,6 @@ public class MeshSampler : MonoBehaviour
     public void AddSamples(List<Sample> samplePoints)
     {
         _samplePoints.Clear();
-
         _samplePoints.AddRange(samplePoints);
     }
 
@@ -99,6 +105,7 @@ public class MeshSampler : MonoBehaviour
 
         _floorSamplesAll.Clear();
         _wallSamplesAll.Clear();
+        _samplePointsAll.Clear();
 
         _samplesNearWalls.Clear();
         _samplesInMid.Clear();
@@ -114,31 +121,46 @@ public class MeshSampler : MonoBehaviour
         Debug.Log($"FloorSamples: {_floorSamplesAll.Count}");
     }
 
+    private bool WithinDisOfCam(Vector3 pos, float maxDistance)
+    {
+        Camera cam = Camera.current;
+        float d = Vector3.Distance(pos, cam.transform.position);
+        return d <= maxDistance;
+    }
+
     private void OnDrawGizmos()
     {
-        return;
+        if (enableGizmosFloorSamples) {
+            Gizmos.color = Color.white;
 
-        Gizmos.color = Color.white;
-
-        foreach (var floorPoint in _floorSamplesAll)
-        {
-            Gizmos.DrawSphere(floorPoint.sample, 0.01f);
-            Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .05f);
+            foreach (var floorPoint in _floorSamplesAll)
+            {
+                if (!WithinDisOfCam(floorPoint.sample, samplesRenderDistance)) continue;
+                Gizmos.DrawSphere(floorPoint.sample, 0.1f);
+                Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .1f);
+            }
         }
 
-        Gizmos.color = Color.red;
+        if (enableGizmosWallSamples) {
+            Gizmos.color = Color.blue;
 
-        foreach (var wallPoint in _wallSamplesAll)
-        {
-            Gizmos.DrawSphere(wallPoint.sample, 0.01f);
-            Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .05f);
+            foreach (var wallPoint in _wallSamplesAll)
+            {
+                if (!WithinDisOfCam(wallPoint.sample, samplesRenderDistance)) continue;
+                Gizmos.DrawSphere(wallPoint.sample, 0.1f);
+                Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .1f);
+            }
         }
 
-        Gizmos.color = Color.red;
+        if (enableGizmosSamplePoints) {
+            Gizmos.color = Color.red;
 
-        foreach (var samplePoint in _samplePoints)
-        {
-            Gizmos.DrawSphere(samplePoint.sample, 0.01f);
+            foreach (var samplePoint in _samplePointsAll)
+            {
+                if (!WithinDisOfCam(samplePoint.sample, samplesRenderDistance)) continue;
+                Gizmos.DrawSphere(samplePoint.sample, 0.1f);
+                Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * .1f);
+            }
         }
     }
 
@@ -464,11 +486,14 @@ public class MeshSampler : MonoBehaviour
         //                                             (Vector3.Dot(s.triangleNormal, Vector3.up) > 0 &&
         //                                              (s.sample.x > min.x && s.sample.x < max.x) && (s.sample.z > min.z && s.sample.z < max.z))));
         
+        _samplePointsAll.AddRange(samples);
         _floorSamples.AddRange(samples.FindAll(s => (Vector3.Dot(s.triangleNormal, Vector3.up) > 0)));
         samples.RemoveAll(s => (Vector3.Dot(s.triangleNormal, Vector3.up) > 0));
+        _floorSamplesAll.AddRange(_floorSamples);
 
         // _floorSamplesAll.AddRange(_floorSamples);
         _wallSamples.AddRange(samples);
+        _wallSamplesAll.AddRange(samples);
 
         // _wallSamples.AddRange(samples.FindAll(s => ((s.sample.y > thresholdMin && s.sample.y <= thresholdMax)
         //                                             && (s.sample.y > min.y && s.sample.y < max.y))));
@@ -596,8 +621,7 @@ public class MeshSampler : MonoBehaviour
 
                 PropObject propObj = Instantiate(prop.Prop, nodeObj.transform, false).GetComponent<PropObject>();
                 propObj.transform.localPosition = nodeObj.transform.InverseTransformPoint(s.sample);
-                propObj.transform.localEulerAngles =
-                    new Vector3(0, Random.Range(0, 360), 0);
+                propObj.transform.localEulerAngles = new Vector3(0, Random.Range(0, 360), 0);
                 
                 // overlapCount += propObj.IsOverlappingNode();
                 overlapCount += propObj.IsOverlappingProp();
