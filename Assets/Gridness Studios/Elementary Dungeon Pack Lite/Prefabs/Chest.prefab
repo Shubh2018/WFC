@@ -76,7 +76,9 @@ MonoBehaviour:
   _nodeLayer:
     serializedVersion: 2
     m_Bits: 128
-  _raycastLength: 1.5
+  _raycastLength: 2
+  _lamp: 0
+  _radius: 0.1
 --- !u!1001 &6565948957760492833
 PrefabInstance:
   m_ObjectHideFlags: 0

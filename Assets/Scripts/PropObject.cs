@@ -26,8 +26,8 @@ public class PropObject : MonoBehaviour
 
            overlapCount += 2;
            
-           // Debug.Log($"Destroyed {this.gameObject.name}");
-           // DestroyImmediate(this.gameObject); 
+           Debug.Log($"Destroyed {this.gameObject.name}");
+           DestroyImmediate(this.gameObject); 
         }
 
         else
@@ -38,8 +38,8 @@ public class PropObject : MonoBehaviour
 
             overlapCount += 1;
             
-            // Debug.Log($"Destroyed {this.gameObject.name}");
-            // DestroyImmediate(this.gameObject); 
+            Debug.Log($"Destroyed {this.gameObject.name}");
+            DestroyImmediate(this.gameObject); 
         }
         
         return overlapCount;
@@ -54,7 +54,7 @@ public class PropObject : MonoBehaviour
             if (Physics.Raycast(this.transform.position + _rayCenter, this.transform.forward, out RaycastHit hit,
                     _raycastLength, _nodeLayer))
             {
-                rotation += 90.0f;
+                rotation += UnityEngine.Random.Range(-30.0f, 30.0f);
                 this.transform.localEulerAngles = new Vector3(this.transform.localEulerAngles.x, rotation, this.transform.localEulerAngles.z);
             }
 

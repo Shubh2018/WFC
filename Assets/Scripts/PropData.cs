@@ -19,6 +19,8 @@ public class PropData : ScriptableObject
 {
     [SerializeField] private GameObject _prop;
 
+    //Neighbor List
+
     [SerializeField] private PropPlacement placement;
     [SerializeField] private int _maxCount;
 

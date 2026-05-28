@@ -134,10 +134,10 @@ public class PathNode
         List<NodeData> potentialNodes = new List<NodeData>(parent.getNodes);
         potentialNodes.AddRange(parent.getNodesGen);
 
-        // if (index >= pathCount - 1)
-        // {
-        //     potentialNodes.RemoveAll((node) => !node.IsDeadEnd);
-        // }
+        if (index >= pathCount - 1)
+        {
+            potentialNodes.RemoveAll((node) => !node.IsDeadEnd);
+        }
         
         // Check if this node is part of a staircase
         if (parent.path.CheckStaircaseOverlap(Vector3Int.FloorToInt(parent.path.CollapsedPath[pathIndicies[0]]))) 

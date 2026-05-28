@@ -477,14 +477,14 @@ public class MeshSampler : MonoBehaviour
             max.z = Mathf.Max(max.z, v.sample.z);
         }
 
-        float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 1.15f;
-        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.2f;
+        float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 1.1f;
+        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.25f;
 
         float mid = (Mathf.Abs((min.y + max.y) / 2) + max.y) / 2;
 
-        // _floorSamples.AddRange(samples.FindAll(s => (s.sample.y < thresholdMin) &&
-        //                                             (Vector3.Dot(s.triangleNormal, Vector3.up) > 0 &&
-        //                                              (s.sample.x > min.x && s.sample.x < max.x) && (s.sample.z > min.z && s.sample.z < max.z))));
+        _floorSamples.AddRange(samples.FindAll(s => (s.sample.y < thresholdMin) &&
+                                                    (Vector3.Dot(s.triangleNormal, Vector3.up) > 0 &&
+                                                     (s.sample.x > min.x && s.sample.x < max.x) && (s.sample.z > min.z && s.sample.z < max.z))));
         
         _samplePointsAll.AddRange(samples);
         _floorSamples.AddRange(samples.FindAll(s => (Vector3.Dot(s.triangleNormal, Vector3.up) > 0)));
@@ -492,36 +492,34 @@ public class MeshSampler : MonoBehaviour
         _floorSamplesAll.AddRange(_floorSamples);
 
         // _floorSamplesAll.AddRange(_floorSamples);
-        _wallSamples.AddRange(samples);
-        _wallSamplesAll.AddRange(samples);
+        // _wallSamples.AddRange(samples);
+        // _wallSamplesAll.AddRange(samples);
 
         // _wallSamples.AddRange(samples.FindAll(s => ((s.sample.y > thresholdMin && s.sample.y <= thresholdMax)
-        //                                             && (s.sample.y > min.y && s.sample.y < max.y))));
-        
-        // _wallSamples.AddRange(samples.FindAll(s => Mathf.Abs(mid - s.sample.y) < 0.1f));
-        // _wallSamplesAll.AddRange(_wallSamples);
+        //                                              && (s.sample.y > min.y && s.sample.y < max.y))));
+    
+        _wallSamples.AddRange(samples.FindAll(s => Mathf.Abs(mid - s.sample.y) < 0.1f));
+        _wallSamplesAll.AddRange(_wallSamples);
 
-        // for (int i = 0; i < _wallSamples.Count; i++)
-        // {
-        //     for (int j = 0; j < _floorSamples.Count; j++)
-        //     {
-        //         Vector3 floorSample = _floorSamples[j].sample;
-        //         floorSample.y = _wallSamples[i].sample.y;
-        //
-        //         if (Vector3.Distance(_wallSamples[i].sample, floorSample) > minDist
-        //             && Vector3.Distance(_wallSamples[i].sample, floorSample) <= maxDist)
-        //         {
-        //             _samplesNearWalls.Add(_floorSamples[j]);
-        //             _floorSamples.RemoveAt(j);
-        //         }
-        //
-        //         else
-        //         {
-        //             _samplesInMid.Add(_floorSamples[j]);
-        //             // Debug.Log($"In Sort Method: {_floorSamples[j].sample}");
-        //         }
-        //     }
-        // }
+        for (int i = 0; i < _wallSamples.Count; i++)
+        {
+            for (int j = 0; j < _floorSamples.Count; j++)
+            {
+                Vector3 floorSample = _floorSamples[j].sample;
+                floorSample.y = _wallSamples[i].sample.y;
+                        if (Vector3.Distance(_wallSamples[i].sample, floorSample) > minDist
+                    && Vector3.Distance(_wallSamples[i].sample, floorSample) <= maxDist)
+                {
+                    _samplesNearWalls.Add(_floorSamples[j]);
+                    _floorSamples.RemoveAt(j);
+                }
+                        else
+                {
+                    _samplesInMid.Add(_floorSamples[j]);
+                    // Debug.Log($"In Sort Method: {_floorSamples[j].sample}");
+                }
+            }
+        }
 
         return (min, max);
     }
@@ -584,8 +582,8 @@ public class MeshSampler : MonoBehaviour
             }
         }
 
-        // else
-        //     toSpawn.FloorPrefabs.RemoveAll((prop) => prop.PropType == Prop.Objective);
+        else
+            toSpawn.FloorPrefabs.RemoveAll((prop) => prop.PropType == Prop.Objective);
 
         List<Sample> filteredSamples = new List<Sample>();
         filteredSamples.AddRange(_floorSamples);
@@ -623,7 +621,7 @@ public class MeshSampler : MonoBehaviour
                 propObj.transform.localPosition = nodeObj.transform.InverseTransformPoint(s.sample);
                 propObj.transform.localEulerAngles = new Vector3(0, Random.Range(0, 360), 0);
                 
-                // overlapCount += propObj.IsOverlappingNode();
+                propObj.IsOverlappingNode();
                 overlapCount += propObj.IsOverlappingProp();
 
                 if(!propObj) continue;
@@ -637,13 +635,11 @@ public class MeshSampler : MonoBehaviour
 
                 _spawnedObjects.Add(propObj.gameObject);
                 filteredSamples.RemoveAt(sampleIndex);
-                // Debug.Log($"FilterdCount before deletion {filteredSamples.Count}");
-                // filteredSamples.RemoveAll((sample) => Vector3.Distance(sample.sample, s.sample) < .75f);
-                // Debug.Log($"FilterdCount after deletion {filteredSamples.Count}");
+                filteredSamples.RemoveAll((sample) => Vector3.Distance(sample.sample, s.sample) < .75f);
                 
                 propCount += 1;
 
-                // floorCount -= 1;
+                floorCount -= 1;
             }
 
             else
@@ -732,47 +728,6 @@ public class MeshSampler : MonoBehaviour
 
         return overlapCount;
     }
-
-    // private List<Sample> FilterSamples(List<Sample> samplesToFilter, PropPlacement placement, Vector3 mid)
-    // {
-    //     List<Sample> filteredSamples;
-    //
-    //     switch (placement)
-    //     {
-    //         case PropPlacement.NearWall:
-    //             filteredSamples = new List<Sample>(_samplesNearWalls);
-    //             _samplesNearWalls.Clear();
-    //             break;
-    //
-    //         case PropPlacement.Mid:
-    //             filteredSamples = new List<Sample>(_samplesInMid);
-    //             _samplesInMid.Clear();
-    //             break;
-    //
-    //         case PropPlacement.TopLeft:
-    //             filteredSamples = new List<Sample>(samplesToFilter.FindAll(s => (s.sample.z > mid.z && s.sample.x < mid.x)));
-    //             break;
-    //
-    //         case PropPlacement.TopRight:
-    //             filteredSamples = new List<Sample>(samplesToFilter.FindAll(s => (s.sample.z > mid.z && s.sample.x > mid.x)));
-    //             break;
-    //
-    //         case PropPlacement.BottomLeft:
-    //             filteredSamples = new List<Sample>(samplesToFilter.FindAll(s => (s.sample.z < mid.z && s.sample.x < mid.x)));
-    //             break;
-    //
-    //         case PropPlacement.BottomRight:
-    //             filteredSamples = new List<Sample>(samplesToFilter.FindAll(s => (s.sample.z < mid.z && s.sample.x > mid.x)));
-    //             break;
-    //
-    //         default:
-    //             filteredSamples = new List<Sample>(samplesToFilter);
-    //             break;
-    //     }
-    //
-    //     // samplesToFilter.Clear();
-    //     return filteredSamples;
-    // }
 }
 
 [System.Serializable]
