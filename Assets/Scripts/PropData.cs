@@ -1,18 +1,5 @@
 using UnityEngine;
-
-public enum PropPlacement
-{
-    Floor,
-    Wall,
-    Ceiling
-};
-
-public enum Prop
-{
-    Decoration,
-    Objective,
-    Enemy
-};
+using System.Collections.Generic; 
 
 [CreateAssetMenu(fileName = "PropData", menuName = "Props/PropData")]
 public class PropData : ScriptableObject
@@ -21,25 +8,32 @@ public class PropData : ScriptableObject
 
     //Neighbor List
 
-    [SerializeField] private PropPlacement placement;
+    [SerializeField] private Placement placement;
     [SerializeField] private int _maxCount;
 
     [SerializeField] private bool _checkOrentation;
     [SerializeField] private bool _limitOnePerRoom;
 
-    [SerializeField] private Prop _propType;
+    [SerializeField] private PropType _propType;
     [SerializeField] [Range(0, 1)] private float _spawnChance = 0.5f;
 
-    [SerializeField] private NodeType _nodeTypeToSpawnIn;
+    [SerializeField] private EnvironmentType _environment;
+    [SerializeField] private List<PropData> _neighbors;
+
+//To Add - 
+    //Spawning Position
+    //NodeType
+    //StructureType
 
     public GameObject Prop => _prop;
-    public PropPlacement Placement => placement;
+    public Placement Placement => placement;
     public int MaxCount => _maxCount;
 
     public bool CheckOrientation => _checkOrentation;
     public bool LimitOnePerRoom => _limitOnePerRoom;
-    public Prop PropType => _propType;
+    public PropType PropType => _propType;
     
     public float SpawnChance => _spawnChance;
-    public NodeType NodeTypeToSpawnIn => _nodeTypeToSpawnIn;
+    public EnvironmentType Environment => _environment;
+    public List<PropData> Neighbors => _neighbors;
 }

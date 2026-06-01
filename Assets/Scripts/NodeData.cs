@@ -63,6 +63,7 @@ public class NodeData : ScriptableObject
     public NodeFaceHorizontal Right;
     public NodeFaceHorizontal Front;
     public NodeFaceHorizontal Back;
+    public List<Prop> validProps;
 
     public void SetRotation(float rotation)
     {

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acd5196af078d4e74b8bdc1ce7cdea58, type: 3}
+  m_Name: Chest
+  m_EditorClassIdentifier: Assembly-CSharp::Prop
+  _prop: {fileID: 3964047321964316565, guid: ed0140ea386bbe94fb5ffe2faf0fa7b1, type: 3}
+  spawnChance: 0.5
+  _parent: {fileID: 0}
+  _propType: 0
+  _structureType: []
+  _environmentType: []
+  _neighbors:
+  - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
+    maxDistance: 0.1
+    spawnChance: 0.45
+  - prop: {fileID: 11400000, guid: d49eabf0cf4f56386a1b32d126245267, type: 2}
+    maxDistance: 0.3
+    spawnChance: 0.15
+  - prop: {fileID: 11400000}
+    maxDistance: 0
+    spawnChance: 0
+  - prop: {fileID: 11400000, guid: 6b2f40d067621b4edb3c9003ad17137c, type: 2}
+    maxDistance: 0.3
+    spawnChance: 0.25
+  - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
+    maxDistance: 0
+    spawnChance: 0
