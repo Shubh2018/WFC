@@ -523,6 +523,10 @@ public class MeshSampler : MonoBehaviour
         int randomPropIndex = Random.Range(0, node.validProps.Count);
 
         Prop prop = node.validProps[randomPropIndex].GetRandomProp();
+        Vector3 spawnPos = _floorSamples[Random.Range(0, _floorSamples.Count)].sample;
+
+        PropObject propObj = Instantiate(prop.PropObject, spawnPos, Quaternion.Euler(0.0f, Random.Range(0f, 360f), 0.0f));
+        propObj.transform.SetParent(nodeObj.transform);
 
         Debug.Log($"Selected Prop: {prop.name}");
 

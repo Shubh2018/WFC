@@ -47,6 +47,8 @@ public class Prop : ScriptableObject
     [SerializeField] private List<SpawnChanceInEnvironment> _environmentType;
     [SerializeField] private List<SpawnChanceNeighbors> _neighbors;
 
+    public PropObject PropObject => _prop;
+
     public Prop GetRandomProp()
     {
         List<SpawnChanceNeighbors> neighbors = new List<SpawnChanceNeighbors>(_neighbors);
@@ -83,7 +85,7 @@ public class Prop : ScriptableObject
             int mid = (low + high) / 2;
 
             if (cdf[mid].spawnChance <= 0)
-                low += mid + 1; 
+                low = mid + 1; 
 
             if (cdf[mid].spawnChance >= rand)
                 high = mid;
