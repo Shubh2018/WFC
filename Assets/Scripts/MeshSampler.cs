@@ -1,10 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
-using System.Threading.Tasks;
-using UnityEditor.Build.Pipeline;
-using UnityEngine.UI;
 
 public enum SurfaceType
 {
@@ -117,8 +113,6 @@ public class MeshSampler : MonoBehaviour
             DestroyImmediate(spawnedObject);
 
         _spawnedObjects.Clear();
-
-        Debug.Log($"FloorSamples: {_floorSamplesAll.Count}");
     }
 
     private bool WithinDisOfCam(Vector3 pos, float maxDistance)
@@ -494,24 +488,20 @@ public class MeshSampler : MonoBehaviour
         _wallSamples.AddRange(samples.FindAll(s => Mathf.Abs(mid - s.sample.y) < 0.1f));
         _wallSamplesAll.AddRange(_wallSamples);
 
-        // for (int i = 0; i < _wallSamples.Count; i++)
-        // {
-        //     for (int j = 0; j < _floorSamples.Count; j++)
-        //     {
-        //         Vector3 floorSample = _floorSamples[j].sample;
-        //         floorSample.y = _wallSamples[i].sample.y;
-        //                 if (Vector3.Distance(_wallSamples[i].sample, floorSample) > minDist
-        //             && Vector3.Distance(_wallSamples[i].sample, floorSample) <= maxDist)
-        //         {
-        //             _samplesNearWalls.Add(_floorSamples[j]);
-        //             _floorSamples.RemoveAt(j);
-        //         }
-        //                 else
-        //         {
-        //             _samplesInMid.Add(_floorSamples[j]);
-        //         }
-        //     }
-        // }
+        for (int i = 0; i < _wallSamples.Count; i++)
+        {
+            for (int j = 0; j < _floorSamples.Count; j++)
+            {
+                Vector3 floorSample = _floorSamples[j].sample;
+                floorSample.y = _wallSamples[i].sample.y;
+                        if (Vector3.Distance(_wallSamples[i].sample, floorSample) > minDist
+                    && Vector3.Distance(_wallSamples[i].sample, floorSample) <= maxDist)
+                {
+                    _samplesNearWalls.Add(_floorSamples[j]);
+                    _floorSamples.RemoveAt(j);
+                }
+            }
+        }
 
         return (min, max);
     }
@@ -519,16 +509,50 @@ public class MeshSampler : MonoBehaviour
     private int SpawnFloorProps(NodeData node, GameObject nodeObj, Vector3 min, Vector3 max)
     {
         int overlapCount = 0;
-    
-        int randomPropIndex = Random.Range(0, node.validProps.Count);
 
-        Prop prop = node.validProps[randomPropIndex].GetRandomProp();
-        Vector3 spawnPos = _floorSamples[Random.Range(0, _floorSamples.Count)].sample;
+        List<Prop> validProps = new List<Prop>(node.validProps);
 
-        PropObject propObj = Instantiate(prop.PropObject, spawnPos, Quaternion.Euler(0.0f, Random.Range(0f, 360f), 0.0f));
+        if(validProps.Count <= 0) return 0;
+
+        int randomPropIndex = Random.Range(0, validProps.Count);;
+        Prop prop = validProps[randomPropIndex];
+
+        List<Sample> samplesInRange = new List<Sample>(_floorSamples);
+
+        Sample spawnSample = samplesInRange[Random.Range(0, samplesInRange.Count)];
+        samplesInRange.Remove(spawnSample);
+        _floorSamples.Remove(spawnSample);
+
+        PropObject propObj = Instantiate(prop.PropObject, spawnSample.sample, Quaternion.Euler(0.0f, Random.Range(0f, 360f), 0.0f));
         propObj.transform.SetParent(nodeObj.transform);
+    
+        int i = 0;
 
-        Debug.Log($"Selected Prop: {prop.name}");
+        while(i < 3)
+        {
+            PropNeighborProperty randomPropNeighbor = validProps[randomPropIndex].GetRandomProp();
+            Prop propNeighbor = randomPropNeighbor.prop;
+
+            float propMaxDistance = randomPropNeighbor.maxDistance;
+
+            samplesInRange.Clear();
+
+            samplesInRange.AddRange(_floorSamples.FindAll((s) => Vector3.Distance(s.sample, spawnSample.sample) <= propMaxDistance));
+            spawnSample = samplesInRange[Random.Range(0, samplesInRange.Count)];
+
+            samplesInRange.Remove(spawnSample);
+            _floorSamples.Remove(spawnSample);
+
+            propObj = Instantiate(propNeighbor.PropObject, spawnSample.sample, Quaternion.Euler(0, Random.Range(0f, 360f), 0f));
+            propObj.transform.SetParent(nodeObj.transform);
+
+            validProps.Clear();
+
+            foreach(var neighbor in propNeighbor.Neighbors)
+                validProps.Add(neighbor.prop);
+
+            i += 1;
+        }
 
         return overlapCount;
     }

@@ -45,28 +45,30 @@ public class Prop : ScriptableObject
     // [SerializeField] private NodeType _nodeType;
     [SerializeField] private List<SpawnChanceInStructure> _structureType;
     [SerializeField] private List<SpawnChanceInEnvironment> _environmentType;
-    [SerializeField] private List<SpawnChanceNeighbors> _neighbors;
+    [SerializeField] private List<PropNeighborProperty> _neighbors;
 
     public PropObject PropObject => _prop;
+    public List<PropNeighborProperty> Neighbors => _neighbors;
 
-    public Prop GetRandomProp()
+    public PropNeighborProperty GetRandomProp()
     {
-        List<SpawnChanceNeighbors> neighbors = new List<SpawnChanceNeighbors>(_neighbors);
+        List<PropNeighborProperty> neighbors = new List<PropNeighborProperty>(_neighbors);
         neighbors.Sort((x, y) => x.spawnChance.CompareTo(y.spawnChance));
 
         int count = neighbors.Count;
 
         float totalProbability = 0;
 
-        SpawnChanceNeighbors[] cdf = new SpawnChanceNeighbors[count];
+        PropNeighborProperty[] cdf = new PropNeighborProperty[count];
 
         for (int i = 0; i < count; i++)
         {
             totalProbability +=  neighbors[i].spawnChance;
-            SpawnChanceNeighbors n = new SpawnChanceNeighbors()
+            PropNeighborProperty n = new PropNeighborProperty()
             {
                 prop = neighbors[i].prop,
-                spawnChance = totalProbability
+                spawnChance = totalProbability,
+                maxDistance = neighbors[i].maxDistance
             };
 
             cdf[i] = n;
@@ -93,7 +95,7 @@ public class Prop : ScriptableObject
                 low = mid + 1;
         }
 
-        return cdf[low].prop;
+        return cdf[low];
     }
 }
 
@@ -112,7 +114,7 @@ public struct SpawnChanceInEnvironment
 }
 
 [Serializable]
-public struct SpawnChanceNeighbors
+public struct PropNeighborProperty
 {
     public Prop prop;
     public float maxDistance;
