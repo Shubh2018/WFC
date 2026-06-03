@@ -457,8 +457,8 @@ public class MeshSampler : MonoBehaviour
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
 
-        float minDist = 4f;
-        float maxDist = 4.5f;
+        float minDist = .5f;
+        float maxDist = 1f;
 
         foreach (var v in samples)
         {
@@ -497,7 +497,6 @@ public class MeshSampler : MonoBehaviour
                         if (Vector3.Distance(_wallSamples[i].sample, floorSample) > minDist
                     && Vector3.Distance(_wallSamples[i].sample, floorSample) <= maxDist)
                 {
-                    _samplesNearWalls.Add(_floorSamples[j]);
                     _floorSamples.RemoveAt(j);
                 }
             }
@@ -513,6 +512,8 @@ public class MeshSampler : MonoBehaviour
         List<Prop> validProps = new List<Prop>(node.validProps);
 
         if(validProps.Count <= 0) return 0;
+
+        validProps.RemoveAll((p) => p.CompareNodeType(node) == 0);
 
         int randomPropIndex = Random.Range(0, validProps.Count);;
         Prop prop = validProps[randomPropIndex];
@@ -530,14 +531,22 @@ public class MeshSampler : MonoBehaviour
 
         while(i < 3)
         {
-            PropNeighborProperty randomPropNeighbor = validProps[randomPropIndex].GetRandomProp();
+            return 0;
+            
+            PropNeighborProperty randomPropNeighbor = prop.GetRandomProp(node);
+
+            if(randomPropNeighbor == null) continue;
+
             Prop propNeighbor = randomPropNeighbor.prop;
 
             float propMaxDistance = randomPropNeighbor.maxDistance;
 
             samplesInRange.Clear();
 
-            samplesInRange.AddRange(_floorSamples.FindAll((s) => Vector3.Distance(s.sample, spawnSample.sample) <= propMaxDistance));
+            samplesInRange.AddRange(_floorSamples.FindAll((s) => Vector3.Distance(s.sample, spawnSample.sample) >= propMaxDistance 
+            && Vector3.Distance(s.sample, spawnSample.sample) < propMaxDistance * 2));
+            
+            if(samplesInRange.Count == 0) continue;
             spawnSample = samplesInRange[Random.Range(0, samplesInRange.Count)];
 
             samplesInRange.Remove(spawnSample);

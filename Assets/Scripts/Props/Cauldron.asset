@@ -16,21 +16,22 @@ MonoBehaviour:
   spawnChance: 0.5
   _parent: {fileID: 0}
   _propType: 0
+  _nodeTypeToSpawnIn: 27
   _structureType: []
   _environmentType: []
   _neighbors:
   - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
-    maxDistance: 1
+    maxDistance: 0.4
     spawnChance: 0.6
   - prop: {fileID: 11400000}
-    maxDistance: 1
+    maxDistance: 0.8
     spawnChance: 0.15
   - prop: {fileID: 11400000, guid: 1e5646d1134267c3f987db1dbe4ca19d, type: 2}
     maxDistance: 1
     spawnChance: 0
   - prop: {fileID: 11400000, guid: 6b2f40d067621b4edb3c9003ad17137c, type: 2}
-    maxDistance: 1
-    spawnChance: 0
+    maxDistance: 0.6
+    spawnChance: 0.15
   - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
-    maxDistance: 1
-    spawnChance: 0.25
+    maxDistance: 0.8
+    spawnChance: 0.1

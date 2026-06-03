@@ -453,8 +453,7 @@ public class WFC : MonoBehaviour
                     newNode.CanHaveObjective = currNode.CanHaveObjective;
                     newNode.IsStairPiece = currNode.IsStairPiece;
                     newNode.IsDeadEnd = currNode.IsDeadEnd; 
-                    int nodeType = Random.Range(0, 3);
-                    newNode.nodeType = (NodeData.NodeType)nodeType;
+                    newNode.nodeType = (NodeData.NodeType)currNode.nodeType;
                     
                     newNode.Up = currNode.Up;
                     newNode.Down = currNode.Down;

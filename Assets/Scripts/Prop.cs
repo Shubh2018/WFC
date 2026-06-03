@@ -42,17 +42,22 @@ public class Prop : ScriptableObject
     [SerializeField] [Range(0.0f, 1.0f)] private float spawnChance = 0.0f;
     [SerializeField] private Prop _parent;
     [SerializeField] private PropType _propType;
+    [SerializeField] private NodeData.NodeType _nodeTypeToSpawnIn;
     // [SerializeField] private NodeType _nodeType;
-    [SerializeField] private List<SpawnChanceInStructure> _structureType;
-    [SerializeField] private List<SpawnChanceInEnvironment> _environmentType;
+    [SerializeField] private List<Structure> _structureType;
+    [SerializeField] private List<Environment> _environmentType;
     [SerializeField] private List<PropNeighborProperty> _neighbors;
 
     public PropObject PropObject => _prop;
     public List<PropNeighborProperty> Neighbors => _neighbors;
 
-    public PropNeighborProperty GetRandomProp()
+    public PropNeighborProperty GetRandomProp(NodeData node)
     {
+        CompareNodeType(node);
+
         List<PropNeighborProperty> neighbors = new List<PropNeighborProperty>(_neighbors);
+
+        neighbors.RemoveAll((n) => n.spawnChance == 0.0f);
         neighbors.Sort((x, y) => x.spawnChance.CompareTo(y.spawnChance));
 
         int count = neighbors.Count;
@@ -86,9 +91,6 @@ public class Prop : ScriptableObject
         {
             int mid = (low + high) / 2;
 
-            if (cdf[mid].spawnChance <= 0)
-                low = mid + 1; 
-
             if (cdf[mid].spawnChance >= rand)
                 high = mid;
             else 
@@ -97,24 +99,36 @@ public class Prop : ScriptableObject
 
         return cdf[low];
     }
+
+    public NodeData.NodeType CompareNodeType(NodeData node)
+    {
+        return (NodeData.NodeType)((int)node.nodeType & (int)_nodeTypeToSpawnIn);
+    }
 }
 
 [Serializable]
-public struct SpawnChanceInStructure
+public class Structure
 {
     public StructureType structure;
     [Range(0.0f, 1.0f)] public float spawnChance;
 };
 
 [Serializable]
-public struct SpawnChanceInEnvironment
+public class Environment
 {
     public EnvironmentType environment;
     [Range(0.0f, 1.0f)] public float spawnChance;
 }
 
 [Serializable]
-public struct PropNeighborProperty
+public class NodeProperty
+{
+    public NodeData.NodeType _spawnInNode;
+    [Range(0.0f, 1.0f)] public float spawnChance;
+}
+
+[Serializable]
+public class PropNeighborProperty
 {
     public Prop prop;
     public float maxDistance;

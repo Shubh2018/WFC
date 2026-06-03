@@ -17,7 +17,7 @@ MonoBehaviour:
   IsStairPiece: 1
   CanHaveObjective: 0
   IsDeadEnd: 0
-  nodeType: 0
+  nodeType: 32
   ClockwiseRotationSteps: 0
   Up:
     name: 5

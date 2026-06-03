@@ -42,11 +42,15 @@ public class NodeFaceVertical : NodeFace
 [CreateAssetMenu(fileName = "Node", menuName = "WFC/Node")]
 public class NodeData : ScriptableObject
 {
+    [System.Flags]
     public enum NodeType
     {
-        None,
-        Study,
-        Objective
+        Corner = 1<<0,
+        Corridor = 1<<1,
+        Deadend = 1<<2,
+        Intersection = 1<<3,
+        Junction = 1<<4,
+        Staircase = 1<<5,
     };
     
     public GameObject Prefab;
