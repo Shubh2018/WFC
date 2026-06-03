@@ -515,7 +515,7 @@ public class MeshSampler : MonoBehaviour
 
         validProps.RemoveAll((p) => p.CompareNodeType(node) == 0);
 
-        int randomPropIndex = Random.Range(0, validProps.Count);;
+        int randomPropIndex = Random.Range(0, validProps.Count);
         Prop prop = validProps[randomPropIndex];
 
         List<Sample> samplesInRange = new List<Sample>(_floorSamples);
@@ -531,8 +531,6 @@ public class MeshSampler : MonoBehaviour
 
         while(i < 3)
         {
-            return 0;
-            
             PropNeighborProperty randomPropNeighbor = prop.GetRandomProp(node);
 
             if(randomPropNeighbor == null) continue;
