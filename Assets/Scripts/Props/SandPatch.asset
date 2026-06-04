@@ -12,14 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acd5196af078d4e74b8bdc1ce7cdea58, type: 3}
   m_Name: SandPatch
   m_EditorClassIdentifier: Assembly-CSharp::Prop
-  _prop: {fileID: 3964047321964316565, guid: ed0140ea386bbe94fb5ffe2faf0fa7b1, type: 3}
-  spawnChance: 0
+  _prop: {fileID: -6137245728790989520, guid: 237f7219ddf7c064e85f5158a48f6bbc, type: 3}
+  _spawnChance: 1
   _parent: {fileID: 0}
   _propType: 0
+  _nodeTypeToSpawnIn: 31
   _structureType:
   - structure: 0
     spawnChance: 0
   _environmentType:
   - environment: 0
     spawnChance: 0
-  _neighbors: []
+  _neighbors:
+  - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
+    maxDistance: 0.2
+    spawnChance: 0.45
+  - prop: {fileID: 11400000, guid: d49eabf0cf4f56386a1b32d126245267, type: 2}
+    maxDistance: 0.2
+    spawnChance: 0.15
+  - prop: {fileID: 11400000, guid: 1e5646d1134267c3f987db1dbe4ca19d, type: 2}
+    maxDistance: 0.2
+    spawnChance: 0
+  - prop: {fileID: 11400000, guid: 6b2f40d067621b4edb3c9003ad17137c, type: 2}
+    maxDistance: 0.2
+    spawnChance: 0
+  - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
+    maxDistance: 0.2
+    spawnChance: 0

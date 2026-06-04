@@ -509,15 +509,12 @@ public class MeshSampler : MonoBehaviour
     {
         int overlapCount = 0;
 
-        List<Prop> validProps = new List<Prop>(node.validProps);
+        // validProps.RemoveAll((p) => p.CompareNodeType(node.nodeType) == 0);
 
-        if(validProps.Count <= 0) return 0;
+        Prop prop = node.GetRandomPropCDF();
 
-        validProps.RemoveAll((p) => p.CompareNodeType(node) == 0);
-
-        int randomPropIndex = Random.Range(0, validProps.Count);
-        Prop prop = validProps[randomPropIndex];
-
+        if(!prop) return 0;
+        
         List<Sample> samplesInRange = new List<Sample>(_floorSamples);
 
         Sample spawnSample = samplesInRange[Random.Range(0, samplesInRange.Count)];
@@ -528,6 +525,8 @@ public class MeshSampler : MonoBehaviour
         propObj.transform.SetParent(nodeObj.transform);
     
         int i = 0;
+
+        string spawnGraph = $"{node.name}: {propObj.name}";
 
         while(i < 3)
         {
@@ -553,13 +552,17 @@ public class MeshSampler : MonoBehaviour
             propObj = Instantiate(propNeighbor.PropObject, spawnSample.sample, Quaternion.Euler(0, Random.Range(0f, 360f), 0f));
             propObj.transform.SetParent(nodeObj.transform);
 
-            validProps.Clear();
+            propObj.UpdateRotation();
 
-            foreach(var neighbor in propNeighbor.Neighbors)
-                validProps.Add(neighbor.prop);
+            // foreach(var neighbor in propNeighbor.Neighbors)
+            //     validProps.Add(neighbor.prop);
 
             i += 1;
+
+            spawnGraph += $"=>{propObj.name}"; 
         }
+
+        Debug.Log($"{spawnGraph}");
 
         return overlapCount;
     }

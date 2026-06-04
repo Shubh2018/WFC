@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Cauldron
   m_EditorClassIdentifier: Assembly-CSharp::Prop
   _prop: {fileID: 6401517715164430998, guid: d429c8a2280208c43ace747d82fa1864, type: 3}
-  spawnChance: 0.5
+  _spawnChance: 0.2
   _parent: {fileID: 0}
   _propType: 0
   _nodeTypeToSpawnIn: 27
@@ -24,7 +24,7 @@ MonoBehaviour:
     maxDistance: 0.4
     spawnChance: 0.6
   - prop: {fileID: 11400000}
-    maxDistance: 0.8
+    maxDistance: 1
     spawnChance: 0.15
   - prop: {fileID: 11400000, guid: 1e5646d1134267c3f987db1dbe4ca19d, type: 2}
     maxDistance: 1
@@ -35,3 +35,6 @@ MonoBehaviour:
   - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
     maxDistance: 0.8
     spawnChance: 0.1
+  - prop: {fileID: 11400000, guid: 34350ee187d01f744978363773e6185e, type: 2}
+    maxDistance: 0.2
+    spawnChance: 0.8

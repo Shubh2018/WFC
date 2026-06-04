@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Pot
   m_EditorClassIdentifier: Assembly-CSharp::Prop
   _prop: {fileID: 2968984832891307277, guid: 2908a19ef1a7b3a49bfc9a55bf645e69, type: 3}
-  spawnChance: 0.5
+  _spawnChance: 0.8
   _parent: {fileID: 0}
   _propType: 0
   _nodeTypeToSpawnIn: 27
@@ -35,3 +35,6 @@ MonoBehaviour:
   - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
     maxDistance: 0.8
     spawnChance: 0.2
+  - prop: {fileID: 11400000, guid: 34350ee187d01f744978363773e6185e, type: 2}
+    maxDistance: 0.2
+    spawnChance: 0.8

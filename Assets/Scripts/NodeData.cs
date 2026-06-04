@@ -74,6 +74,50 @@ public class NodeData : ScriptableObject
         if(Prefab != null)
             Prefab.transform.rotation = Quaternion.Euler(new Vector3(0, rotation, 0));
     }
+
+    public Prop GetRandomPropCDF()
+    {
+        List<Prop> props = new List<Prop>(validProps);
+
+        if(props.Count <= 0) return null;
+
+        props.RemoveAll((p) => p.SpawnChance == 0.0f || p.CompareNodeType(this.nodeType) == 0);
+        props.Sort((x, y) => x.SpawnChance.CompareTo(y.SpawnChance));
+
+        int count = props.Count;
+
+        float totalProbability = 0;
+
+        Prop[] cdf = new Prop[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            totalProbability += props[i].SpawnChance;
+
+            Prop p = new Prop(props[i]);
+            cdf[i] = p;
+        }
+
+        for (int i = 0; i < count; i++)
+            cdf[i].SpawnChance /= totalProbability;
+
+        float rand = UnityEngine.Random.value;
+
+        int low = 0;
+        int high = cdf.Length - 1;
+
+        while (low < high)
+        {
+            int mid = (low + high) / 2;
+
+            if (cdf[mid].SpawnChance >= rand)
+                high = mid;
+            else 
+                low = mid + 1;
+        }
+
+        return cdf[low];
+    }
 }
 
 public class PathNodeData {

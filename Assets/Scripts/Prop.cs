@@ -39,7 +39,7 @@ public enum EnvironmentType
 public class Prop : ScriptableObject
 {
     [SerializeField] private PropObject _prop;
-    [SerializeField] [Range(0.0f, 1.0f)] private float spawnChance = 0.0f;
+    [SerializeField] [Range(0.0f, 1.0f)] private float _spawnChance = 0.0f;
     [SerializeField] private Prop _parent;
     [SerializeField] private PropType _propType;
     [SerializeField] private NodeData.NodeType _nodeTypeToSpawnIn;
@@ -50,10 +50,23 @@ public class Prop : ScriptableObject
 
     public PropObject PropObject => _prop;
     public List<PropNeighborProperty> Neighbors => _neighbors;
+    public float SpawnChance {set { _spawnChance = value; } get {return _spawnChance;}}
+
+    public Prop(Prop p)
+    {
+        this._prop = p._prop;
+        this._spawnChance = p._spawnChance;
+        this._parent = p._parent;
+        this._propType = p._propType;
+        this._nodeTypeToSpawnIn = p._nodeTypeToSpawnIn;
+        this._structureType = new List<Structure>(p._structureType);
+        this._environmentType = new List<Environment>(p._environmentType);
+        this._neighbors = new List<PropNeighborProperty>(p._neighbors);
+    }
 
     public PropNeighborProperty GetRandomProp(NodeData node)
     {
-        CompareNodeType(node);
+        CompareNodeType(node.nodeType);
 
         List<PropNeighborProperty> neighbors = new List<PropNeighborProperty>(_neighbors);
 
@@ -100,9 +113,9 @@ public class Prop : ScriptableObject
         return cdf[low];
     }
 
-    public NodeData.NodeType CompareNodeType(NodeData node)
+    public NodeData.NodeType CompareNodeType(NodeData.NodeType nodeType)
     {
-        return (NodeData.NodeType)((int)node.nodeType & (int)_nodeTypeToSpawnIn);
+        return (NodeData.NodeType)((int)nodeType & (int)_nodeTypeToSpawnIn);
     }
 }
 

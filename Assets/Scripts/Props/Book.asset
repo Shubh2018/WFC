@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Book
   m_EditorClassIdentifier: Assembly-CSharp::Prop
   _prop: {fileID: -5805111504026453631, guid: 587911d8e2e27694daaec695bc48f418, type: 3}
-  spawnChance: 0.5
+  _spawnChance: 0.9
   _parent: {fileID: 0}
   _propType: 0
   _nodeTypeToSpawnIn: 27
@@ -35,3 +35,6 @@ MonoBehaviour:
   - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
     maxDistance: 0.8
     spawnChance: 0.15
+  - prop: {fileID: 11400000, guid: 34350ee187d01f744978363773e6185e, type: 2}
+    maxDistance: 0.2
+    spawnChance: 0.8
