@@ -20,13 +20,13 @@ public class PropObject : MonoBehaviour
         
         if (!_lamp)
         {
-           Collider[] colliders = Physics.OverlapBox(this.transform.position + _center, _overlapDimensions / 2, this.transform.rotation, _propLayer);
+           Collider[] colliders = Physics.OverlapBox(this.transform.position + _center, _overlapDimensions, this.transform.rotation, _propLayer);
    
            if (colliders.Length <= 0) return 0;
 
            overlapCount += 2;
            
-           Debug.Log($"Destroyed {this.gameObject.name}");
+           Debug.Log($"Destroyed {this.gameObject.name} ({this.transform.position})");
            DestroyImmediate(this.gameObject); 
         }
 
@@ -38,7 +38,7 @@ public class PropObject : MonoBehaviour
 
             overlapCount += 1;
             
-            Debug.Log($"Destroyed {this.gameObject.name}");
+            Debug.Log($"Destroyed {this.gameObject.name} ({this.transform.position})");
             DestroyImmediate(this.gameObject); 
         }
         
@@ -51,15 +51,13 @@ public class PropObject : MonoBehaviour
 
         while (rotation <= 360)
         {
-            if (Physics.Raycast(this.transform.position + _rayCenter, this.transform.forward, out RaycastHit hit,
-                    _raycastLength, _nodeLayer))
+            if (Physics.Raycast(this.transform.position + _rayCenter, this.transform.forward, out RaycastHit hit, _raycastLength, _nodeLayer))
             {
                 rotation += UnityEngine.Random.Range(-30.0f, 30.0f);
                 this.transform.localEulerAngles = new Vector3(this.transform.localEulerAngles.x, rotation, this.transform.localEulerAngles.z);
             }
 
-            else
-                break;
+            else break;
         }
     }
 
@@ -72,12 +70,12 @@ public class PropObject : MonoBehaviour
         {
             rotation += step;
             
-            if (Physics.Raycast(this.transform.position + _rayCenter, this.transform.forward, out RaycastHit hit,
-                    _raycastLength, _nodeLayer))
+            if (Physics.Raycast(this.transform.position + _rayCenter, this.transform.forward, out RaycastHit hit, _raycastLength, _nodeLayer))
             {
                 Vector3 dir = (hit.point - (this.transform.position + _rayCenter)).normalized;
+                Vector3 oldPos = this.transform.position;
                 this.transform.position -= dir * _raycastLength;
-                Debug.Log($"Moved {this.gameObject.name}");
+                Debug.Log($"Moved {this.gameObject.name} (before: {oldPos}, after: {this.transform.position})");
                 
                 this.transform.localEulerAngles = new Vector3(this.transform.localEulerAngles.x, rotation, this.transform.localEulerAngles.z);
             }

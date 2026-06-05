@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
 
 public class NodeFace
@@ -66,8 +67,73 @@ public class NodeData : ScriptableObject
 
     public void SetRotation(float rotation)
     {
-        if(Prefab != null)
-            Prefab.transform.rotation = Quaternion.Euler(new Vector3(0, rotation, 0));
+        if(Prefab != null) Prefab.transform.rotation = Quaternion.Euler(new Vector3(0, rotation, 0));
+    }
+
+
+    // Check if the node can be rotated based on if it has a positive weight and are not symmetrical all the way around
+    public bool ShouldRotate()
+    {
+        return ((Left.type != NodeFaceHorizontal.Type.None 
+            || Right.type != NodeFaceHorizontal.Type.None
+            || Front.type != NodeFaceHorizontal.Type.None
+            || Back.type != NodeFaceHorizontal.Type.None
+            || new List<NodeFace.Name>{ Back.name, Right.name, Front.name, Left.name }.Distinct().Skip(1).Any())
+            && Weight > 0);
+    }
+
+    // Check if this node is symmetrical on two sides
+    public bool IsBilateralSymmetric()
+    {
+        return (Right.name == Left.name 
+             && Back.name == Front.name 
+             && Right.name != Back.name);
+    }
+
+    public void Rotate(int amount)
+    {
+        if (amount == 0) return;
+
+        amount %= 4;
+        RotateVerticalFaces(amount);
+        RotateHorizontalFaces(amount);
+    }
+
+    private void RotateVerticalFaces(int amount)
+    {
+        foreach (NodeFaceVertical face in new NodeFaceVertical[]{ Up, Down })
+            if(!face.invariantRotation)
+                face.rotationIndex = amount;
+    }
+
+    private void RotateHorizontalFaces(int amount)
+    {
+        NodeFaceHorizontal left = Left;
+        NodeFaceHorizontal right = Right;
+        NodeFaceHorizontal front = Front;
+        NodeFaceHorizontal back = Back;
+
+        switch(amount)
+        {
+            case 1: // 90 degrees
+                Back = right;
+                Right = front;
+                Front = left;
+                Left = back;
+                break;
+            case 2: // 180 degrees
+                Back = front;
+                Right = left;
+                Front = back;
+                Left = right;
+                break;
+            case 3: // 270 degrees
+                Back = left;
+                Right = back;
+                Front = right;
+                Left = front;
+                break;            
+        }
     }
 }
 

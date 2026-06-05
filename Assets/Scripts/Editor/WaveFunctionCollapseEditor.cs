@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine.UIElements;
+using UnityEngine;
 
 [CustomEditor(typeof(WFC))]
 public class WaveFunctionCollapseEditor : Editor
@@ -155,28 +156,39 @@ public class WaveFunctionCollapseEditor : Editor
     private void GenerateTiles(ClickEvent evt)
     {   
         WaveFunctionCollapse.GenerateTiles();
+        WaveFunctionCollapse.SampleTiles();
     }
 
     private void GeneratePath(ClickEvent evt)
     {
-        WaveFunctionCollapse.StartFindPath();
+        WaveFunctionCollapse.StartFindPath(() => {
+            SetButtonState("_stopGeneratePath", false);
+            SetButtonState("_clearPath", true);
+        });
+
+        SetButtonState("_stopGeneratePath", true);
+        SetButtonState("_generatePath", false);
     }
 
     private void StopGeneratePath(ClickEvent evt)
     {
         WaveFunctionCollapse.StopFindPath();
+        SetButtonState("_stopGeneratePath", false);
+        SetButtonState("_clearPath", true);
     }
 
     private void ClearPath(ClickEvent evt)
     {
-        testText.text = "";
+        SetButtonState("_stopGeneratePath", false);
+        SetButtonState("_clearPath", false);
+        SetButtonState("_generatePath", true);
         WaveFunctionCollapse.ClearPath();
     }
 
     private void CollapseTiles(ClickEvent evt)
     {
         WaveFunctionCollapse.pauseGeneration = false;
-        WaveFunctionCollapse.StartCollapse(() => {
+        WaveFunctionCollapse.StartCollapse((int overlaps) => {
             ResetControls();
         });
 
@@ -197,12 +209,22 @@ public class WaveFunctionCollapseEditor : Editor
             SetButtonState("_collapseTilesTest", true);
             SetButtonState("CreateFile", true);
             SetButtonState("_stopTesting", false);
-        });
+        }, (round) => UpdateTestingLabel(round));
 
         SetButtonState("_collapseTilesTest", false);
         SetButtonState("CreateFile", false);
         SetButtonState("_stopTesting", true);
-        SetLabelText("TestLabel", "testing...");
+        
+        UpdateTestingLabel(-1);
+    }
+
+    private void UpdateTestingLabel(int currentRound)
+    {
+        int totalRounds = rootTree.Q<IntegerField>("LevelCount").value;
+        int currRound = currentRound + 1;
+        float percentageDone = ((float) currRound) / ((float) totalRounds) * 100f;
+
+        SetLabelText("TestLabel", $"({currRound}/{rootTree.Q<IntegerField>("LevelCount").value}, {percentageDone}%) testing...");
     }
 
     private void StopTesting(ClickEvent evt)

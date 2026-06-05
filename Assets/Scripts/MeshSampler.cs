@@ -6,6 +6,37 @@ using System.Threading.Tasks;
 using UnityEditor.Build.Pipeline;
 using UnityEngine.UI;
 
+[System.Serializable]
+public struct Sample
+{
+    public Vector3 sample;
+    public Vector3 triangleNormal;
+}
+
+[System.Serializable]
+public struct Spawner
+{
+    [SerializeField] private List<PropData> _wallPrefabs;
+    [SerializeField] private List<PropData> _floorPrefabs;
+
+    [SerializeField] private int maxWallPropCountPerRoom;
+    [SerializeField] private int maxFloorPropCountPerRoom;
+
+    public List<PropData> WallPrefabs => _wallPrefabs;
+    public List<PropData> FloorPrefabs => _floorPrefabs;
+    public int MaxWallPropCountPerRoom => maxWallPropCountPerRoom;
+    public int MaxFloorPropCountPerRoom => maxFloorPropCountPerRoom;
+
+    public Spawner(Spawner spawner)
+    {
+        _wallPrefabs = new List<PropData>(spawner.WallPrefabs);
+        _floorPrefabs = new List<PropData>(spawner.FloorPrefabs);
+
+        maxFloorPropCountPerRoom = spawner.MaxFloorPropCountPerRoom;
+        maxWallPropCountPerRoom = spawner.MaxWallPropCountPerRoom;
+    }
+}
+
 public enum SurfaceType
 {
     Floor,
@@ -66,15 +97,6 @@ public class MeshSampler : MonoBehaviour
             Clear();
 
         _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
-
-        // _meshFilter = GetComponentsInChildren<MeshFilter>().ToList();
-        //
-        // _samplePoints.Clear();
-        //
-        // foreach (MeshFilter meshFilter in _meshFilter)
-        //     _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
-
-        // SpawnProps();
     }
 
     public void SetRadiusAndTries(float radius, int tries)
@@ -169,103 +191,74 @@ public class MeshSampler : MonoBehaviour
         return SampleMesh(mesh, _radius, _tries);
     }
 
-    private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries) // Method to sample the meshes. Return a list of Sample
+    // Method to sample the meshes. Return a list of Sample
+    private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
     {
         List<Sample> samples = new List<Sample>();
         List<int> active = new List<int>();
 
-        float[] cdf = BuildTriangleAreaCDF(mesh.sharedMesh.vertices, mesh.sharedMesh.triangles);  // Builds mesh triangles' CDF.
-        (Vector3 min, Vector3 max) = BuildBoundingBox(mesh.sharedMesh.vertices); // Builds the bound box of the mesh
-
-        (Vector3[,,] grid, float cellSize, int gx, int gy, int gz) = InitializeGrid(min, max, radius); // Initializes the grid to store the references to samples
-
-        int triangleIndex = SampleTriangleIndexFromCDF(cdf);    // returns a random triangle, based on its area
-
         int[] triangles = mesh.sharedMesh.triangles;
         Vector3[] vertices = mesh.sharedMesh.vertices;
 
-        int i0 = triangles[triangleIndex * 3 + 0];
-        int i1 = triangles[triangleIndex * 3 + 1];
-        int i2 = triangles[triangleIndex * 3 + 2];
-
-        Vector3 p = SamplePointInTriangle(vertices[i0], vertices[i1], vertices[i2]); // Samples point ina triangle based on its barycentric coordinates
-        InsertSampleToGrid(p, grid, min, cellSize); // Inserts the sample in the grids.
-
-        Sample sample = new Sample()
-        {
-            sample = p,
-            triangleNormal = Vector3.Cross((vertices[i1] - vertices[i0]), (vertices[i2] - vertices[i0])).normalized,
-        };
-
-        samples.Add(sample);
-        active.Add(0);
+        float[] cdf = BuildTriangleAreaCDF(vertices, triangles);
+        (Vector3 min, Vector3 max) = BuildBoundingBox(vertices);
+        (Vector3[,,] grid, float cellSize, Vector3Int gridSize) = InitializeGrid(min, max, radius);
 
         int tryCount = 0;
 
-        while (active.Count > 0 && tryCount < safety)
+        do
         {
-            tryCount += 1;
-
-            int activeIndex = Random.Range(0, active.Count);
-            int index = active[activeIndex];
-
-            Sample s = samples[index];
-
             bool accepted = false;
 
             for (int i = 0; i < _tries; i++)
             {
                 int triIndex = SampleTriangleIndexFromCDF(cdf);
 
-                i0 = triangles[triIndex * 3 + 0];
-                i1 = triangles[triIndex * 3 + 1];
-                i2 = triangles[triIndex * 3 + 2];
+                int i0 = triangles[triIndex * 3 + 0];
+                int i1 = triangles[triIndex * 3 + 1];
+                int i2 = triangles[triIndex * 3 + 2];
 
                 Vector3 candidate = SamplePointInTriangle(vertices[i0], vertices[i1], vertices[i2]);
+                Vector3 normal = Vector3.Cross((vertices[i1] - vertices[i0]), (vertices[i2] - vertices[i0])).normalized;
 
-                if (IsValid(candidate, radius, grid, min, cellSize, gx, gy, gz))
+                if ((active.Count == 0 || IsValid(candidate, radius, grid, min, cellSize, gridSize)) && IsInside(candidate, normal, mesh.transform.position))
                 {
                     InsertSampleToGrid(candidate, grid, min, cellSize);
 
-                    sample = new Sample()
-                    {
-                        sample = candidate,
-                        triangleNormal = Vector3.Cross((vertices[i1] - vertices[i0]), (vertices[i2] - vertices[i0]))
-                            .normalized,
-                    };
+                    samples.Add(new Sample() {
+                        sample = mesh.transform.TransformPoint(candidate),
+                        triangleNormal = mesh.transform.TransformDirection(normal),
+                    });
 
-                    samples.Add(sample);
-                    int newIndex = samples.Count - 1;
-
-                    active.Add(newIndex);
+                    active.Add(samples.Count - 1);
                     accepted = true;
                 }
             }
 
             if (!accepted)
             {
+                int activeIndex = Random.Range(0, active.Count);
                 (active[activeIndex], active[^1]) = (active[^1], active[activeIndex]);
                 active.Remove(active.Count - 1);
             }
-        }
 
-        for (int i = samples.Count - 1; i >= 0; i--)
+        } while(tryCount++ < safety && active.Count > 0);
+
+        /*for (int i = samples.Count - 1; i >= 0; i--)
         {
             if (!IsInside(samples[i], mesh.transform.position))
                 samples.RemoveAt(i);
-        }
+        }*/
 
-        for (int i = 0; i < samples.Count; i++)
+       /*for (int i = 0; i < samples.Count; i++)
         {
             Sample s = samples[i];
             s.sample = mesh.transform.TransformPoint(s.sample);
             s.triangleNormal = mesh.transform.TransformDirection(s.triangleNormal);
             samples[i] = s;
-        }
+        }*/
 
-        samples = samples.OrderBy(s => s.sample.y).ToList();
-
-        return samples;
+        return samples.OrderBy(s => s.sample.y).ToList();
     }
 
     public int SpawnProps(NodeData node, GameObject obj)
@@ -297,6 +290,7 @@ public class MeshSampler : MonoBehaviour
         }
     }
 
+    // Builds mesh triangles' CDF.
     private float[] BuildTriangleAreaCDF(Vector3[] vertices, int[] triangles)
     {
         int count = triangles.Length / 3;
@@ -328,6 +322,7 @@ public class MeshSampler : MonoBehaviour
         return cdf;
     }
 
+    // returns a random triangle, based on its area
     private int SampleTriangleIndexFromCDF(float[] cdf)
     {
         float rand = Random.value;
@@ -348,6 +343,7 @@ public class MeshSampler : MonoBehaviour
         return low;
     }
 
+    // Samples point ina triangle based on its barycentric coordinates
     private Vector3 SamplePointInTriangle(Vector3 v0, Vector3 v1, Vector3 v2)
     {
         float u = Random.value;
@@ -363,6 +359,7 @@ public class MeshSampler : MonoBehaviour
         return p;
     }
 
+    // Builds the bounding box of the mesh
     private (Vector3, Vector3) BuildBoundingBox(Vector3[] vertices)
     {
         Vector3 min = Vector3.positiveInfinity;
@@ -382,16 +379,15 @@ public class MeshSampler : MonoBehaviour
         return (min, max);
     }
 
-    private (Vector3[,,], float, int, int, int) InitializeGrid(Vector3 min, Vector3 max, float radius)
+    // Initializes the grid to store the references to samples
+    private (Vector3[,,], float, Vector3Int) InitializeGrid(Vector3 min, Vector3 max, float radius)
     {
         float cellSize = radius / Mathf.Sqrt(3);
 
-        int gridX = Mathf.FloorToInt((max.x - min.x) / cellSize) + 1;
-        int gridY = Mathf.FloorToInt((max.y - min.y) / cellSize) + 1;
-        int gridZ = Mathf.FloorToInt((max.z - min.z) / cellSize) + 1;
+        Vector3Int g = PointToGrid(max, min, cellSize) + Vector3Int.one;
+        Vector3[,,] grid = new Vector3[g.x, g.y, g.z];
 
-        Vector3[,,] grid = new Vector3[gridX, gridY, gridZ];
-        return (grid, cellSize, gridX, gridY, gridZ);
+        return (grid, cellSize, g);
     }
 
     private Vector3Int PointToGrid(Vector3 p, Vector3 min, float cellSize)
@@ -403,23 +399,17 @@ public class MeshSampler : MonoBehaviour
         return new Vector3Int(gx, gy, gz);
     }
 
-    private bool IsValid(Vector3 point, float radius, Vector3[,,] grid, Vector3 min, float cellSize, int gridX,
-        int gridY, int gridZ)
+    // Validates a point if it is more than a specific radius away from every specific point already on the mesh
+    private bool IsValid(Vector3 point, float radius, Vector3[,,] grid, Vector3 min, float cellSize, Vector3Int gridSize)
     {
         Vector3Int g = PointToGrid(point, min, cellSize);
 
-        for (int x = g.x - 2; x <= g.x + 2; x++)
+        for (int x = Mathf.Max(g.x - 2, 0); x <= Mathf.Min(g.x + 2, gridSize.x - 1); x++)
         {
-            if (x < 0 || x >= gridX) continue;
-
-            for (int y = g.y - 2; y <= g.y + 2; y++)
+            for (int y = Mathf.Max(g.y - 2, 0); y <= Mathf.Min(g.y + 2, gridSize.y - 1); y++)
             {
-                if (y < 0 || y >= gridY) continue;
-
-                for (int z = g.z - 2; z <= g.z + 2; z++)
+                for (int z = Mathf.Max(g.z - 2, 0); z <= Mathf.Min(g.z + 2, gridSize.z - 1); z++)
                 {
-                    if (z < 0 || z >= gridZ) continue;
-
                     Vector3 q = grid[x, y, z];
 
                     if (Vector3.Distance(q, point) < radius)
@@ -431,17 +421,18 @@ public class MeshSampler : MonoBehaviour
         return true;
     }
 
+    // Inserts the sample in the grids.
     private void InsertSampleToGrid(Vector3 point, Vector3[,,] grid, Vector3 min, float cellSize)
     {
         Vector3Int g = PointToGrid(point, min, cellSize);
         grid[g.x, g.y, g.z] = point;
     }
 
-    private bool IsInside(Sample pInterior, Vector3 meshPos)
+    private bool IsInside(Vector3 sample, Vector3 normal, Vector3 meshPos)
     {
-        Vector3 dir = (meshPos - pInterior.sample);
+        Vector3 dir = (meshPos - sample);
 
-        float d = Vector3.Dot(dir.normalized, pInterior.triangleNormal);
+        float d = Vector3.Dot(dir.normalized, normal);
         float floor = Vector3.Dot(dir.normalized, Vector3.up);
 
         return d >= 0 || floor >= 1;
@@ -457,25 +448,10 @@ public class MeshSampler : MonoBehaviour
         _floorSamples.Clear();
         _samplesNearWalls.Clear();
 
-        // _floorSamplesAll.Clear();
-        // _wallSamplesAll.Clear();
-
-        Vector3 min = Vector3.positiveInfinity;
-        Vector3 max = Vector3.negativeInfinity;
+        (Vector3 min, Vector3 max) = BuildBoundingBox(samples.Select(v => v.sample).ToArray());
 
         float minDist = 4f;
         float maxDist = 4.5f;
-
-        foreach (var v in samples)
-        {
-            min.x = Mathf.Min(min.x, v.sample.x);
-            min.y = Mathf.Min(min.y, v.sample.y);
-            min.z = Mathf.Min(min.z, v.sample.z);
-
-            max.x = Mathf.Max(max.x, v.sample.x);
-            max.y = Mathf.Max(max.y, v.sample.y);
-            max.z = Mathf.Max(max.z, v.sample.z);
-        }
 
         float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 1.1f;
         float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.25f;
@@ -490,13 +466,6 @@ public class MeshSampler : MonoBehaviour
         _floorSamples.AddRange(samples.FindAll(s => (Vector3.Dot(s.triangleNormal, Vector3.up) > 0)));
         samples.RemoveAll(s => (Vector3.Dot(s.triangleNormal, Vector3.up) > 0));
         _floorSamplesAll.AddRange(_floorSamples);
-
-        // _floorSamplesAll.AddRange(_floorSamples);
-        // _wallSamples.AddRange(samples);
-        // _wallSamplesAll.AddRange(samples);
-
-        // _wallSamples.AddRange(samples.FindAll(s => ((s.sample.y > thresholdMin && s.sample.y <= thresholdMax)
-        //                                              && (s.sample.y > min.y && s.sample.y < max.y))));
     
         _wallSamples.AddRange(samples.FindAll(s => Mathf.Abs(mid - s.sample.y) < 0.1f));
         _wallSamplesAll.AddRange(_wallSamples);
@@ -507,16 +476,17 @@ public class MeshSampler : MonoBehaviour
             {
                 Vector3 floorSample = _floorSamples[j].sample;
                 floorSample.y = _wallSamples[i].sample.y;
-                        if (Vector3.Distance(_wallSamples[i].sample, floorSample) > minDist
-                    && Vector3.Distance(_wallSamples[i].sample, floorSample) <= maxDist)
+                
+                if (Vector3.Distance(_wallSamples[i].sample, floorSample) > minDist
+                 && Vector3.Distance(_wallSamples[i].sample, floorSample) <= maxDist)
                 {
                     _samplesNearWalls.Add(_floorSamples[j]);
                     _floorSamples.RemoveAt(j);
                 }
-                        else
+                
+                else
                 {
                     _samplesInMid.Add(_floorSamples[j]);
-                    // Debug.Log($"In Sort Method: {_floorSamples[j].sample}");
                 }
             }
         }
@@ -535,55 +505,38 @@ public class MeshSampler : MonoBehaviour
 
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
 
-        // switch (node.nodeType)
-        // {
-        //     case NodeData.NodeType.None: 
-        //         Debug.Log($"NodeType : None");
-        //         break;
-        //     
-        //     case NodeData.NodeType.Study:
-        //         Debug.Log($"NodeType : Study");
-        //         break;
-        //     
-        //     case NodeData.NodeType.Objective:
-        //         Debug.Log($"NodeType : Objective");
-        //         break;
-        //     
-        //     default:
-        //         break;
-        // }
-
         int random = 0;
         int propCount = 0;
-
         int floorCount = toSpawn.MaxFloorPropCountPerRoom;
 
         if (node.CanHaveObjective)
         {
             List<PropData> props = toSpawn.FloorPrefabs.FindAll((prop) => prop.PropType == Prop.Objective);
-            random = Random.Range(0, props.Count);
-            PropData prop = props[random];
 
-            if (_props.TryGetValue(prop, out var value))
-                propCount = value;
-            else
-                _props.Add(prop, propCount);
+            if (props.Count > 0) {
+                random = Random.Range(0, props.Count);
+                PropData prop = props[random];
 
-            if (!(_objectivesSpawned >= 1))
-            {
-                PropObject propObj = Instantiate(prop.Prop, nodeObj.transform, false).GetComponent<PropObject>();
-                propObj.transform.localPosition = Vector3.zero;
-                propObj.UpdateRotation();
+                if (_props.TryGetValue(prop, out var value))
+                    propCount = value;
+                else
+                    _props.Add(prop, propCount);
 
-                propCount += 1;
-                _props[prop] = propCount;
+                if (!(_objectivesSpawned >= 1))
+                {
+                    PropObject propObj = Instantiate(prop.Prop, nodeObj.transform, false).GetComponent<PropObject>();
+                    propObj.transform.localPosition = Vector3.zero;
+                    propObj.UpdateRotation();
 
-                return 0;
+                    propCount += 1;
+                    _props[prop] = propCount;
+
+                    return 0;
+                }
             }
         }
 
-        else
-            toSpawn.FloorPrefabs.RemoveAll((prop) => prop.PropType == Prop.Objective);
+        else toSpawn.FloorPrefabs.RemoveAll((prop) => prop.PropType == Prop.Objective);
 
         List<Sample> filteredSamples = new List<Sample>();
         filteredSamples.AddRange(_floorSamples);
@@ -591,16 +544,9 @@ public class MeshSampler : MonoBehaviour
         while (floorCount > 0 && toSpawn.FloorPrefabs.Count > 0 && filteredSamples.Count > 0)
         {
             floorCount -= 1;
-            
-            propCount = 0;
 
             random = Random.Range(0, toSpawn.FloorPrefabs.Count);
             PropData prop = toSpawn.FloorPrefabs[random];
-
-            // foreach (var filtered in filteredSamples)
-            // {
-            //     Debug.Log($"In Filtered Samples: {filtered.sample}");
-            // }
 
             int sampleIndex = Random.Range(0, filteredSamples.Count);
 
@@ -610,23 +556,24 @@ public class MeshSampler : MonoBehaviour
             Vector3 dir = midPoint - s.sample;
             dir.y = 0;
 
-            // Debug.Log($"{sampleIndex} : {filteredSamples.Count}");
+            Debug.Log($"prop: {prop.Prop.name}, max: {prop.MaxCount}");
 
             if (propCount < prop.MaxCount)
             {
-                if(Random.Range(0, 1) > prop.SpawnChance)
-                    continue;
+                if(Random.Range(0, 1) > prop.SpawnChance) continue;
 
                 PropObject propObj = Instantiate(prop.Prop, nodeObj.transform, false).GetComponent<PropObject>();
+
                 propObj.transform.localPosition = nodeObj.transform.InverseTransformPoint(s.sample);
                 propObj.transform.localEulerAngles = new Vector3(0, Random.Range(0, 360), 0);
-                
                 propObj.IsOverlappingNode();
+
                 overlapCount += propObj.IsOverlappingProp();
 
-                if(!propObj) continue;
+                Debug.Log($"current count: {propCount}, prop exists: {propObj != null}");
 
-                // Debug.Log($"{go.transform.name} : {s.sample}");
+                if (!propObj) continue;
+
                 if(prop.CheckOrientation)
                     propObj.transform.forward = dir;
 
@@ -634,18 +581,15 @@ public class MeshSampler : MonoBehaviour
                     _objectivesSpawned += 1;
 
                 _spawnedObjects.Add(propObj.gameObject);
+
                 filteredSamples.RemoveAt(sampleIndex);
                 filteredSamples.RemoveAll((sample) => Vector3.Distance(sample.sample, s.sample) < .75f);
                 
                 propCount += 1;
-
                 floorCount -= 1;
             }
 
-            else
-            {
-                toSpawn.FloorPrefabs.RemoveAt(random);
-            }
+            else toSpawn.FloorPrefabs.RemoveAt(random);
 
             if (_props.TryGetValue(prop, out var value))
                 propCount = value;
@@ -679,12 +623,10 @@ public class MeshSampler : MonoBehaviour
         while (wallCount > 0 && toSpawn.WallPrefabs.Count > 0 && filteredSamples.Count > 0)
         {
             int propCount = 0;
-
             int random = Random.Range(0, toSpawn.WallPrefabs.Count);
+            int sampleIndex = Random.Range(0, filteredSamples.Count);
 
             PropData prop = toSpawn.WallPrefabs[random];
-
-            int sampleIndex = Random.Range(0, filteredSamples.Count);
             
             Sample s = filteredSamples[sampleIndex];
             _wallSamples.Remove(s);
@@ -696,12 +638,12 @@ public class MeshSampler : MonoBehaviour
             {
                 PropObject obj = Instantiate(prop.Prop, go.transform).GetComponent<PropObject>();
 
+                if (!obj) continue;
+
                 obj.transform.position = s.sample;
                 obj.transform.forward = s.triangleNormal;
 
                 overlapCount += obj.IsOverlappingProp();
-
-                if (!obj) continue;
 
                 propCount += 1;
                 
@@ -711,10 +653,7 @@ public class MeshSampler : MonoBehaviour
                 wallCount -= 1;
             }
 
-            else
-            {
-                toSpawn.WallPrefabs.RemoveAt(random);
-            }
+            else toSpawn.WallPrefabs.RemoveAt(random);
             
             if (_props.TryGetValue(prop, out var value))
                 propCount = value;
@@ -727,36 +666,5 @@ public class MeshSampler : MonoBehaviour
         filteredSamples.Clear();
 
         return overlapCount;
-    }
-}
-
-[System.Serializable]
-public struct Sample
-{
-    public Vector3 sample;
-    public Vector3 triangleNormal;
-}
-
-[System.Serializable]
-public struct Spawner
-{
-    [SerializeField] private List<PropData> _wallPrefabs;
-    [SerializeField] private List<PropData> _floorPrefabs;
-
-    [SerializeField] private int maxWallPropCountPerRoom;
-    [SerializeField] private int maxFloorPropCountPerRoom;
-
-    public List<PropData> WallPrefabs => _wallPrefabs;
-    public List<PropData> FloorPrefabs => _floorPrefabs;
-    public int MaxWallPropCountPerRoom => maxWallPropCountPerRoom;
-    public int MaxFloorPropCountPerRoom => maxFloorPropCountPerRoom;
-
-    public Spawner(Spawner spawner)
-    {
-        _wallPrefabs = new List<PropData>(spawner.WallPrefabs);
-        _floorPrefabs = new List<PropData>(spawner.FloorPrefabs);
-
-        maxFloorPropCountPerRoom = spawner.MaxFloorPropCountPerRoom;
-        maxWallPropCountPerRoom = spawner.MaxWallPropCountPerRoom;
     }
 }
