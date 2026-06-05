@@ -528,8 +528,10 @@ public class MeshSampler : MonoBehaviour
 
         string spawnGraph = $"{node.name}: {propObj.name}";
 
-        while(i < 3)
+        while(i < 2)
         {
+            i += 1;
+
             PropNeighborProperty randomPropNeighbor = prop.GetRandomProp(node);
 
             if(randomPropNeighbor == null) continue;
@@ -553,11 +555,6 @@ public class MeshSampler : MonoBehaviour
             propObj.transform.SetParent(nodeObj.transform);
 
             propObj.UpdateRotation();
-
-            // foreach(var neighbor in propNeighbor.Neighbors)
-            //     validProps.Add(neighbor.prop);
-
-            i += 1;
 
             spawnGraph += $"=>{propObj.name}"; 
         }

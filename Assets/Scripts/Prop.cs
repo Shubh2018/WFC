@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.U2D.IK;
 
 public enum Placement
 {
@@ -28,6 +26,9 @@ public enum StructureType
 public enum EnvironmentType
 {
     Objective,
+    Study,
+    Cellar,
+    Garden,
 };
 
 // public enum NodeType
@@ -43,13 +44,14 @@ public class Prop : ScriptableObject
     [SerializeField] private Prop _parent;
     [SerializeField] private PropType _propType;
     [SerializeField] private NodeData.NodeType _nodeTypeToSpawnIn;
-    // [SerializeField] private NodeType _nodeType;
+    [SerializeField] private NodeData.EnvironmentType _environmentsToSpawnIn;
     [SerializeField] private List<Structure> _structureType;
-    [SerializeField] private List<Environment> _environmentType;
     [SerializeField] private List<PropNeighborProperty> _neighbors;
 
     public PropObject PropObject => _prop;
     public List<PropNeighborProperty> Neighbors => _neighbors;
+    public NodeData.NodeType NodeTypeToSpawnIn => _nodeTypeToSpawnIn;
+    public NodeData.EnvironmentType EnvironmentTypeToSpawnIn => _environmentsToSpawnIn;
     public float SpawnChance {set { _spawnChance = value; } get {return _spawnChance;}}
 
     public Prop(Prop p)
@@ -60,13 +62,12 @@ public class Prop : ScriptableObject
         this._propType = p._propType;
         this._nodeTypeToSpawnIn = p._nodeTypeToSpawnIn;
         this._structureType = new List<Structure>(p._structureType);
-        this._environmentType = new List<Environment>(p._environmentType);
         this._neighbors = new List<PropNeighborProperty>(p._neighbors);
     }
 
     public PropNeighborProperty GetRandomProp(NodeData node)
     {
-        CompareNodeType(node.nodeType);
+        if(!CompareNode<NodeData.NodeType>(_nodeTypeToSpawnIn, node.nodeType)) return null;
 
         List<PropNeighborProperty> neighbors = new List<PropNeighborProperty>(_neighbors);
 
@@ -113,9 +114,12 @@ public class Prop : ScriptableObject
         return cdf[low];
     }
 
-    public NodeData.NodeType CompareNodeType(NodeData.NodeType nodeType)
+    public bool CompareNode<T>(T nodeTypeToSpawnIn, T nodeType) where T : Enum
     {
-        return (NodeData.NodeType)((int)nodeType & (int)_nodeTypeToSpawnIn);
+        if(!typeof(T).IsEnum)
+            throw new ArgumentException($"T must be an enum");
+
+        return nodeTypeToSpawnIn.HasFlag(nodeType);
     }
 }
 
@@ -125,13 +129,6 @@ public class Structure
     public StructureType structure;
     [Range(0.0f, 1.0f)] public float spawnChance;
 };
-
-[Serializable]
-public class Environment
-{
-    public EnvironmentType environment;
-    [Range(0.0f, 1.0f)] public float spawnChance;
-}
 
 [Serializable]
 public class NodeProperty

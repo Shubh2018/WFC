@@ -454,6 +454,7 @@ public class WFC : MonoBehaviour
                     newNode.IsStairPiece = currNode.IsStairPiece;
                     newNode.IsDeadEnd = currNode.IsDeadEnd; 
                     newNode.nodeType = currNode.nodeType;
+                    newNode.environmentType = currNode.environmentType;
                     
                     newNode.Up = currNode.Up;
                     newNode.Down = currNode.Down;

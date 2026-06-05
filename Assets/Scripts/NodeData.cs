@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class NodeFace
 {
@@ -52,6 +53,15 @@ public class NodeData : ScriptableObject
         Junction = 1<<4,
         Staircase = 1<<5,
     };
+
+    [System.Flags]
+    public enum EnvironmentType
+    {
+        Objective = 1<<0,
+        Study = 1<<1,
+        Cellar = 1<<2,
+        Garden = 1<<3,
+    };
     
     public GameObject Prefab;
     public int Weight;
@@ -59,6 +69,7 @@ public class NodeData : ScriptableObject
     public bool CanHaveObjective = false;
     public bool IsDeadEnd = false;
     public NodeType nodeType;
+    public EnvironmentType environmentType;
     [HideInInspector] public int ClockwiseRotationSteps; // Set automatically as the tile is rotated
 
     public NodeFaceVertical Up;
@@ -81,10 +92,14 @@ public class NodeData : ScriptableObject
 
         if(props.Count <= 0) return null;
 
-        props.RemoveAll((p) => p.SpawnChance == 0.0f || p.CompareNodeType(this.nodeType) == 0);
+        props.RemoveAll((p) => p.SpawnChance == 0.0f || 
+            !p.CompareNode<NodeData.NodeType>(p.NodeTypeToSpawnIn, this.nodeType) || 
+            !p.CompareNode<NodeData.EnvironmentType>(p.EnvironmentTypeToSpawnIn, this.environmentType));
         props.Sort((x, y) => x.SpawnChance.CompareTo(y.SpawnChance));
 
         int count = props.Count;
+
+        if(count <= 0) return null;
 
         float totalProbability = 0;
 
