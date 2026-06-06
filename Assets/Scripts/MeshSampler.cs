@@ -521,8 +521,10 @@ public class MeshSampler : MonoBehaviour
         samplesInRange.Remove(spawnSample);
         _floorSamples.Remove(spawnSample);
 
-        PropObject propObj = Instantiate(prop.PropObject, spawnSample.sample, Quaternion.Euler(0.0f, Random.Range(0f, 360f), 0.0f));
+        PropObject propObj = Instantiate(prop.PropObject, spawnSample.sample, Quaternion.identity);
         propObj.transform.SetParent(nodeObj.transform);
+
+        propObj.transform.localEulerAngles = new Vector3(0.0f, Random.Range(0f, 360f), 0.0f);
     
         int i = 0;
 

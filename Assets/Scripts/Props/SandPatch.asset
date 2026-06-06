@@ -16,8 +16,8 @@ MonoBehaviour:
   _spawnChance: 1
   _parent: {fileID: 0}
   _propType: 0
-  _nodeTypeToSpawnIn: 31
-  _environmentsToSpawnIn: -1
+  _nodeTypeToSpawnIn: 0
+  _environmentsToSpawnIn: 0
   _structureType:
   - structure: 0
     spawnChance: 0

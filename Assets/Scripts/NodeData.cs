@@ -93,13 +93,17 @@ public class NodeData : ScriptableObject
         if(props.Count <= 0) return null;
 
         props.RemoveAll((p) => p.SpawnChance == 0.0f || 
-            !p.CompareNode<NodeData.NodeType>(p.NodeTypeToSpawnIn, this.nodeType) || 
-            !p.CompareNode<NodeData.EnvironmentType>(p.EnvironmentTypeToSpawnIn, this.environmentType));
+            !p.CompareNode(p.NodeTypeToSpawnIn, this.nodeType) || 
+            !p.CompareNode(p.EnvironmentTypeToSpawnIn, this.environmentType));
         props.Sort((x, y) => x.SpawnChance.CompareTo(y.SpawnChance));
 
         int count = props.Count;
 
-        if(count <= 0) return null;
+        if(count <= 0) 
+        {
+            Debug.Log($"Null");
+            return null;
+        }
 
         float totalProbability = 0;
 

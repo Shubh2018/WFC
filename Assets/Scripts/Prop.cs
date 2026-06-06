@@ -67,7 +67,7 @@ public class Prop : ScriptableObject
 
     public PropNeighborProperty GetRandomProp(NodeData node)
     {
-        if(!CompareNode<NodeData.NodeType>(_nodeTypeToSpawnIn, node.nodeType)) return null;
+        if(!CompareNode(_nodeTypeToSpawnIn, node.nodeType)) return null;
 
         List<PropNeighborProperty> neighbors = new List<PropNeighborProperty>(_neighbors);
 
@@ -119,7 +119,7 @@ public class Prop : ScriptableObject
         if(!typeof(T).IsEnum)
             throw new ArgumentException($"T must be an enum");
 
-        return nodeTypeToSpawnIn.HasFlag(nodeType);
+        return nodeTypeToSpawnIn.HasFlag(nodeType) || nodeType.HasFlag(nodeTypeToSpawnIn);
     }
 }
 
