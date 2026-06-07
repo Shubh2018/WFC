@@ -425,6 +425,8 @@ public class WFC : MonoBehaviour
         for(int i = 0; i < nodes; i++) 
         {
             NodeData currNode = _nodes[i];
+            Debug.Log($"CurrNode: {currNode.name}");
+
             List<NodeFaceHorizontal.Name> currFaceNames = new List<NodeFaceHorizontal.Name>{ currNode.Back.name, currNode.Right.name, currNode.Front.name, currNode.Left.name };
 
             // Only rotate nodes with a positive weight that are not symmetrical all the way around (like the crossroad)
@@ -432,7 +434,7 @@ public class WFC : MonoBehaviour
             || currNode.Right.type != NodeFaceHorizontal.Type.None
             || currNode.Front.type != NodeFaceHorizontal.Type.None
             || currNode.Back.type != NodeFaceHorizontal.Type.None
-            || currFaceNames.Distinct().Skip(1).Any())
+            || currFaceNames.Distinct().Any())
             && currNode.Weight > 0) 
             {
                 // Rotate object clockwise a maximum of three times
@@ -492,6 +494,9 @@ public class WFC : MonoBehaviour
         
         foreach (var node in _nodesGenerated)
         {
+            // Debug.Log($"NodeName: {node.name}");
+            // continue;
+            
             if(node.Prefab == null) continue;
             
             SampleData sampleData = new SampleData

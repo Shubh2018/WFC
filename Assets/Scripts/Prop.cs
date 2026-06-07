@@ -47,7 +47,9 @@ public class Prop : ScriptableObject
     [SerializeField] private NodeData.EnvironmentType _environmentsToSpawnIn;
     [SerializeField] private List<Structure> _structureType;
     [SerializeField] private List<PropNeighborProperty> _neighbors;
+    [SerializeField] private bool _randomRotation = false;
 
+    public bool RandomRotation => _randomRotation;
     public PropObject PropObject => _prop;
     public List<PropNeighborProperty> Neighbors => _neighbors;
     public NodeData.NodeType NodeTypeToSpawnIn => _nodeTypeToSpawnIn;

@@ -165,6 +165,8 @@ public class MeshSampler : MonoBehaviour
 
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries) // Method to sample the meshes. Return a list of Sample
     {
+        Debug.Log($"Sampled Mesh: {mesh.transform.name}");
+
         List<Sample> samples = new List<Sample>();
         List<int> active = new List<int>();
 
@@ -497,6 +499,7 @@ public class MeshSampler : MonoBehaviour
                         if (Vector3.Distance(_wallSamples[i].sample, floorSample) > minDist
                     && Vector3.Distance(_wallSamples[i].sample, floorSample) <= maxDist)
                 {
+                    _samplesNearWalls.Add(_floorSamples[j]);
                     _floorSamples.RemoveAt(j);
                 }
             }
