@@ -35,6 +35,4 @@ MonoBehaviour:
   - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
     maxDistance: 0.8
     spawnChance: 0.2
-  - prop: {fileID: 11400000, guid: 34350ee187d01f744978363773e6185e, type: 2}
-    maxDistance: 0.2
-    spawnChance: 0.2
+  _randomRotation: 0

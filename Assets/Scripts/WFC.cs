@@ -425,7 +425,6 @@ public class WFC : MonoBehaviour
         for(int i = 0; i < nodes; i++) 
         {
             NodeData currNode = _nodes[i];
-            Debug.Log($"CurrNode: {currNode.name}");
 
             List<NodeFaceHorizontal.Name> currFaceNames = new List<NodeFaceHorizontal.Name>{ currNode.Back.name, currNode.Right.name, currNode.Front.name, currNode.Left.name };
 

@@ -45,6 +45,4 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   validProps:
-  - {fileID: 11400000, guid: bef57d5fec758110bb92bd49c98d8325, type: 2}
-  - {fileID: 11400000, guid: 975323c2788227e568e04fc21d17e141, type: 2}
   - {fileID: 11400000, guid: f6aaafa0312c45a7aaef2e43ee98f215, type: 2}

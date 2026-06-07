@@ -459,8 +459,8 @@ public class MeshSampler : MonoBehaviour
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
 
-        float minDist = .5f;
-        float maxDist = 1f;
+        float minDist = 5f;
+        float maxDist = 5.5f;
 
         foreach (var v in samples)
         {
@@ -560,6 +560,8 @@ public class MeshSampler : MonoBehaviour
             propObj.transform.SetParent(nodeObj.transform);
 
             propObj.UpdateRotation();
+
+            prop = propNeighbor;
 
             spawnGraph += $"=>{propObj.name}"; 
         }

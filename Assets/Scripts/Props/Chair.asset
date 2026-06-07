@@ -20,7 +20,10 @@ MonoBehaviour:
   _environmentsToSpawnIn: 2
   _structureType: []
   _neighbors:
-  - prop: {fileID: 0}
-    maxDistance: 0
-    spawnChance: 0
+  - prop: {fileID: 11400000}
+    maxDistance: 1
+    spawnChance: 0.75
+  - prop: {fileID: 11400000, guid: d49eabf0cf4f56386a1b32d126245267, type: 2}
+    maxDistance: 1
+    spawnChance: 0.25
   _randomRotation: 0

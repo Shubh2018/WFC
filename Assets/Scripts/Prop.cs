@@ -78,6 +78,8 @@ public class Prop : ScriptableObject
 
         int count = neighbors.Count;
 
+        if(count <= 0) return null; 
+
         float totalProbability = 0;
 
         PropNeighborProperty[] cdf = new PropNeighborProperty[count];
