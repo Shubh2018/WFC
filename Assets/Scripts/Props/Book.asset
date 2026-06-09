@@ -16,6 +16,7 @@ MonoBehaviour:
   _spawnChance: 0.9
   _parent: {fileID: 0}
   _propType: 0
+  _spawnPositions: 0
   _nodeTypeToSpawnIn: 27
   _environmentsToSpawnIn: 2
   _structureType: []
@@ -35,4 +36,3 @@ MonoBehaviour:
   - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
     maxDistance: 0.8
     spawnChance: 0.15
-  _randomRotation: 0

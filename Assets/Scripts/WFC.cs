@@ -5,8 +5,6 @@ using System.Linq;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.LowLevelPhysics;
-using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 // Represents a tile that needs to be collapsed

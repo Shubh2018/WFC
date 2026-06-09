@@ -31,6 +31,20 @@ public enum EnvironmentType
     Garden,
 };
 
+public enum SpawnPosition
+{
+    Random,
+    Center,
+    North,
+    South,
+    East,
+    West,
+    NorthEast,
+    NorthWest,
+    SouthEast,
+    SouthWest
+};
+
 // public enum NodeType
 // {
 
@@ -43,18 +57,20 @@ public class Prop : ScriptableObject
     [SerializeField] [Range(0.0f, 1.0f)] private float _spawnChance = 0.0f;
     [SerializeField] private Prop _parent;
     [SerializeField] private PropType _propType;
+    [SerializeField] private SpawnPosition _spawnPositions;
+    [SerializeField] private bool _useStaticPositions;
     [SerializeField] private NodeData.NodeType _nodeTypeToSpawnIn;
     [SerializeField] private NodeData.EnvironmentType _environmentsToSpawnIn;
     [SerializeField] private List<Structure> _structureType;
     [SerializeField] private List<PropNeighborProperty> _neighbors;
-    [SerializeField] private bool _randomRotation = false;
 
-    public bool RandomRotation => _randomRotation;
     public PropObject PropObject => _prop;
+    public SpawnPosition SpawnPosition => _spawnPositions;
     public List<PropNeighborProperty> Neighbors => _neighbors;
     public NodeData.NodeType NodeTypeToSpawnIn => _nodeTypeToSpawnIn;
     public NodeData.EnvironmentType EnvironmentTypeToSpawnIn => _environmentsToSpawnIn;
     public float SpawnChance {set { _spawnChance = value; } get {return _spawnChance;}}
+    public bool UseStaticPositions => _useStaticPositions;
 
     public Prop(Prop p)
     {
@@ -65,6 +81,8 @@ public class Prop : ScriptableObject
         this._nodeTypeToSpawnIn = p._nodeTypeToSpawnIn;
         this._structureType = new List<Structure>(p._structureType);
         this._neighbors = new List<PropNeighborProperty>(p._neighbors);
+        this._spawnPositions = p._spawnPositions;
+        this._useStaticPositions = p._useStaticPositions;
     }
 
     public PropNeighborProperty GetRandomProp(NodeData node)
