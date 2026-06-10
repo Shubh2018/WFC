@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UIElements;
 
 public enum SurfaceType
 {
@@ -536,6 +537,57 @@ public class MeshSampler : MonoBehaviour
         }
     }
 
+    private Sample WallMid(MeshFilter mesh, Vector3 min, Vector3 max)
+    {
+        // min = transform.InverseTransformPoint(min);
+        // max = transform.InverseTransformPoint(max);
+
+        Vector3 mid = (min + max) / 2;
+
+        Vector3 rotation = mesh.transform.eulerAngles;
+
+        float div = rotation.y / 90.0f;
+
+        List<Sample> wall1 = new List<Sample>();
+        List<Sample> wall2 = new List<Sample>();
+
+        if(div % 2 == 0)
+        {
+            wall1.AddRange(new List<Sample>(_wallSamples.FindAll((s) => s.sample.z > mid.z)));
+            wall2.AddRange(new List<Sample>(_wallSamples.FindAll((s) => s.sample.z < mid.z)));
+        }
+
+        else
+        {
+            wall1.AddRange(new List<Sample>(_wallSamples.FindAll((s) => s.sample.x > mid.x)));
+            wall2.AddRange(new List<Sample>(_wallSamples.FindAll((s) => s.sample.x < mid.x)));
+        }
+
+        Sample minimum = new Sample{sample = Vector3.positiveInfinity, triangleNormal = Vector3.zero};
+        Sample maximum = new Sample{sample = Vector3.negativeInfinity, triangleNormal = Vector3.zero};
+
+        foreach(var sample in wall1)
+        {
+            minimum = new Sample {
+                sample = new Vector3(Mathf.Min(minimum.sample.x, sample.sample.x), sample.sample.y, Mathf.Min(minimum.sample.z, sample.sample.z)),
+                triangleNormal = sample.triangleNormal
+            };
+
+            maximum = new Sample {
+                sample = new Vector3(Mathf.Max(maximum.sample.x, sample.sample.x), sample.sample.y, Mathf.Max(maximum.sample.z, sample.sample.z)),
+                triangleNormal = sample.triangleNormal
+            };
+        }
+
+        Sample middle = new Sample
+        {
+            sample = (minimum.sample + maximum.sample) / 2,
+            triangleNormal = minimum.triangleNormal
+        };
+
+        return middle;
+    }
+
     private List<Sample> GetSamplesBySpawnPosition(SpawnPosition spawnPos, Vector3 min, Vector3 max)
     {
         min = transform.InverseTransformPoint(min);
@@ -639,8 +691,6 @@ public class MeshSampler : MonoBehaviour
         int overlapCount = 0;
         
         if (node.IsStairPiece) return 0;
-        
-        Vector3 midPoint = (min + max) / 2;
 
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
 
@@ -659,8 +709,9 @@ public class MeshSampler : MonoBehaviour
 
             int sampleIndex = Random.Range(0, filteredSamples.Count);
             
-            Sample s = filteredSamples[sampleIndex];
-            _wallSamples.Remove(s);
+            // Sample s = filteredSamples[sampleIndex];
+            Sample s = WallMid(go.GetComponent<MeshFilter>(), min, max);
+            //_wallSamples.Remove(s);
             
             if (Random.Range(0, 1) > prop.SpawnChance)
                 continue;
