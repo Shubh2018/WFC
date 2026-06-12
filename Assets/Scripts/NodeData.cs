@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using UnityEngine.Serialization;
 
 public class NodeFace
 {
@@ -78,7 +79,9 @@ public class NodeData : ScriptableObject
     public NodeFaceHorizontal Right;
     public NodeFaceHorizontal Front;
     public NodeFaceHorizontal Back;
-    public List<Prop> validProps;
+
+    [FormerlySerializedAs("validProps")] public List<Prop> validFloorProps;
+    public List<Prop> validWallProps;
 
     public void SetRotation(float rotation)
     {
@@ -86,9 +89,17 @@ public class NodeData : ScriptableObject
             Prefab.transform.rotation = Quaternion.Euler(new Vector3(0, rotation, 0));
     }
 
-    public Prop GetRandomPropCDF()
+    public Prop GetRandomPropCDF(PropPlacementType placementType)
     {
-        List<Prop> props = new List<Prop>(validProps);
+        List<Prop> props = new List<Prop>();
+
+        if (placementType == PropPlacementType.Floor)
+            props = new List<Prop>(validFloorProps);
+        else if (placementType == PropPlacementType.Wall)
+        {
+            Debug.Log($"validWallProps: {validWallProps}");
+            props = new List<Prop>(validWallProps);
+        }
 
         if(props.Count <= 0) return null;
 

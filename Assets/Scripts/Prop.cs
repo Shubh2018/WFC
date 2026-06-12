@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum Placement
+public enum PropPlacementType
 {
     Floor,
     Wall,
@@ -56,6 +56,7 @@ public class Prop : ScriptableObject
     [SerializeField] private PropObject _prop;
     [SerializeField] [Range(0.0f, 1.0f)] private float _spawnChance = 0.0f;
     [SerializeField] private Prop _parent;
+    [SerializeField] private PropPlacementType _propPlacement;
     [SerializeField] private PropType _propType;
     [SerializeField] private SpawnPosition _spawnPositions;
     [SerializeField] private bool _useStaticPositions;

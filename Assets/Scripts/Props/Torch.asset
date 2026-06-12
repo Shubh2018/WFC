@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acd5196af078d4e74b8bdc1ce7cdea58, type: 3}
+  m_Name: Torch
+  m_EditorClassIdentifier: Assembly-CSharp::Prop
+  _prop: {fileID: 4812528741861764482, guid: 7a937ee5bc40ba142a195e3a41fa7258, type: 3}
+  _spawnChance: 1
+  _parent: {fileID: 0}
+  _propPlacement: 1
+  _propType: 0
+  _spawnPositions: 0
+  _useStaticPositions: 0
+  _nodeTypeToSpawnIn: -1
+  _environmentsToSpawnIn: -1
+  _structureType: []
+  _neighbors: []

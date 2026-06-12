@@ -457,7 +457,8 @@ public class WFC : MonoBehaviour
                     
                     newNode.Up = currNode.Up;
                     newNode.Down = currNode.Down;
-                    newNode.validProps = new List<Prop>(currNode.validProps);
+                    newNode.validFloorProps = new List<Prop>(currNode.validFloorProps);
+                    newNode.validWallProps = new List<Prop>(currNode.validWallProps);
                     
                     switch(j)
                     {

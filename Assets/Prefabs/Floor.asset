@@ -18,6 +18,7 @@ MonoBehaviour:
   CanHaveObjective: 0
   IsDeadEnd: 0
   nodeType: 0
+  environmentType: 0
   ClockwiseRotationSteps: 0
   Up:
     name: 0
@@ -43,4 +44,5 @@ MonoBehaviour:
     name: 6
     symmetry: 1
     type: 0
-  validProps: []
+  validFloorProps: []
+  validWallProps: []

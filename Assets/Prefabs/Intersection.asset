@@ -44,5 +44,7 @@ MonoBehaviour:
     name: 3
     symmetry: 1
     type: 0
-  validProps:
+  validFloorProps:
   - {fileID: 11400000, guid: f6aaafa0312c45a7aaef2e43ee98f215, type: 2}
+  validWallProps:
+  - {fileID: 11400000, guid: 845fb54e4eb479c4995477faf75926c2, type: 2}

@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.UIElements;
+using System.Runtime.InteropServices.ComTypes;
 
 public enum SurfaceType
 {
@@ -275,7 +275,7 @@ public class MeshSampler : MonoBehaviour
         int overlapCount = 0;
 
         overlapCount += SpawnFloorProps(node, obj, minMesh, maxMesh);
-        overlapCount += SpawnWallProps(node, obj, minMesh, maxMesh);
+        overlapCount += SpawnPropsOnWall(node, obj, minMesh, maxMesh);
 
         _samplePoints.Clear();
 
@@ -537,55 +537,61 @@ public class MeshSampler : MonoBehaviour
         }
     }
 
-    private Sample WallMid(MeshFilter mesh, Vector3 min, Vector3 max)
+    private List<Sample> WallMid(Vector3 min, Vector3 max)
     {
         // min = transform.InverseTransformPoint(min);
         // max = transform.InverseTransformPoint(max);
 
         Vector3 mid = (min + max) / 2;
 
-        Vector3 rotation = mesh.transform.eulerAngles;
+        List<Sample> wall = new List<Sample>();
+        List<Sample>[] samplesArray = new List<Sample>[4];
 
-        float div = rotation.y / 90.0f;
-
-        List<Sample> wall1 = new List<Sample>();
-        List<Sample> wall2 = new List<Sample>();
-
-        if(div % 2 == 0)
+        for(int i = 0; i < 4; i++)
         {
-            wall1.AddRange(new List<Sample>(_wallSamples.FindAll((s) => s.sample.z > mid.z)));
-            wall2.AddRange(new List<Sample>(_wallSamples.FindAll((s) => s.sample.z < mid.z)));
+            samplesArray[i] = new List<Sample>();
         }
 
-        else
+        samplesArray[0].AddRange(_wallSamples.FindAll((s) => s.sample.z < mid.z && s.sample.z > min.z));
+        samplesArray[1].AddRange(_wallSamples.FindAll((s) => s.sample.z > mid.z && s.sample.z < max.z));
+        samplesArray[2].AddRange(_wallSamples.FindAll((s) => s.sample.x > mid.x && s.sample.x < max.x));
+        samplesArray[3].AddRange(_wallSamples.FindAll((s) => s.sample.x < mid.x && s.sample.x > min.x));
+
+        Sample nearestPoint = new Sample
         {
-            wall1.AddRange(new List<Sample>(_wallSamples.FindAll((s) => s.sample.x > mid.x)));
-            wall2.AddRange(new List<Sample>(_wallSamples.FindAll((s) => s.sample.x < mid.x)));
-        }
-
-        Sample minimum = new Sample{sample = Vector3.positiveInfinity, triangleNormal = Vector3.zero};
-        Sample maximum = new Sample{sample = Vector3.negativeInfinity, triangleNormal = Vector3.zero};
-
-        foreach(var sample in wall1)
-        {
-            minimum = new Sample {
-                sample = new Vector3(Mathf.Min(minimum.sample.x, sample.sample.x), sample.sample.y, Mathf.Min(minimum.sample.z, sample.sample.z)),
-                triangleNormal = sample.triangleNormal
-            };
-
-            maximum = new Sample {
-                sample = new Vector3(Mathf.Max(maximum.sample.x, sample.sample.x), sample.sample.y, Mathf.Max(maximum.sample.z, sample.sample.z)),
-                triangleNormal = sample.triangleNormal
-            };
-        }
-
-        Sample middle = new Sample
-        {
-            sample = (minimum.sample + maximum.sample) / 2,
-            triangleNormal = minimum.triangleNormal
+            sample = Vector3.positiveInfinity,
+            triangleNormal = Vector3.zero
         };
 
-        return middle;
+        float d = 0;
+        float distance = float.PositiveInfinity;
+
+        Sample nearestSample = new Sample
+        {
+            sample = Vector3.positiveInfinity,
+            triangleNormal = Vector3.zero
+        };
+
+        List<Sample> nearestSamples = new List<Sample>();
+    
+        for(int i = 0; i < samplesArray.Length; i++)
+        {
+            foreach(var s in samplesArray[i])
+            {
+                d = Vector3.Distance(s.sample, mid);
+
+                if(d < distance)
+                {
+                    distance = d;
+                    nearestSample = s;
+                }
+            }
+
+            nearestSamples.Add(nearestSample);
+        }
+
+
+        return nearestSamples;
     }
 
     private List<Sample> GetSamplesBySpawnPosition(SpawnPosition spawnPos, Vector3 min, Vector3 max)
@@ -602,8 +608,8 @@ public class MeshSampler : MonoBehaviour
         {
             case SpawnPosition.North: return _floorSamples.FindAll((s) => s.sample.z > halfMax.z && s.sample.x < halfMax.x && s.sample.x > halfMin.x);
             case SpawnPosition.South: return _floorSamples.FindAll((s) => s.sample.z < halfMin.z && s.sample.x < halfMax.x && s.sample.x > halfMin.x);
-            case SpawnPosition.East: return _floorSamples.FindAll((s) => s.sample.x > halfMax.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z);
-            case SpawnPosition.West: return _floorSamples.FindAll((s) => s.sample.x < halfMin.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z);
+            case SpawnPosition.East:  return _floorSamples.FindAll((s) => s.sample.x > halfMax.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z);
+            case SpawnPosition.West:  return _floorSamples.FindAll((s) => s.sample.x < halfMin.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z);
 
             case SpawnPosition.NorthEast: return _floorSamples.FindAll((s) => s.sample.x > halfMax.x && s.sample.z > halfMax.z);
             case SpawnPosition.NorthWest: return _floorSamples.FindAll((s) => s.sample.x < halfMin.x && s.sample.z > halfMax.z);
@@ -622,7 +628,7 @@ public class MeshSampler : MonoBehaviour
 
         // validProps.RemoveAll((p) => p.CompareNodeType(node.nodeType) == 0);
 
-        Prop prop = node.GetRandomPropCDF();
+        Prop prop = node.GetRandomPropCDF(PropPlacementType.Floor);
 
         if(!prop) return 0;
         
@@ -686,6 +692,32 @@ public class MeshSampler : MonoBehaviour
         return overlapCount;
     }
 
+    private int SpawnPropsOnWall(NodeData node, GameObject go, Vector3 min, Vector3 max)
+    {
+        int overlapCount = 0;
+
+        int i = 0;
+        List<Sample> samplesList = new List<Sample>(WallMid(min, max));
+        Debug.Log($"SamplesList: {samplesList.Count}");
+
+        while (i < 2)
+        {
+            if(samplesList.Count <= 0) return 0;
+
+            i += 1;
+
+            Prop prop = node.GetRandomPropCDF(PropPlacementType.Wall);
+            Sample randomSample = samplesList[Random.Range(0, samplesList.Count)];
+            
+            PropObject propObj = Instantiate(prop.PropObject, go.transform);
+            propObj.transform.forward = randomSample.triangleNormal;
+
+            samplesList.Remove(randomSample);
+        }
+
+        return overlapCount;
+    }
+
     private int SpawnWallProps(NodeData node, GameObject go, Vector3 min, Vector3 max)
     {
         int overlapCount = 0;
@@ -697,7 +729,7 @@ public class MeshSampler : MonoBehaviour
         int wallCount = toSpawn.MaxWallPropCountPerRoom;
 
         List<Sample> filteredSamples = new List<Sample>();
-        filteredSamples.AddRange(_wallSamples);
+        filteredSamples.AddRange(WallMid(min, max));
 
         while (wallCount > 0 && toSpawn.WallPrefabs.Count > 0 && filteredSamples.Count > 0)
         {
@@ -709,9 +741,8 @@ public class MeshSampler : MonoBehaviour
 
             int sampleIndex = Random.Range(0, filteredSamples.Count);
             
-            // Sample s = filteredSamples[sampleIndex];
-            Sample s = WallMid(go.GetComponent<MeshFilter>(), min, max);
-            //_wallSamples.Remove(s);
+            Sample s = filteredSamples[sampleIndex];
+            _wallSamples.Remove(s);
             
             if (Random.Range(0, 1) > prop.SpawnChance)
                 continue;

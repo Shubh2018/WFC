@@ -8,7 +8,7 @@ public class PropData : ScriptableObject
 
     //Neighbor List
 
-    [SerializeField] private Placement placement;
+    [SerializeField] private PropPlacementType placement;
     [SerializeField] private int _maxCount;
 
     [SerializeField] private bool _checkOrentation;
@@ -26,7 +26,7 @@ public class PropData : ScriptableObject
     //StructureType
 
     public GameObject Prop => _prop;
-    public Placement Placement => placement;
+    public PropPlacementType Placement => placement;
     public int MaxCount => _maxCount;
 
     public bool CheckOrientation => _checkOrentation;
