@@ -557,12 +557,6 @@ public class MeshSampler : MonoBehaviour
         samplesArray[2].AddRange(_wallSamples.FindAll((s) => s.sample.x > mid.x && s.sample.x < max.x));
         samplesArray[3].AddRange(_wallSamples.FindAll((s) => s.sample.x < mid.x && s.sample.x > min.x));
 
-        Sample nearestPoint = new Sample
-        {
-            sample = Vector3.positiveInfinity,
-            triangleNormal = Vector3.zero
-        };
-
         float d = 0;
         float distance = float.PositiveInfinity;
 
@@ -697,19 +691,22 @@ public class MeshSampler : MonoBehaviour
         int overlapCount = 0;
 
         int i = 0;
-        List<Sample> samplesList = new List<Sample>(WallMid(min, max));
-        Debug.Log($"SamplesList: {samplesList.Count}");
+        List<Sample> samplesList = WallMid(min, max);
 
-        while (i < 2)
+        while (i < 1)
         {
-            if(samplesList.Count <= 0) return 0;
+            if(samplesList.Count <= 0) break;
 
             i += 1;
 
             Prop prop = node.GetRandomPropCDF(PropPlacementType.Wall);
+
+            if(prop == null) continue;
+            
             Sample randomSample = samplesList[Random.Range(0, samplesList.Count)];
             
             PropObject propObj = Instantiate(prop.PropObject, go.transform);
+            propObj.transform.position = randomSample.sample;
             propObj.transform.forward = randomSample.triangleNormal;
 
             samplesList.Remove(randomSample);
