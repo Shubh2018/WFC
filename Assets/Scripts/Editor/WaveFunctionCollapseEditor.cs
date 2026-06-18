@@ -55,6 +55,12 @@ public class WaveFunctionCollapseEditor : Editor
         Slider collapseSpeedSlider = rootTree.Q<Slider>("_collapseSpeedSlider");
         collapseSpeedSlider.RegisterCallback<ChangeEvent<float>>(UpdateCollapseTime);
 
+        Toggle overrideObjListToggle = rootTree.Q<Toggle>("OverrideObjList");
+        overrideObjListToggle.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => {
+            VisualElement objectsToSpawnField = rootTree.Q("Objects");
+            objectsToSpawnField.style.display = evt.newValue ? DisplayStyle.Flex : DisplayStyle.None;
+        });
+
         // Debug Settings (A*)
         Toggle togglePathLine = rootTree.Q<Toggle>("_togglePath");
         Toggle togglePathPoints = rootTree.Q<Toggle>("_togglePathPoints");
@@ -190,6 +196,7 @@ public class WaveFunctionCollapseEditor : Editor
         WaveFunctionCollapse.pauseGeneration = false;
         WaveFunctionCollapse.StartCollapse((int overlaps) => {
             ResetControls();
+            PropData.Props.PrintHierarchy();
         });
 
         SetGenLabels(WaveFunctionCollapse.getTiles, WaveFunctionCollapse.getCollapseTime, WaveFunctionCollapse.collapseWaitTime);

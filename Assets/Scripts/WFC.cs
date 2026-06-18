@@ -29,29 +29,6 @@ public class Tile
     }
 }
 
-[System.Serializable]
-public class Samples
-{
-    public List<Sample> samples;
-
-    public Samples(List<Sample> samples)
-    {
-        this.samples = samples;
-    }
-}
-
-[System.Serializable]
-public class SampleData
-{
-    public NodeData nodeData;
-    public List<Samples> samples;
-
-    public SampleData()
-    {
-        this.samples = new List<Samples>();
-    }
-}
-
 public class PathNode
 {
     public PathNodeData data = new PathNodeData();
@@ -176,6 +153,7 @@ public class WFC : MonoBehaviour
     [SerializeField] private int _width;
     [SerializeField] private int _length;
     [SerializeField] private int _height;
+    [SerializeField] private int _samplesPerNode;
     
     [SerializeField] private Vector3Int _tileSize = Vector3Int.one;
     
@@ -186,14 +164,9 @@ public class WFC : MonoBehaviour
 
     [SerializeField] private float _samplingRadius = 0.5f;
     [SerializeField] private int _samplingTries = 30;
+    [SerializeField] private bool _overrideObjList = false;
 
     [SerializeField] private int _levelCount = 0;
-    
-    // List to save the samples before generation
-    // currently saving 5 distinct sample data 
-    private List<SampleData> _generatedSamples = new List<SampleData>();
-    
-    private MeshSampler _meshSampler;
 
     public string PropText { get; private set; } = "";
 
@@ -246,6 +219,10 @@ public class WFC : MonoBehaviour
     public bool enableGizmosPathField = false;
     public bool enableGizmosPathFinding = false;
     public bool enableGizmosDelay = false;
+    // -- PDS
+    public bool enableGizmosFloorSamples = false;
+    public bool enableGizmosWallSamples = false;
+    public bool enableGizmosSamplePoints = false;
 
     public void StartFindPath(Action doneFuncHook)
     {
@@ -307,12 +284,14 @@ public class WFC : MonoBehaviour
     // Used with the Unity VisualElement editor to save transitive information to the Mesh Sampler object
     public void SavePDSSettings(bool pdsFloorSamples, bool pdsWallSamples, bool pdsSamplePoints, float samplesRenderDistance)
     {
+        MeshSampler sampler = gameObject.GetComponent<MeshSampler>();
+
         // If the mesh sampler object exist, toggle its settings
-        if (_meshSampler) {
-            _meshSampler.enableGizmosFloorSamples = pdsFloorSamples;
-            _meshSampler.enableGizmosWallSamples = pdsWallSamples;
-            _meshSampler.enableGizmosSamplePoints = pdsSamplePoints;
-            _meshSampler.samplesRenderDistance = samplesRenderDistance;
+        if (sampler) {
+            sampler.enableGizmosFloorSamples = pdsFloorSamples;
+            sampler.enableGizmosWallSamples = pdsWallSamples;
+            sampler.enableGizmosSamplePoints = pdsSamplePoints;
+            sampler.samplesRenderDistance = samplesRenderDistance;
         }
     }
 
@@ -455,39 +434,20 @@ public class WFC : MonoBehaviour
 
     public void SampleTiles()
     {
-        _meshSampler = GetComponent<MeshSampler>();
-        _meshSampler.SetRadiusAndTries(_samplingRadius, _samplingTries);
-
-        _generatedSamples.Clear();
-
+        MeshSampler sampler = gameObject.GetComponent<MeshSampler>();
         List<NodeData> nodes = new List<NodeData>(_nodes);
         nodes.AddRange(_nodesGenerated);
 
-        foreach (NodeData node in nodes)
-        {
-            if(node.Prefab == null) continue;
-            
-            SampleData sampleData = new SampleData { nodeData = node };
-        
-            MeshFilter filter = sampleData.nodeData.Prefab.GetComponent<MeshFilter>();
-            sampleData.nodeData.SetRotation(sampleData.nodeData.ClockwiseRotationSteps * 90.0f);
-            
-            for (int i = 0; i < 5; i++)
-                sampleData.samples.Add(new Samples(_meshSampler.GetSamples(filter)));
-            
-            _generatedSamples.Add(sampleData);
-        }
-        
-        _meshSampler.SetSpawnerData(_gameObjectsToSpawn);
+        MeshNode.SampleTiles(sampler, nodes, _gameObjectsToSpawn, _samplingRadius, _samplingTries);
     }
 
     public void ClearTiles(bool clearAll = false) 
     {
         PropText = "";
         _nodesToCollapse.Clear();
+        PropData.Props.Clear();
 
-        _meshSampler?.Clear();
-        _meshSampler?.PropCount.Clear();
+        gameObject.GetComponent<MeshSampler>().Clear();
         
         if(clearAll) _nodesGenerated.Clear();
         _grid = null;
@@ -655,11 +615,11 @@ public class WFC : MonoBehaviour
 
             yield return new WaitUntil(() => roundDone);
             
-            foreach (var prop in _meshSampler.PropCount)
+            /*foreach (var prop in _meshSampler._props)
             {
                 PropText += $"{prop.Key}: {prop.Value} \n";
                 totalProps += prop.Value;
-            }
+            }*/
 
             PropText += $"Overlaps: {overlaps}\n";
             PropText += $"Totalprops: {totalProps}\n\n";
@@ -800,28 +760,11 @@ public class WFC : MonoBehaviour
         obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
 
         // Spawn props on the node
-        return SpawnProps(node, obj);
-    }
+        MeshNode mesh = obj.GetComponent<MeshNode>();
+        mesh.Init();
+        mesh.Generate(node, _overrideObjList ? _gameObjectsToSpawn : null);
 
-    private int SpawnProps(NodeData node, GameObject obj)
-    {
-        SampleData sampleData = _generatedSamples.Single(s => s.nodeData == node);
-
-        if (sampleData == null) return 0;
-
-        List<Sample> selectedSamples = new List<Sample>();
-        int randomSampleSet = Random.Range(0, sampleData.samples.Count);
-
-        foreach (var sample in sampleData.samples[randomSampleSet].samples)
-        {                    
-            selectedSamples.Add(new Sample() {
-                sample = obj.transform.localPosition + sample.sample,
-                triangleNormal = sample.triangleNormal
-            });
-        }
-        
-        _meshSampler.AddSamples(selectedSamples);
-        return _meshSampler.SpawnProps(node, obj);
+        return 0;
     }
 
     private Vector3 GetRotPosVec(Vector3Int pos, int rotationSteps) => pos - rotationSteps switch {

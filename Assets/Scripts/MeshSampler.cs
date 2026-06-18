@@ -5,6 +5,7 @@ using NUnit.Framework;
 using System.Threading.Tasks;
 using UnityEditor.Build.Pipeline;
 using UnityEngine.UI;
+using System;
 
 [System.Serializable]
 public struct Sample
@@ -19,21 +20,43 @@ public struct Spawner
     [SerializeField] private List<PropData> _wallPrefabs;
     [SerializeField] private List<PropData> _floorPrefabs;
 
-    [SerializeField] private int maxWallPropCountPerRoom;
-    [SerializeField] private int maxFloorPropCountPerRoom;
+    [SerializeField] public int maxWallPropCount;
+    [SerializeField] public int maxFloorPropCount;
 
     public List<PropData> WallPrefabs => _wallPrefabs;
     public List<PropData> FloorPrefabs => _floorPrefabs;
-    public int MaxWallPropCountPerRoom => maxWallPropCountPerRoom;
-    public int MaxFloorPropCountPerRoom => maxFloorPropCountPerRoom;
 
     public Spawner(Spawner spawner)
     {
         _wallPrefabs = new List<PropData>(spawner.WallPrefabs);
         _floorPrefabs = new List<PropData>(spawner.FloorPrefabs);
 
-        maxFloorPropCountPerRoom = spawner.MaxFloorPropCountPerRoom;
-        maxWallPropCountPerRoom = spawner.MaxWallPropCountPerRoom;
+        maxFloorPropCount = spawner.maxFloorPropCount;
+        maxWallPropCount = spawner.maxWallPropCount;
+    }
+
+    public Spawner(bool empty = false)
+    {
+        _wallPrefabs = new List<PropData>();
+        _floorPrefabs = new List<PropData>();
+
+        maxFloorPropCount = 5;
+        maxWallPropCount = 5;
+    }
+
+    public void AddProp(PropData prop) 
+    {
+        switch(prop.Placement)
+        {
+            case PropPlacement.Floor:
+                _floorPrefabs.Add(prop);
+                break;
+            case PropPlacement.Wall:
+                _wallPrefabs.Add(prop);
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -77,11 +100,10 @@ public class MeshSampler : MonoBehaviour
 
     private List<GameObject> _spawnedObjects = new List<GameObject>();
 
-    private Dictionary<PropData, int> _props = new Dictionary<PropData, int>();
-    private Dictionary<string, int> _propCount = new Dictionary<string, int>();
-    public Dictionary<string, int> PropCount => _propCount;
-
     private float _spawnChance = 0.3f;
+    private int _spawnHierarchy = 5;
+    private int _currentHierachyLevel = 0;
+    public Guid _parentId;
 
     public string PropText { get; private set; }
 
@@ -105,9 +127,16 @@ public class MeshSampler : MonoBehaviour
         _tries = tries;
     }
 
-    public void SetSpawnerData(Spawner spawner)
+    public void SetParent(Guid parentId)
+    {
+        _parentId = parentId;
+    }
+
+    public void SetSpawnerData(Spawner spawner, int spawnHierarchy = 5, int currentLevel = 0)
     {
         _gameObjectsToSpawn = new Spawner(spawner);
+        _spawnHierarchy = spawnHierarchy;
+        _currentHierachyLevel = currentLevel;
     }
 
     public void AddSamples(List<Sample> samplePoints)
@@ -133,7 +162,6 @@ public class MeshSampler : MonoBehaviour
         _samplesInMid.Clear();
 
         _meshFilter.Clear();
-        _props.Clear();
 
         foreach(var spawnedObject in _spawnedObjects)
             DestroyImmediate(spawnedObject);
@@ -159,7 +187,7 @@ public class MeshSampler : MonoBehaviour
             {
                 if (!WithinDisOfCam(floorPoint.sample, samplesRenderDistance)) continue;
                 Gizmos.DrawSphere(floorPoint.sample, 0.1f);
-                Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .1f);
+                Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .2f);
             }
         }
 
@@ -170,7 +198,7 @@ public class MeshSampler : MonoBehaviour
             {
                 if (!WithinDisOfCam(wallPoint.sample, samplesRenderDistance)) continue;
                 Gizmos.DrawSphere(wallPoint.sample, 0.1f);
-                Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .1f);
+                Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .2f);
             }
         }
 
@@ -181,7 +209,7 @@ public class MeshSampler : MonoBehaviour
             {
                 if (!WithinDisOfCam(samplePoint.sample, samplesRenderDistance)) continue;
                 Gizmos.DrawSphere(samplePoint.sample, 0.1f);
-                Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * .1f);
+                Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * .2f);
             }
         }
     }
@@ -237,57 +265,33 @@ public class MeshSampler : MonoBehaviour
 
             if (!accepted)
             {
-                int activeIndex = Random.Range(0, active.Count);
+                int activeIndex = UnityEngine.Random.Range(0, active.Count);
                 (active[activeIndex], active[^1]) = (active[^1], active[activeIndex]);
                 active.Remove(active.Count - 1);
             }
 
         } while(tryCount++ < safety && active.Count > 0);
 
-        /*for (int i = samples.Count - 1; i >= 0; i--)
-        {
-            if (!IsInside(samples[i], mesh.transform.position))
-                samples.RemoveAt(i);
-        }*/
-
-       /*for (int i = 0; i < samples.Count; i++)
-        {
-            Sample s = samples[i];
-            s.sample = mesh.transform.TransformPoint(s.sample);
-            s.triangleNormal = mesh.transform.TransformDirection(s.triangleNormal);
-            samples[i] = s;
-        }*/
-
         return samples.OrderBy(s => s.sample.y).ToList();
     }
 
-    public int SpawnProps(NodeData node, GameObject obj)
+    public int SpawnProps(GameObject obj, bool canHaveObjectes, Func<Vector3, PropData, bool, bool> spawnFilterFunc = null)
     {
         (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(_samplePoints);
 
         int overlapCount = 0;
+        Vector3 midPoint = (minMesh + maxMesh) / 2;
 
-        overlapCount += SpawnFloorProps(node, obj, minMesh, maxMesh);
-        overlapCount += SpawnWallProps(node, obj, minMesh, maxMesh);
+        spawnFilterFunc = spawnFilterFunc ?? ((Vector3 sample, PropData prop, bool propType) => true);
+
+        overlapCount += SpawnFloorProps(obj, midPoint, canHaveObjectes, spawnFilterFunc);
+        overlapCount += SpawnWallProps(obj, midPoint, spawnFilterFunc);
 
         _samplePoints.Clear();
 
-        AddPropToList();
+        PropText += $"Prop List: \n";
         
         return overlapCount;
-    }
-
-    private void AddPropToList()
-    {
-        PropText += $"Prop List: \n";
-
-        foreach(var prop in _props)
-        {
-            if(_propCount.ContainsKey(prop.Key.Prop.name))
-                _propCount[prop.Key.Prop.name] += prop.Value;
-            else
-                _propCount.Add(prop.Key.Prop.name, prop.Value);
-        }
     }
 
     // Builds mesh triangles' CDF.
@@ -325,7 +329,7 @@ public class MeshSampler : MonoBehaviour
     // returns a random triangle, based on its area
     private int SampleTriangleIndexFromCDF(float[] cdf)
     {
-        float rand = Random.value;
+        float rand = UnityEngine.Random.value;
 
         int low = 0;
         int high = cdf.Length - 1;
@@ -346,8 +350,8 @@ public class MeshSampler : MonoBehaviour
     // Samples point ina triangle based on its barycentric coordinates
     private Vector3 SamplePointInTriangle(Vector3 v0, Vector3 v1, Vector3 v2)
     {
-        float u = Random.value;
-        float v = Random.value;
+        float u = UnityEngine.Random.value;
+        float v = UnityEngine.Random.value;
 
         if (u + v > 1)
         {
@@ -405,19 +409,11 @@ public class MeshSampler : MonoBehaviour
         Vector3Int g = PointToGrid(point, min, cellSize);
 
         for (int x = Mathf.Max(g.x - 2, 0); x <= Mathf.Min(g.x + 2, gridSize.x - 1); x++)
-        {
             for (int y = Mathf.Max(g.y - 2, 0); y <= Mathf.Min(g.y + 2, gridSize.y - 1); y++)
-            {
                 for (int z = Mathf.Max(g.z - 2, 0); z <= Mathf.Min(g.z + 2, gridSize.z - 1); z++)
-                {
-                    Vector3 q = grid[x, y, z];
-
-                    if (Vector3.Distance(q, point) < radius)
+                    if (Vector3.Distance(grid[x, y, z], point) < radius) 
                         return false;
-                }
-            }
-        }
-
+                        
         return true;
     }
 
@@ -435,14 +431,12 @@ public class MeshSampler : MonoBehaviour
         float d = Vector3.Dot(dir.normalized, normal);
         float floor = Vector3.Dot(dir.normalized, Vector3.up);
 
-        return d >= 0 || floor >= 1;
+        return (d >= 0 || floor >= 1);
     }
 
-    private (Vector3, Vector3) SortSamplesInMesh(List<Sample> samples)
+    public (Vector3, Vector3) SortSamplesInMesh(List<Sample> samples)
     {
         PropText = "";
-
-        _props.Clear();
 
         _wallSamples.Clear();
         _floorSamples.Clear();
@@ -494,88 +488,82 @@ public class MeshSampler : MonoBehaviour
         return (min, max);
     }
 
-    private int SpawnFloorProps(NodeData node, GameObject nodeObj, Vector3 min, Vector3 max)
+    private int SpawnFloorProps(GameObject nodeObj, Vector3 midPoint, bool canHaveObjectes, Func<Vector3, PropData, bool, bool> spawnFilterFunc)
     {
-        int overlapCount = 0;
-        
-        if (node.IsStairPiece) return 0;
-        if (Random.Range(0, 1) >= _spawnChance) return 0;
-
-        Vector3 midPoint = (min + max) / 2;
-
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
 
-        int random = 0;
-        int propCount = 0;
-        int floorCount = toSpawn.MaxFloorPropCountPerRoom;
+        if (toSpawn.FloorPrefabs.Count == 0) return 0;
 
-        if (node.CanHaveObjective)
+        //int propCount = 0;
+        int i = 0;
+        int overlapCount = 0;
+        int floorCount = toSpawn.maxFloorPropCount;
+
+        /*if (canHaveObjectes)
         {
             List<PropData> props = toSpawn.FloorPrefabs.FindAll((prop) => prop.PropType == Prop.Objective);
 
             if (props.Count > 0) {
-                random = Random.Range(0, props.Count);
+                int random = UnityEngine.Random.Range(0, props.Count);
                 PropData prop = props[random];
-
-                if (_props.TryGetValue(prop, out var value))
-                    propCount = value;
-                else
-                    _props.Add(prop, propCount);
+                
+                //UpdatePropCount(prop, ref propCount);
 
                 if (!(_objectivesSpawned >= 1))
                 {
                     PropObject propObj = Instantiate(prop.Prop, nodeObj.transform, false).GetComponent<PropObject>();
+
                     propObj.transform.localPosition = Vector3.zero;
                     propObj.UpdateRotation();
 
-                    propCount += 1;
-                    _props[prop] = propCount;
+                    //propCount++;
+
+                    //UpdatePropCount(prop, ref propCount);
 
                     return 0;
                 }
             }
-        }
+        }*/
 
-        else toSpawn.FloorPrefabs.RemoveAll((prop) => prop.PropType == Prop.Objective);
+        toSpawn.FloorPrefabs.RemoveAll((prop) => prop.PropType == Prop.Objective);
 
-        List<Sample> filteredSamples = new List<Sample>();
-        filteredSamples.AddRange(_floorSamples);
+        List<Sample> filteredSamples = new List<Sample>(_floorSamples);
         
-        while (floorCount > 0 && toSpawn.FloorPrefabs.Count > 0 && filteredSamples.Count > 0)
+        while (floorCount > 0 && filteredSamples.Count > 0 || i > 1000)
         {
-            floorCount -= 1;
+            i++;
+            int random = UnityEngine.Random.Range(0, toSpawn.FloorPrefabs.Count);
+            int sampleIndex = UnityEngine.Random.Range(0, filteredSamples.Count);
 
-            random = Random.Range(0, toSpawn.FloorPrefabs.Count);
             PropData prop = toSpawn.FloorPrefabs[random];
-
-            int sampleIndex = Random.Range(0, filteredSamples.Count);
-
             Sample s = filteredSamples[sampleIndex];
-            _floorSamples.Remove(s);
 
-            Vector3 dir = midPoint - s.sample;
-            dir.y = 0;
-
-            Debug.Log($"prop: {prop.Prop.name}, max: {prop.MaxCount}");
-
-            if (propCount < prop.MaxCount)
+            if (PropData.Props.CanSpawnProp(_parentId, prop))
             {
-                if(Random.Range(0, 1) > prop.SpawnChance) continue;
+                if (UnityEngine.Random.Range(0, 1) > prop.SpawnChance) continue;
+                if (!spawnFilterFunc(s.sample, prop, false)) continue;
 
                 PropObject propObj = Instantiate(prop.Prop, nodeObj.transform, false).GetComponent<PropObject>();
 
                 propObj.transform.localPosition = nodeObj.transform.InverseTransformPoint(s.sample);
-                propObj.transform.localEulerAngles = new Vector3(0, Random.Range(0, 360), 0);
+                propObj.transform.localEulerAngles = new Vector3(0, UnityEngine.Random.Range(0, 360), 0);
                 propObj.IsOverlappingNode();
 
                 overlapCount += propObj.IsOverlappingProp();
 
-                Debug.Log($"current count: {propCount}, prop exists: {propObj != null}");
-
                 if (!propObj) continue;
 
+                Debug.Log($"parent: {_parentId}, prop name: {prop.Prop.name}");
+
+                PropData.Props.Increase(_parentId, prop.Prop.name);
+                propObj.UpdateChildren(_parentId, _spawnHierarchy, _currentHierachyLevel+1);
+
                 if(prop.CheckOrientation)
+                {
+                    Vector3 dir = midPoint - s.sample;
+                    dir.y = 0;
                     propObj.transform.forward = dir;
+                }
 
                 if (prop.PropType == Prop.Objective)
                     _objectivesSpawned += 1;
@@ -585,85 +573,59 @@ public class MeshSampler : MonoBehaviour
                 filteredSamples.RemoveAt(sampleIndex);
                 filteredSamples.RemoveAll((sample) => Vector3.Distance(sample.sample, s.sample) < .75f);
                 
-                propCount += 1;
-                floorCount -= 1;
+                floorCount--;
             }
 
-            else toSpawn.FloorPrefabs.RemoveAt(random);
-
-            if (_props.TryGetValue(prop, out var value))
-                propCount = value;
-            else
-                _props.Add(prop, propCount);
-            
-            _props[prop] = propCount;
-            
+            else filteredSamples.RemoveAt(sampleIndex);
         }
-
-        filteredSamples.Clear();
 
         return overlapCount;
     }
 
-    private int SpawnWallProps(NodeData node, GameObject go, Vector3 min, Vector3 max)
+    private int SpawnWallProps(GameObject go, Vector3 midPoint, Func<Vector3, PropData, bool, bool> spawnFilterFunc)
     {
-        int overlapCount = 0;
-        
-        if (node.IsStairPiece) return 0;
-        
-        Vector3 midPoint = (min + max) / 2;
-
         Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
 
-        int wallCount = toSpawn.MaxWallPropCountPerRoom;
+        if (toSpawn.WallPrefabs.Count == 0) return 0;
 
-        List<Sample> filteredSamples = new List<Sample>();
-        filteredSamples.AddRange(_wallSamples);
+        int overlapCount = 0;
+        int wallCount = toSpawn.maxWallPropCount;
 
-        while (wallCount > 0 && toSpawn.WallPrefabs.Count > 0 && filteredSamples.Count > 0)
+        List<Sample> filteredSamples = new List<Sample>(_wallSamples);
+
+        while (wallCount > 0 && filteredSamples.Count > 0)
         {
-            int propCount = 0;
-            int random = Random.Range(0, toSpawn.WallPrefabs.Count);
-            int sampleIndex = Random.Range(0, filteredSamples.Count);
+            int random = UnityEngine.Random.Range(0, toSpawn.WallPrefabs.Count);
+            int sampleIndex = UnityEngine.Random.Range(0, filteredSamples.Count);
 
             PropData prop = toSpawn.WallPrefabs[random];
-            
             Sample s = filteredSamples[sampleIndex];
-            _wallSamples.Remove(s);
             
-            if (Random.Range(0, 1) > prop.SpawnChance)
-                continue;
-            
-            if (propCount < prop.MaxCount)
+            if (PropData.Props.CanSpawnProp(_parentId, prop))
             {
-                PropObject obj = Instantiate(prop.Prop, go.transform).GetComponent<PropObject>();
+                if (UnityEngine.Random.Range(0, 1) > prop.SpawnChance) continue;
+                if (!spawnFilterFunc(s.sample, prop, true)) continue;
 
-                if (!obj) continue;
+                PropObject propObj = Instantiate(prop.Prop, go.transform).GetComponent<PropObject>();
 
-                obj.transform.position = s.sample;
-                obj.transform.forward = s.triangleNormal;
+                propObj.transform.position = s.sample;
+                propObj.transform.forward = s.triangleNormal;
 
-                overlapCount += obj.IsOverlappingProp();
+                overlapCount += propObj.IsOverlappingProp();
 
-                propCount += 1;
+                if (!propObj) continue;
+
+                PropData.Props.Increase(_parentId, prop.Prop.name);
+                propObj.UpdateChildren(_parentId, _spawnHierarchy, _currentHierachyLevel+1);
                 
-                _spawnedObjects.Add(obj.gameObject);
+                _spawnedObjects.Add(propObj.gameObject);
                 filteredSamples.RemoveAt(sampleIndex);
 
-                wallCount -= 1;
+                wallCount--;
             }
 
-            else toSpawn.WallPrefabs.RemoveAt(random);
-            
-            if (_props.TryGetValue(prop, out var value))
-                propCount = value;
-            else
-                _props.Add(prop, propCount);
-            
-            _props[prop] = propCount;
+            else filteredSamples.RemoveAt(sampleIndex);
         }
-
-        filteredSamples.Clear();
 
         return overlapCount;
     }

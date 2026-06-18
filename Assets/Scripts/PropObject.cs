@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 public class PropObject : MonoBehaviour
 {
@@ -13,6 +15,8 @@ public class PropObject : MonoBehaviour
 
     [SerializeField] private bool _lamp = false;
     [SerializeField] private float _radius = 0.1f;
+
+    public Vector3 OverlapDimenstions => _overlapDimensions;
     
     public int IsOverlappingProp()
     {
@@ -45,6 +49,13 @@ public class PropObject : MonoBehaviour
         return overlapCount;
     }
 
+    public bool IsOverlappingPropSphere(Vector3 pos, List<Collider> exceptions = null)
+    {
+        List<Collider> hitColliders = new List<Collider>(Physics.OverlapBox(pos + _center, _overlapDimensions, this.transform.rotation, _propLayer & _nodeLayer)).Except(exceptions).ToList();
+
+        return hitColliders.Count > 0;
+    }
+
     public void UpdateRotation()
     {
         float rotation = this.transform.localEulerAngles.y;
@@ -59,6 +70,15 @@ public class PropObject : MonoBehaviour
 
             else break;
         }
+    }
+
+    public void UpdateChildren(Guid parentId, int maxHierarchyLevel, int currentLevel)
+    {
+        foreach (MeshSurface surface in GetComponentsInChildren<MeshSurface>())
+            surface.Init(parentId, maxHierarchyLevel, currentLevel);
+
+        foreach (MeshPoint point in GetComponentsInChildren<MeshPoint>())
+            point.Init(parentId, maxHierarchyLevel, currentLevel);
     }
 
     public void IsOverlappingNode()
@@ -85,11 +105,12 @@ public class PropObject : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
+        Gizmos.matrix = transform.localToWorldMatrix;
         
         if(_lamp)
-            Gizmos.DrawWireSphere(this.transform.position + _center, _radius);
+            Gizmos.DrawWireSphere(_center, _radius);
         
-        Gizmos.DrawWireCube(this.transform.position + _center, _overlapDimensions);
-        Gizmos.DrawRay(this.transform.position + _rayCenter, this.transform.forward * _raycastLength);
+        Gizmos.DrawWireCube(_center, _overlapDimensions);
+        Gizmos.DrawRay(_rayCenter, this.transform.forward * _raycastLength);
     }
 }

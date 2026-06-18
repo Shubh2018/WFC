@@ -1,9 +1,11 @@
 using UnityEngine;
+using UnityEditor;
 using System;
 using System.Linq;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 public static class Utils
 {
@@ -62,4 +64,52 @@ public static class Utils
     {
         return points.Exists(point => Utils.VecCmp(point, pos, distance));
     }
+
+    public static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles) {
+        return Quaternion.Euler(angles) * (point - pivot) + pivot;
+    }
+
+    public static Mesh CreatePlaneMesh(Vector3 size)
+    {
+        Mesh mesh = new Mesh();
+
+        mesh.name = "Plane";
+        mesh.vertices =  new Vector3[] { new Vector3(size.x, 0, size.z), new Vector3(size.x, 0, -size.z), new Vector3(-size.x, 0, size.z), new Vector3(-size.x, 0, -size.z) };
+        mesh.uv = new Vector2[] { new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1), new Vector2(0, 0) };
+        mesh.triangles = new int[] { 0, 1, 2, 2, 1, 3 };
+
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        return mesh;
+    }
+
+    public static Spawner LoadProps(string path, Func<PropData, bool> filterFunc)
+    {
+        string[] props = Directory.GetFiles(path, "*.asset");
+        Spawner spawner = new Spawner(true);
+
+        foreach(string prop in props)
+        {
+            PropData propData = (PropData) AssetDatabase.LoadAssetAtPath(prop, typeof(PropData));
+            if (filterFunc(propData)) spawner.AddProp(propData); 
+        }
+
+        return spawner;
+    }
+
+    /*public static bool IsOverlapping(Vector3 pos, Vector3 rot, Vector3 size, int layer = AllLayers)
+    {
+        Collider[] hitColliders = Physics.OverlapBox(pos, size, rot, layer);
+
+        int i = 0;
+
+        while (i < hitColliders.Length)
+        {
+            Debug.Log("Hit : " + hitColliders[i].name + i);
+            i++;
+        }
+
+        return hitColliders.Length > 0;
+    }*/
 }

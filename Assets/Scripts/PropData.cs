@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public enum PropPlacement
 {
@@ -14,6 +15,18 @@ public enum Prop
     Enemy
 };
 
+public enum PropSpawnTagEnum {
+    Small,
+    Medium,
+    Large
+};
+
+public enum PropLimitTypeEnum {
+    PerRoom,
+    PerHierarchyElement,
+    InTotal
+};
+
 [CreateAssetMenu(fileName = "PropData", menuName = "Props/PropData")]
 public class PropData : ScriptableObject
 {
@@ -22,22 +35,24 @@ public class PropData : ScriptableObject
     //Neighbor List
 
     [SerializeField] private PropPlacement placement;
-    [SerializeField] private int _maxCount;
-
+    [SerializeField] private int _limitCount;
+    [SerializeField] private PropLimitTypeEnum _limitType;
     [SerializeField] private bool _checkOrentation;
-    [SerializeField] private bool _limitOnePerRoom;
+    [SerializeField] private PropSpawnTagEnum _spawnTag;
 
     [SerializeField] private Prop _propType;
     [SerializeField] [Range(0, 1)] private float _spawnChance = 0.5f;
 
     [SerializeField] private NodeType _nodeTypeToSpawnIn;
+    public static PropHierarchy Props = new PropHierarchy(null, Guid.Empty);
 
     public GameObject Prop => _prop;
     public PropPlacement Placement => placement;
-    public int MaxCount => _maxCount;
+    public int LimitCount => _limitCount;
+    public PropLimitTypeEnum LimitType => _limitType;
 
     public bool CheckOrientation => _checkOrentation;
-    public bool LimitOnePerRoom => _limitOnePerRoom;
+    public PropSpawnTagEnum SpawnTag => _spawnTag;
     public Prop PropType => _propType;
     
     public float SpawnChance => _spawnChance;
