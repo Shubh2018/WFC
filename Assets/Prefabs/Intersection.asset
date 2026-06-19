@@ -48,3 +48,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f6aaafa0312c45a7aaef2e43ee98f215, type: 2}
   validWallProps:
   - {fileID: 11400000, guid: 845fb54e4eb479c4995477faf75926c2, type: 2}
+  - {fileID: 11400000, guid: 4272b57546d0b43548d0c767c0153e31, type: 2}

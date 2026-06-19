@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: Flag
   m_EditorClassIdentifier: Assembly-CSharp::Prop
   _prop: {fileID: -467876852072747623, guid: be2c581d1fc050dc9a0afa702c45547b, type: 3}
-  _spawnChance: 1
+  _spawnChance: 0.75
   _parent: {fileID: 0}
   _propPlacement: 1
   _propType: 0
-  _spawnPositions: 0
-  _useStaticPositions: 0
+  _spawnPositions: 7
+  _useStaticPositions: 1
   _nodeTypeToSpawnIn: -1
   _environmentsToSpawnIn: -1
   _structureType: []
