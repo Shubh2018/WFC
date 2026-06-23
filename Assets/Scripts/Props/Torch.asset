@@ -17,7 +17,7 @@ MonoBehaviour:
   _parent: {fileID: 0}
   _propPlacement: 1
   _propType: 0
-  _spawnPositions: 4
+  _spawnPositions: 1
   _useStaticPositions: 1
   _nodeTypeToSpawnIn: -1
   _environmentsToSpawnIn: -1

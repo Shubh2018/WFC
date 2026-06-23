@@ -48,7 +48,8 @@ public class MeshSampler : MonoBehaviour
 
     public Dictionary<string, int> PropCount => _propCount;
 
-    private WFC _wfc;
+    private int _floorPropGraphLevel;
+    private int _wallPropGraphLevel;
 
     public string PropText { get; private set; }
 
@@ -75,12 +76,12 @@ public class MeshSampler : MonoBehaviour
         // SpawnProps();
     }
 
-    public void SetRadiusAndTries(float radius, int tries)
+    public void SetSamplingGraphProperties(float radius, int tries, int floorPropGraphLevel, int wallPropGraphLevel)
     {
         _radius = radius;
         _tries = tries;
-
-        _wfc = GetComponent<WFC>();
+        _floorPropGraphLevel = floorPropGraphLevel;
+        _wallPropGraphLevel = wallPropGraphLevel;
     }
 
     public void SetSpawnerData(Spawner spawner)
@@ -275,7 +276,7 @@ public class MeshSampler : MonoBehaviour
         int overlapCount = 0;
 
         overlapCount += SpawnFloorProps(node, obj, minMesh, maxMesh);
-        overlapCount += SpawnPropsOnWall(node, obj, minMesh, maxMesh);
+        overlapCount += SpawnWallProps(node, obj, minMesh, maxMesh);
 
         _samplePoints.Clear();
 
@@ -596,8 +597,8 @@ public class MeshSampler : MonoBehaviour
 
     private List<Sample> GetWallSamplesBySpawnPosition(int rem, SpawnPosition spawnPos, Vector3 min, Vector3 max, bool useStaticPosition)
     {
-        min = transform.InverseTransformPoint(min);
-        max = transform.InverseTransformPoint(max);
+        // min = transform.InverseTransformPoint(min);
+        // max = transform.InverseTransformPoint(max);
 
         Vector3 mid = (min + max) / 2;
         Vector3 halfMin = (min + mid) / 2;
@@ -666,7 +667,7 @@ public class MeshSampler : MonoBehaviour
 
         List<Sample> samples = new List<Sample>();
 
-        if(useStaticPosition)
+        if(!useStaticPosition)
         {
             switch(spawnPos)
             {
@@ -753,8 +754,6 @@ public class MeshSampler : MonoBehaviour
         List<Sample> samplesInRange = new List<Sample>();
         samplesInRange.AddRange(GetFloorSamplesBySpawnPosition(prop.SpawnPosition, min, max, prop.UseStaticPositions));
 
-        // samplesInRange.AddRange(GetFloorSamplesBySpawnPosition(prop.SpawnPosition, min, max, prop.UseStaticPositions));
-
         Sample spawnSample = samplesInRange[Random.Range(0, samplesInRange.Count)];
         samplesInRange.Remove(spawnSample);
         _floorSamples.Remove(spawnSample);
@@ -764,7 +763,7 @@ public class MeshSampler : MonoBehaviour
     
         int i = 0;
 
-        while(i < 2)
+        while(i < _floorPropGraphLevel - 1)
         {
             i += 1;
 
@@ -798,7 +797,7 @@ public class MeshSampler : MonoBehaviour
         return overlapCount;
     }
 
-    private int SpawnPropsOnWall(NodeData node, GameObject go, Vector3 min, Vector3 max)
+    private int SpawnWallProps(NodeData node, GameObject go, Vector3 min, Vector3 max)
     {
         int overlapCount = 0;
 
@@ -813,8 +812,6 @@ public class MeshSampler : MonoBehaviour
         
         List<Sample> samplesList = GetWallSamplesBySpawnPosition(rem, prop.SpawnPosition, min, max, prop.UseStaticPositions);
 
-        int randomWall = Random.Range(0, 2);
-
         if(samplesList.Count <= 0) return 0;
 
         Sample randomSample = samplesList[Random.Range(0, samplesList.Count)];
@@ -825,7 +822,7 @@ public class MeshSampler : MonoBehaviour
 
         samplesList.Clear();
 
-        while (i < 1)
+        while (i < _wallPropGraphLevel- 1)
         {
             i += 1;
 
@@ -849,72 +846,6 @@ public class MeshSampler : MonoBehaviour
             samplesList.Clear();
             // samplesList.RemoveAll((s) => s.sample.x == randomSample.sample.x || s.sample.z == randomSample.sample.z);
         }
-
-        return overlapCount;
-    }
-
-    private int SpawnWallProps(NodeData node, GameObject go, Vector3 min, Vector3 max)
-    {
-        int overlapCount = 0;
-        
-        if (node.IsStairPiece) return 0;
-
-        Spawner toSpawn = new Spawner(_gameObjectsToSpawn);
-
-        int wallCount = toSpawn.MaxWallPropCountPerRoom;
-
-        List<Sample> filteredSamples = new List<Sample>();
-        // filteredSamples.AddRange(WallMid(min, max));
-
-        while (wallCount > 0 && toSpawn.WallPrefabs.Count > 0 && filteredSamples.Count > 0)
-        {
-            int propCount = 0;
-
-            int random = Random.Range(0, toSpawn.WallPrefabs.Count);
-
-            PropData prop = toSpawn.WallPrefabs[random];
-
-            int sampleIndex = Random.Range(0, filteredSamples.Count);
-            
-            Sample s = filteredSamples[sampleIndex];
-            _wallSamples.Remove(s);
-            
-            if (Random.Range(0, 1) > prop.SpawnChance)
-                continue;
-            
-            if (propCount < prop.MaxCount)
-            {
-                PropObject obj = Instantiate(prop.Prop, go.transform).GetComponent<PropObject>();
-
-                obj.transform.position = s.sample;
-                obj.transform.forward = s.triangleNormal;
-
-                overlapCount += obj.IsOverlappingProp();
-
-                if (!obj) continue;
-
-                propCount += 1;
-                
-                _spawnedObjects.Add(obj.gameObject);
-                filteredSamples.RemoveAt(sampleIndex);
-
-                wallCount -= 1;
-            }
-
-            else
-            {
-                toSpawn.WallPrefabs.RemoveAt(random);
-            }
-            
-            if (_props.TryGetValue(prop, out var value))
-                propCount = value;
-            else
-                _props.Add(prop, propCount);
-            
-            _props[prop] = propCount;
-        }
-
-        filteredSamples.Clear();
 
         return overlapCount;
     }

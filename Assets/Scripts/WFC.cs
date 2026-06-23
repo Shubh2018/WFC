@@ -184,6 +184,8 @@ public class WFC : MonoBehaviour
 
     [SerializeField] private float _samplingRadius = 0.5f;
     [SerializeField] private int _samplingTries = 30;
+    [SerializeField] private int _floorPropGraphLevel = 2;
+    [SerializeField] private int _wallPropGraphLevel = 2;
 
     [SerializeField] private int _levelCount = 0;
     
@@ -305,6 +307,11 @@ public class WFC : MonoBehaviour
         }
     }
 
+    public void SetGraphLevel()
+    {
+        
+    }
+
     public void OnDrawGizmos()
     {
         Gizmos.color = new Color(1.0f, 1.0f, 1.0f, 0.1f);
@@ -417,7 +424,7 @@ public class WFC : MonoBehaviour
         int nodes = _nodes.Count;
         
         _meshSampler = GetComponent<MeshSampler>();
-        _meshSampler.SetRadiusAndTries(_samplingRadius, _samplingTries);
+        _meshSampler.SetSamplingGraphProperties(_samplingRadius, _samplingTries, _floorPropGraphLevel, _wallPropGraphLevel);
 
         // Go through all created nodes and rotate those that need it
         for(int i = 0; i < nodes; i++) 

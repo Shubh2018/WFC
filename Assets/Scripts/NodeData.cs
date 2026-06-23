@@ -96,10 +96,7 @@ public class NodeData : ScriptableObject
         if (placementType == PropPlacementType.Floor)
             props = new List<Prop>(validFloorProps);
         else if (placementType == PropPlacementType.Wall)
-        {
-            Debug.Log($"validWallProps: {validWallProps}");
             props = new List<Prop>(validWallProps);
-        }
 
         if(props.Count <= 0) return null;
 
