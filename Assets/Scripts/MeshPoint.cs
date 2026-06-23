@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 public class MeshPoint : MonoBehaviour
 {
@@ -30,7 +31,8 @@ public class MeshPoint : MonoBehaviour
             - (X) check for obstacles and prevent spawning if blocked
             - Fix bugs:
              > small empty tile node
-             > prop overlapping not fixed
+             > fix points not sorted correctly
+             > (X) prop overlapping not fixed
              > (X) max object count per room is not transfered to MeshSurface or MeshPoint
              > check tile node collision to prevent spawning props (right now only props are checked)
              > smapler not spawning enough props as it is done randomly
@@ -44,7 +46,7 @@ public class MeshPoint : MonoBehaviour
         _id = Guid.NewGuid();
         _parentId = parentId;
 
-        PropData.Props.AddEntry(_parentId, _id);
+        PropData.Props.AddEntry(_parentId, _id, transform.parent.gameObject);
 
         SpawnProp();
     }
@@ -62,7 +64,7 @@ public class MeshPoint : MonoBehaviour
         PropData prop = ChooseRandomProp();
         PropObject propObj = prop.Prop.GetComponent<PropObject>();
         float rand = UnityEngine.Random.Range(0, 1);
-        bool overlap = propObj.IsOverlappingPropSphere(transform.position, new List<Collider>{ GetComponentInParent<BoxCollider>() });
+        bool overlap = propObj.CheckOverlapBox(transform.position, transform.rotation, (List<Collider> cols) => cols.Except(new List<Collider>{ GetComponentInParent<BoxCollider>() }));
 
         Debug.Log($"hierarchy: {_currentHierachyLevel}/{_spawnHierarchy}, prop: {prop.Prop.name}, spawn chance: {prop.SpawnChance}, random chance: {rand}, forced to spawn: {_forcedToSpawn}, collide: {overlap}");
 

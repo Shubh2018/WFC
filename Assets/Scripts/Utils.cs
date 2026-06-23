@@ -1,9 +1,6 @@
 using UnityEngine;
 using UnityEditor;
 using System;
-using System.Linq;
-using System.Diagnostics;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -97,19 +94,4 @@ public static class Utils
 
         return spawner;
     }
-
-    /*public static bool IsOverlapping(Vector3 pos, Vector3 rot, Vector3 size, int layer = AllLayers)
-    {
-        Collider[] hitColliders = Physics.OverlapBox(pos, size, rot, layer);
-
-        int i = 0;
-
-        while (i < hitColliders.Length)
-        {
-            Debug.Log("Hit : " + hitColliders[i].name + i);
-            i++;
-        }
-
-        return hitColliders.Length > 0;
-    }*/
 }

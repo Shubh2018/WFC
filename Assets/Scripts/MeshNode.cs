@@ -45,7 +45,7 @@ public class MeshNode : MonoBehaviour
     public void Init()
     {
         _id = Guid.NewGuid();
-        PropData.Props.AddEntry(Guid.Empty, _id, true);
+        PropData.Props.AddEntry(Guid.Empty, _id, gameObject, true);
     }
 
     public static void SampleTiles(MeshSampler sampler, List<NodeData> nodes, Spawner spawner, float radius, int tries)

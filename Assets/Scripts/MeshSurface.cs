@@ -80,7 +80,7 @@ public class MeshSurface : MonoBehaviour
 
         Debug.Log($"id: {_id}, parent: {_parentId}");
 
-        PropData.Props.AddEntry(_parentId, _id);
+        PropData.Props.AddEntry(_parentId, _id, transform.parent?.gameObject);
 
         Generate();
     }

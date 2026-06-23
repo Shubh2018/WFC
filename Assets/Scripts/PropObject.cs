@@ -17,43 +17,24 @@ public class PropObject : MonoBehaviour
     [SerializeField] private float _radius = 0.1f;
 
     public Vector3 OverlapDimenstions => _overlapDimensions;
-    
-    public int IsOverlappingProp()
+
+    private void OnDrawGizmos()
     {
-        int overlapCount = 0;
+        Gizmos.color = Color.red;
+        Gizmos.matrix = transform.localToWorldMatrix;
         
-        if (!_lamp)
-        {
-           Collider[] colliders = Physics.OverlapBox(this.transform.position + _center, _overlapDimensions, this.transform.rotation, _propLayer);
-   
-           if (colliders.Length <= 0) return 0;
-
-           overlapCount += 2;
-           
-           Debug.Log($"Destroyed {this.gameObject.name} ({this.transform.position})");
-           DestroyImmediate(this.gameObject); 
-        }
-
-        else
-        {
-            Collider[] colliders = Physics.OverlapSphere(this.transform.position + _center, _radius, _propLayer);
-            
-            if(colliders.Length <= 0) return 0;
-
-            overlapCount += 1;
-            
-            Debug.Log($"Destroyed {this.gameObject.name} ({this.transform.position})");
-            DestroyImmediate(this.gameObject); 
-        }
-        
-        return overlapCount;
+        Gizmos.DrawWireCube(_center, _overlapDimensions);
+        Gizmos.DrawWireSphere(_center, _radius);
     }
 
-    public bool IsOverlappingPropSphere(Vector3 pos, List<Collider> exceptions = null)
+    public bool CheckOverlapBox(Vector3 pos, Quaternion rot)
     {
-        List<Collider> hitColliders = new List<Collider>(Physics.OverlapBox(pos + _center, _overlapDimensions, this.transform.rotation, _propLayer & _nodeLayer)).Except(exceptions).ToList();
+        return Physics.OverlapBox(pos + _center, _overlapDimensions / 2, rot, _propLayer).Count() > 0;
+    }
 
-        return hitColliders.Count > 0;
+    public bool CheckOverlapBox(Vector3 pos, Quaternion rot, Func<List<Collider>, IEnumerable<Collider>> func)
+    {
+        return func(new List<Collider>(Physics.OverlapBox(pos + _center, _overlapDimensions / 2, rot, _propLayer))).ToList().Count > 0;
     }
 
     public void UpdateRotation()
@@ -83,7 +64,7 @@ public class PropObject : MonoBehaviour
 
     public void IsOverlappingNode()
     {
-        float rotation = this.transform.localEulerAngles.y;
+        float rotation = transform.localEulerAngles.y;
         float step = 20.0f;
 
         while (rotation <= 360)
@@ -100,17 +81,5 @@ public class PropObject : MonoBehaviour
                 this.transform.localEulerAngles = new Vector3(this.transform.localEulerAngles.x, rotation, this.transform.localEulerAngles.z);
             }
         }
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.matrix = transform.localToWorldMatrix;
-        
-        if(_lamp)
-            Gizmos.DrawWireSphere(_center, _radius);
-        
-        Gizmos.DrawWireCube(_center, _overlapDimensions);
-        Gizmos.DrawRay(_rayCenter, this.transform.forward * _raycastLength);
     }
 }
