@@ -4,6 +4,7 @@
         <ui:IntegerField label="Spawn Hierarchy" value="5" name="_spawnHierarchy" data-source-type="MeshSurface, Assembly-CSharp" data-source-path="_spawnHierarchy" binding-path="_spawnHierarchy"/>
         <ui:Vector3Field label="Surface Size" name="_surfaceSize" data-source-type="MeshSurface, Assembly-CSharp" data-source-path="_surfaceSize" binding-path="_surfaceSize" value="1,1,1"/>
         <ui:Toggle label="Choose Objects" name="_spawnToggle" data-source-type="MeshSurface, Assembly-CSharp" data-source-path="_spawnViaSpawner" value="false" binding-path="_spawnViaSpawner"/>
+        <ui:IntegerField label="Max Prop Count" value="1" name="_maxPropCountField" data-source-type="MeshSurface, Assembly-CSharp" data-source-path="_maxPropCount" binding-path="_maxPropCount" max-length="2"/>
         <ui:EnumField label="Spawn Type" value="Small" type="PropSpawnTagEnum, Assembly-CSharp" name="_spawnTypeField" enabled="true" data-source-type="MeshSurface, Assembly-CSharp" data-source-path="_spawnTypeTag" binding-path="_spawnTypeTag"/>
         <uie:PropertyField name="_objectsToSpawn" binding-path="_gameObjectsToSpawn" data-source-path="_gameObjectsToSpawn" label="Game Objects To Spawn" tabindex="3" data-source-type="MeshSurface, Assembly-CSharp" enabled="true" style="display: none;"/>
     </ui:VisualElement>

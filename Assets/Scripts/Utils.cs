@@ -66,6 +66,8 @@ public static class Utils
         return Quaternion.Euler(angles) * (point - pivot) + pivot;
     }
 
+    // Dynamically creates a mesh for the sampler to create points on for prop spawning on surfaces
+    // This is here since standard meshes (box, cylinder, plane etc.) cannot be loaded like an ordinary asset with a path
     public static Mesh CreatePlaneMesh(Vector3 size)
     {
         Mesh mesh = new Mesh();
@@ -81,17 +83,31 @@ public static class Utils
         return mesh;
     }
 
+    // Loads all prop assets inside of a folder
     public static Spawner LoadProps(string path, Func<PropData, bool> filterFunc)
     {
         string[] props = Directory.GetFiles(path, "*.asset");
-        Spawner spawner = new Spawner(true);
+        Spawner spawner = new Spawner(5, 5);
 
         foreach(string prop in props)
         {
             PropData propData = (PropData) AssetDatabase.LoadAssetAtPath(prop, typeof(PropData));
-            if (filterFunc(propData)) spawner.AddProp(propData); 
+            if (filterFunc(propData)) spawner.AddProp(propData);
         }
 
         return spawner;
+    }
+
+    // Loads all props within a specific size range
+    public static Spawner LoadFilteredProps(PropSpawnTagEnum tag)
+    {
+        return LoadProps("Assets/Scripts/Props/", (PropData prop) => tag switch {
+            PropSpawnTagEnum.Small or PropSpawnTagEnum.SmallToMedium => prop.SpawnTag == PropSpawnTagEnum.Small,
+            PropSpawnTagEnum.Medium or PropSpawnTagEnum.SmallToMedium => prop.SpawnTag == PropSpawnTagEnum.Medium,
+            PropSpawnTagEnum.Medium or PropSpawnTagEnum.MediumToLarge => prop.SpawnTag == PropSpawnTagEnum.Medium,
+            PropSpawnTagEnum.Large or PropSpawnTagEnum.MediumToLarge => prop.SpawnTag == PropSpawnTagEnum.Large,
+            PropSpawnTagEnum.Any => true,
+            _ => false
+        });
     }
 }

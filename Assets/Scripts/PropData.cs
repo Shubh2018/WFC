@@ -18,7 +18,10 @@ public enum Prop
 public enum PropSpawnTagEnum {
     Small,
     Medium,
-    Large
+    Large,
+    SmallToMedium,
+    MediumToLarge,
+    Any
 };
 
 public enum PropLimitTypeEnum {

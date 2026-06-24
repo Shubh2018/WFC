@@ -16,6 +16,7 @@ public class MeshSurface : MonoBehaviour
     [SerializeField] private Spawner _gameObjectsToSpawn;
     [SerializeField] private Vector3 _surfaceSize = Vector3.one;
     [SerializeField] public int _spawnHierarchy = 5;
+    [SerializeField] private int _maxPropCount = 1;
     private int _currentHierachyLevel = 0;
     private static Spawner? spawner = null;
     private Guid _id;
@@ -78,8 +79,6 @@ public class MeshSurface : MonoBehaviour
         _id = Guid.NewGuid();
         _parentId = parentId;
 
-        Debug.Log($"id: {_id}, parent: {_parentId}");
-
         PropData.Props.AddEntry(_parentId, _id, transform.parent?.gameObject);
 
         Generate();
@@ -97,7 +96,7 @@ public class MeshSurface : MonoBehaviour
         _meshSampler.Clear();
         _meshSampler.AddSamples(_samples);
 
-        if (!_spawnViaSpawner) spawner = Utils.LoadProps("Assets/Scripts/Props/", (PropData prop) => prop.SpawnTag == _spawnTypeTag);
+        if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxPropCount, _maxPropCount);
 
         _meshSampler.SetSpawnerData(_spawnViaSpawner ? _gameObjectsToSpawn : (Spawner) spawner, _spawnHierarchy, _currentHierachyLevel);
         _meshSampler.SpawnProps(gameObject, false, (Vector3 sample, PropData prop, bool propType) => IsPropContained(sample, prop.Prop.GetComponent<PropObject>()));

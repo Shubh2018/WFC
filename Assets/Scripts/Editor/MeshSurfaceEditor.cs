@@ -22,7 +22,7 @@ public class MeshSurfaceEditor : Editor
         spawnButton.RegisterCallback<ClickEvent>((ClickEvent evt) => {
             PropData.Props.Clear();
             surface.Init(Guid.Empty, surface._spawnHierarchy, 0);
-            PropData.Props.PrintHierarchy();
+            //PropData.Props.PrintHierarchy();
         });
 
         Vector3Field size = rootTree.Q<Vector3Field>("_surfaceSize");
@@ -46,15 +46,18 @@ public class MeshSurfaceEditor : Editor
         Toggle spawnToggle = rootTree.Q<Toggle>("_spawnToggle");
         spawnToggle.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => {
             EnumField spawnTypeField = rootTree.Q<EnumField>("_spawnTypeField");
+            IntegerField maxPropCountField = rootTree.Q<IntegerField>("_maxPropCountField");
             VisualElement objectsToSpawnField = rootTree.Q("_objectsToSpawn");
 
             if (evt.newValue)
             {
                 objectsToSpawnField.style.display = DisplayStyle.Flex;
                 spawnTypeField.style.display = DisplayStyle.None;
+                maxPropCountField.style.display = DisplayStyle.None;
             } else {
                 objectsToSpawnField.style.display = DisplayStyle.None;
                 spawnTypeField.style.display = DisplayStyle.Flex;
+                maxPropCountField.style.display = DisplayStyle.Flex;
             }
         });
 

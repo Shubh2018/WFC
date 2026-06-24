@@ -2,6 +2,8 @@
     <ui:VisualElement name="VisualElement" data-source="" style="flex-grow: 1;">
         <ui:IntegerField label="Spawn Hierarchy" value="5" name="_spawnHierarchy" data-source-type="MeshSurface, Assembly-CSharp" data-source-path="_spawnHierarchy" binding-path="_spawnHierarchy"/>
         <ui:Toggle label="Choose Objects" name="_spawnToggle" data-source-type="MeshSurface, Assembly-CSharp" data-source-path="_spawnViaSpawner" value="false" binding-path="_spawnViaSpawner"/>
+        <ui:IntegerField label="Max Floor Props" value="1" name="_maxFloorCountField" max-length="2" binding-path="_maxFloorCount" data-source-path="_maxFloorCount" data-source-type="MeshNode, Assembly-CSharp"/>
+        <ui:IntegerField label="Max Wall Props" value="1" name="_maxWallCountField" data-source-type="MeshNode, Assembly-CSharp" data-source-path="_maxWallCount" binding-path="_maxWallCount" max-length="2"/>
         <ui:EnumField label="Spawn Type" value="Small" type="PropSpawnTagEnum, Assembly-CSharp" name="_spawnTypeField" enabled="true" data-source-type="MeshSurface, Assembly-CSharp" data-source-path="_spawnTypeTag" binding-path="_spawnTypeTag"/>
         <uie:PropertyField name="_objectsToSpawn" binding-path="_gameObjectsToSpawn" data-source-path="_gameObjectsToSpawn" label="Game Objects To Spawn" tabindex="3" data-source-type="MeshSurface, Assembly-CSharp" enabled="true" style="display: none;"/>
     </ui:VisualElement>

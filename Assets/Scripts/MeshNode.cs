@@ -33,6 +33,8 @@ public class MeshNode : MonoBehaviour
     [SerializeField] private PropSpawnTagEnum _spawnTypeTag;
     [SerializeField] private Spawner _gameObjectsToSpawn;
     [SerializeField] public int _spawnHierarchy = 5;
+    [SerializeField] private int _maxFloorCount = 1;
+    [SerializeField] private int _maxWallCount = 1;
     private int _currentHierachyLevel = 0;
     private Guid _id;
 
@@ -97,10 +99,8 @@ public class MeshNode : MonoBehaviour
         meshSampler.AddSamples(selectedSamples);
 
         if (objs != null) spawner = objs;
-        else if (!_spawnViaSpawner) spawner = Utils.LoadProps("Assets/Scripts/Props/", (PropData prop) => prop.SpawnTag == _spawnTypeTag);
+        else if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxFloorCount, _maxWallCount);
         else spawner = _gameObjectsToSpawn;
-
-        Debug.Log($"arg objs: {objs == null}, spawnviaSpawner: {_spawnViaSpawner}, spawner: {spawner?.WallPrefabs.Count()}");
 
         meshSampler.SetSpawnerData((Spawner) spawner, _spawnHierarchy, _currentHierachyLevel);
         meshSampler.SpawnProps(gameObject, _nodeData.CanHaveObjective);

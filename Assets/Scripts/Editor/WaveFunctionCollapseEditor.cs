@@ -196,7 +196,7 @@ public class WaveFunctionCollapseEditor : Editor
         WaveFunctionCollapse.pauseGeneration = false;
         WaveFunctionCollapse.StartCollapse((int overlaps) => {
             ResetControls();
-            PropData.Props.PrintHierarchy();
+            //PropData.Props.PrintHierarchy();
         });
 
         SetGenLabels(WaveFunctionCollapse.getTiles, WaveFunctionCollapse.getCollapseTime, WaveFunctionCollapse.collapseWaitTime);

@@ -59,7 +59,7 @@ public class MeshPoint : MonoBehaviour
     public void SpawnProp()
     {
         if (_currentHierachyLevel > _spawnHierarchy) return;
-        if (!_spawnViaSpawner) spawner = Utils.LoadProps("Assets/Scripts/Props/", (PropData prop) => prop.SpawnTag == _spawnTypeTag);
+        if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), 1, 1);
 
         PropData prop = ChooseRandomProp();
         PropObject propObj = prop.Prop.GetComponent<PropObject>();

@@ -761,8 +761,10 @@ public class WFC : MonoBehaviour
 
         // Spawn props on the node
         MeshNode mesh = obj.GetComponent<MeshNode>();
-        mesh.Init();
-        mesh.Generate(node, _overrideObjList ? _gameObjectsToSpawn : null);
+        mesh?.Init();
+        mesh?.Generate(node, _overrideObjList ? _gameObjectsToSpawn : null);
+
+        if (mesh == null) Debug.LogWarning($"Node Prefab '{node.Prefab.name}' does not have a MeshNode!");
 
         return 0;
     }

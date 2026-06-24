@@ -23,22 +23,22 @@ public struct Spawner
     public List<PropData> WallPrefabs => _wallPrefabs;
     public List<PropData> FloorPrefabs => _floorPrefabs;
 
-    public Spawner(Spawner spawner)
+    public Spawner(Spawner spawner, int? maxFloorProps = null, int? maxWallProps = null)
     {
         _wallPrefabs = new List<PropData>(spawner.WallPrefabs);
         _floorPrefabs = new List<PropData>(spawner.FloorPrefabs);
 
-        maxFloorPropCount = spawner.maxFloorPropCount;
-        maxWallPropCount = spawner.maxWallPropCount;
+        maxFloorPropCount = maxFloorProps ?? spawner.maxFloorPropCount;
+        maxWallPropCount = maxWallProps ?? spawner.maxWallPropCount;
     }
 
-    public Spawner(bool empty = false)
+    public Spawner(int maxFloorProps = 5, int maxWallProps = 5)
     {
         _wallPrefabs = new List<PropData>();
         _floorPrefabs = new List<PropData>();
 
-        maxFloorPropCount = 5;
-        maxWallPropCount = 5;
+        maxFloorPropCount = maxFloorProps;
+        maxWallPropCount = maxWallProps;
     }
 
     public void AddProp(PropData prop) 
@@ -558,16 +558,19 @@ public class MeshSampler : MonoBehaviour
                         filteredSamples.RemoveAll((sample) => Vector3.Distance(sample.sample, s.sample) < .75f);
                         
                         floorCount--;
+
+                        yield return null;
+                        continue;
                     }
 
-                    else filteredSamples.RemoveAt(sampleIndex);
+                    filteredSamples.RemoveAt(sampleIndex);
 
                     yield return null;
                 }
+
+                Debug.Log("Done spawning floor props");
             }
         }
-
-        //PropData.Props.PrintHierarchy();
     }
 
     private IEnumerator SpawnWallProps(GameObject go, Vector3 midPoint, Func<Vector3, PropData, bool, bool> spawnFilterFunc)
@@ -590,9 +593,11 @@ public class MeshSampler : MonoBehaviour
                 
                 if (PropData.Props.CanSpawnProp(_parentId, prop))
                 {
+                    List<Collider> cols = PropData.Props.GetGameObjects(_parentId).Select(obj => obj.GetComponent<Collider>()).ToList();
+
                     if (UnityEngine.Random.Range(0, 1) > prop.SpawnChance) continue;
                     if (!spawnFilterFunc(s.sample, prop, true)) continue;
-                    if (prop.Prop.GetComponent<PropObject>().CheckOverlapBox(s.sample, Quaternion.LookRotation(s.triangleNormal))) continue;
+                    if (prop.Prop.GetComponent<PropObject>().CheckOverlapBox(s.sample, Quaternion.LookRotation(s.triangleNormal), (List<Collider> cols2) => cols2.Intersect(cols))) continue;
 
                     PropObject propObj = Instantiate(prop.Prop, go.transform).GetComponent<PropObject>();
 
@@ -606,12 +611,17 @@ public class MeshSampler : MonoBehaviour
                     filteredSamples.RemoveAt(sampleIndex);
 
                     wallCount--;
+
+                    yield return null;
+                    continue;
                 }
 
-                else filteredSamples.RemoveAt(sampleIndex);
+                filteredSamples.RemoveAt(sampleIndex);
 
                 yield return null;
-            }   
+            }
+
+            Debug.Log("Done spawning wall props");
         }
     }
 }
