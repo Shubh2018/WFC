@@ -47,13 +47,13 @@ public class MeshNode : MonoBehaviour
     public void Init()
     {
         _id = Guid.NewGuid();
-        PropData.Props.AddEntry(Guid.Empty, _id, gameObject, true);
+        Prop.Props.AddEntry(Guid.Empty, _id, gameObject, true);
     }
 
-    public static void SampleTiles(MeshSampler sampler, List<NodeData> nodes, Spawner spawner, float radius, int tries)
+    public static void SampleTiles(MeshSampler sampler, List<NodeData> nodes, Spawner spawner, float radius, int tries, int floorGraphLevel, int wallGraphLevel)
     {
         meshSampler = sampler;
-        meshSampler.SetRadiusAndTries(radius, tries);
+        meshSampler.SetSamplingGraphProperties(radius, tries, floorGraphLevel, wallGraphLevel);
 
         generatedSamples.Clear();
 

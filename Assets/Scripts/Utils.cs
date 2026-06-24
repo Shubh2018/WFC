@@ -84,14 +84,14 @@ public static class Utils
     }
 
     // Loads all prop assets inside of a folder
-    public static Spawner LoadProps(string path, Func<PropData, bool> filterFunc)
+    public static Spawner LoadProps(string path, Func<Prop, bool> filterFunc)
     {
         string[] props = Directory.GetFiles(path, "*.asset");
         Spawner spawner = new Spawner(5, 5);
 
         foreach(string prop in props)
         {
-            PropData propData = (PropData) AssetDatabase.LoadAssetAtPath(prop, typeof(PropData));
+            Prop propData = (Prop) AssetDatabase.LoadAssetAtPath(prop, typeof(Prop));
             if (filterFunc(propData)) spawner.AddProp(propData);
         }
 
@@ -101,7 +101,7 @@ public static class Utils
     // Loads all props within a specific size range
     public static Spawner LoadFilteredProps(PropSpawnTagEnum tag)
     {
-        return LoadProps("Assets/Scripts/Props/", (PropData prop) => tag switch {
+        return LoadProps("Assets/Scripts/Props/", (Prop prop) => tag switch {
             PropSpawnTagEnum.Small or PropSpawnTagEnum.SmallToMedium => prop.SpawnTag == PropSpawnTagEnum.Small,
             PropSpawnTagEnum.Medium or PropSpawnTagEnum.SmallToMedium => prop.SpawnTag == PropSpawnTagEnum.Medium,
             PropSpawnTagEnum.Medium or PropSpawnTagEnum.MediumToLarge => prop.SpawnTag == PropSpawnTagEnum.Medium,

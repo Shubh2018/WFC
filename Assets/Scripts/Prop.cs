@@ -23,14 +23,6 @@ public enum StructureType
     Basement  
 };
 
-public enum EnvironmentType
-{
-    Objective,
-    Study,
-    Cellar,
-    Garden,
-};
-
 public enum SpawnPosition
 {
     Random,
@@ -45,10 +37,20 @@ public enum SpawnPosition
     SouthWest
 };
 
-// public enum NodeType
-// {
+public enum PropSpawnTagEnum {
+    Small,
+    Medium,
+    Large,
+    SmallToMedium,
+    MediumToLarge,
+    Any
+};
 
-// };
+public enum PropLimitTypeEnum {
+    PerRoom,
+    PerHierarchyElement,
+    InTotal
+};
 
 [CreateAssetMenu(fileName = "Prop", menuName = "Props/Prop")]
 public class Prop : ScriptableObject
@@ -58,32 +60,46 @@ public class Prop : ScriptableObject
     [SerializeField] private Prop _parent;
     [SerializeField] private PropPlacementType _propPlacement;
     [SerializeField] private PropType _propType;
+    [SerializeField] private PropLimitTypeEnum _limitType;
+    [SerializeField] private PropSpawnTagEnum _spawnTag;
     [SerializeField] private SpawnPosition _spawnPositions;
     [SerializeField] private bool _useStaticPositions;
     [SerializeField] private NodeData.NodeType _nodeTypeToSpawnIn;
     [SerializeField] private NodeData.EnvironmentType _environmentsToSpawnIn;
     [SerializeField] private List<Structure> _structureType;
     [SerializeField] private List<PropNeighborProperty> _neighbors;
+    [SerializeField] private bool _checkOrentation;
+    [SerializeField] private int _limitCount;
+    [SerializeField] private int _maxCount;
+
+    public static PropHierarchy Props = new PropHierarchy(null, Guid.Empty);
 
     public PropObject PropObject => _prop;
+    public PropType PropType => _propType;
     public SpawnPosition SpawnPosition => _spawnPositions;
     public List<PropNeighborProperty> Neighbors => _neighbors;
     public NodeData.NodeType NodeTypeToSpawnIn => _nodeTypeToSpawnIn;
+    public PropPlacementType Placement => _propPlacement;
     public NodeData.EnvironmentType EnvironmentTypeToSpawnIn => _environmentsToSpawnIn;
     public float SpawnChance {set { _spawnChance = value; } get {return _spawnChance;}}
     public bool UseStaticPositions => _useStaticPositions;
+    public PropLimitTypeEnum LimitType => _limitType;
+    public PropSpawnTagEnum SpawnTag => _spawnTag;
+    public bool CheckOrientation => _checkOrentation;
+    public int LimitCount => _limitCount;
+    public int MaxCount => _maxCount;
 
     public Prop(Prop p)
     {
-        this._prop = p._prop;
-        this._spawnChance = p._spawnChance;
-        this._parent = p._parent;
-        this._propType = p._propType;
-        this._nodeTypeToSpawnIn = p._nodeTypeToSpawnIn;
-        this._structureType = new List<Structure>(p._structureType);
-        this._neighbors = new List<PropNeighborProperty>(p._neighbors);
-        this._spawnPositions = p._spawnPositions;
-        this._useStaticPositions = p._useStaticPositions;
+        _prop = p._prop;
+        _spawnChance = p._spawnChance;
+        _parent = p._parent;
+        _propType = p._propType;
+        _nodeTypeToSpawnIn = p._nodeTypeToSpawnIn;
+        _structureType = new List<Structure>(p._structureType);
+        _neighbors = new List<PropNeighborProperty>(p._neighbors);
+        _spawnPositions = p._spawnPositions;
+        _useStaticPositions = p._useStaticPositions;
     }
 
     public PropNeighborProperty GetRandomProp(NodeData node)

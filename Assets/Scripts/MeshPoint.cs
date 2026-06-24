@@ -46,7 +46,7 @@ public class MeshPoint : MonoBehaviour
         _id = Guid.NewGuid();
         _parentId = parentId;
 
-        PropData.Props.AddEntry(_parentId, _id, transform.parent.gameObject);
+        Prop.Props.AddEntry(_parentId, _id, transform.parent.gameObject);
 
         SpawnProp();
     }
@@ -61,27 +61,26 @@ public class MeshPoint : MonoBehaviour
         if (_currentHierachyLevel > _spawnHierarchy) return;
         if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), 1, 1);
 
-        PropData prop = ChooseRandomProp();
-        PropObject propObj = prop.Prop.GetComponent<PropObject>();
+        Prop propObj = ChooseRandomProp();
         float rand = UnityEngine.Random.Range(0, 1);
-        bool overlap = propObj.CheckOverlapBox(transform.position, transform.rotation, (List<Collider> cols) => cols.Except(new List<Collider>{ GetComponentInParent<BoxCollider>() }));
+        bool overlap = propObj.PropObject.CheckOverlapBox(transform.position, transform.rotation, (List<Collider> cols) => cols.Except(new List<Collider>{ GetComponentInParent<BoxCollider>() }));
 
-        Debug.Log($"hierarchy: {_currentHierachyLevel}/{_spawnHierarchy}, prop: {prop.Prop.name}, spawn chance: {prop.SpawnChance}, random chance: {rand}, forced to spawn: {_forcedToSpawn}, collide: {overlap}");
+        Debug.Log($"hierarchy: {_currentHierachyLevel}/{_spawnHierarchy}, prop: {propObj.name}, spawn chance: {propObj.SpawnChance}, random chance: {rand}, forced to spawn: {_forcedToSpawn}, collide: {overlap}");
 
-        if((!_forcedToSpawn && (rand > prop.SpawnChance)) || overlap) return;
+        if((!_forcedToSpawn && (rand > propObj.SpawnChance)) || overlap) return;
 
-        _spawnedObject = Instantiate(prop.Prop, transform, false).GetComponent<PropObject>();
+        _spawnedObject = Instantiate(propObj, transform, false).PropObject;
 
         _spawnedObject.transform.localPosition = Vector3.zero;
         _spawnedObject.transform.localEulerAngles = new Vector3(0, UnityEngine.Random.Range(0, 360), 0);
         _spawnedObject.UpdateChildren(_id, _spawnHierarchy, _currentHierachyLevel+1);
     }
 
-    public PropData ChooseRandomProp()
+    public Prop ChooseRandomProp()
     {
         Spawner propSpawner = _spawnViaSpawner ? _gameObjectsToSpawn : (Spawner) spawner;
 
-        List<PropData> _allProps = new List<PropData>(propSpawner.WallPrefabs);
+        List<Prop> _allProps = new List<Prop>(propSpawner.WallPrefabs);
         _allProps.AddRange(propSpawner.FloorPrefabs);
 
         return _allProps[UnityEngine.Random.Range(0, _allProps.Count)];

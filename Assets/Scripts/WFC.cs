@@ -450,7 +450,7 @@ public class WFC : MonoBehaviour
     {
         PropText = "";
         _nodesToCollapse.Clear();
-        PropData.Props.Clear();
+        Prop.Props.Clear();
 
         gameObject.GetComponent<MeshSampler>().Clear();
         

@@ -79,7 +79,7 @@ public class MeshSurface : MonoBehaviour
         _id = Guid.NewGuid();
         _parentId = parentId;
 
-        PropData.Props.AddEntry(_parentId, _id, transform.parent?.gameObject);
+        Prop.Props.AddEntry(_parentId, _id, transform.parent?.gameObject);
 
         Generate();
     }
@@ -88,7 +88,7 @@ public class MeshSurface : MonoBehaviour
     {
         if (_currentHierachyLevel > _spawnHierarchy) return;
         
-        _meshSampler.SetRadiusAndTries(0.25f, 1);
+        _meshSampler.SetSamplingGraphProperties(0.25f, 1, 1, 1);
         _meshSampler.SetParent(_id);
 
         _samples = _meshSampler.GetSamples(_meshFilter);
@@ -99,7 +99,7 @@ public class MeshSurface : MonoBehaviour
         if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxPropCount, _maxPropCount);
 
         _meshSampler.SetSpawnerData(_spawnViaSpawner ? _gameObjectsToSpawn : (Spawner) spawner, _spawnHierarchy, _currentHierachyLevel);
-        _meshSampler.SpawnProps(gameObject, false, (Vector3 sample, PropData prop, bool propType) => IsPropContained(sample, prop.Prop.GetComponent<PropObject>()));
+        _meshSampler.SpawnProps(gameObject, false, (Vector3 sample, Prop prop, bool propType) => IsPropContained(sample, prop.PropObject));
     }
 
     private bool IsPropContained(Vector3 sample, PropObject obj)

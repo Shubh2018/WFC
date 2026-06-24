@@ -191,12 +191,12 @@ public class PropHierarchy
     }
 
     // Returns true if a specific prop can be spawned based on its conditions, else false
-    public bool CanSpawnProp(Guid instanceId, PropData prop)
+    public bool CanSpawnProp(Guid instanceId, Prop prop)
     {
         return prop.LimitType switch {
-            PropLimitTypeEnum.InTotal => prop.LimitCount > SumPropTotalAmount(prop.Prop.name),
-            PropLimitTypeEnum.PerHierarchyElement => prop.LimitCount > SumPropLocalHierachyAmount(instanceId, prop.Prop.name),
-            PropLimitTypeEnum.PerRoom => prop.LimitCount > SumPropRoomAmount(instanceId, prop.Prop.name),
+            PropLimitTypeEnum.InTotal => prop.LimitCount > SumPropTotalAmount(prop.PropObject.name),
+            PropLimitTypeEnum.PerHierarchyElement => prop.LimitCount > SumPropLocalHierachyAmount(instanceId, prop.PropObject.name),
+            PropLimitTypeEnum.PerRoom => prop.LimitCount > SumPropRoomAmount(instanceId, prop.PropObject.name),
             _ => false
         };
     }

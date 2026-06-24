@@ -20,7 +20,7 @@ public class MeshSurfaceEditor : Editor
 
         Button spawnButton = rootTree.Q<Button>("_spawnObjectsButton");
         spawnButton.RegisterCallback<ClickEvent>((ClickEvent evt) => {
-            PropData.Props.Clear();
+            Prop.Props.Clear();
             surface.Init(Guid.Empty, surface._spawnHierarchy, 0);
             //PropData.Props.PrintHierarchy();
         });
