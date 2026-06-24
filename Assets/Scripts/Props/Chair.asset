@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acd5196af078d4e74b8bdc1ce7cdea58, type: 3}
+  m_Name: Chair
+  m_EditorClassIdentifier: Assembly-CSharp::Prop
+  _prop: {fileID: 8873400715260981595, guid: e0b2491dfd0bb9d4c9007eb87e252f4b, type: 3}
+  _spawnChance: 0.6
+  _parent: {fileID: 0}
+  _propType: 0
+  _nodeTypeToSpawnIn: 8
+  _environmentsToSpawnIn: 2
+  _structureType: []
+  _neighbors:
+  - prop: {fileID: 11400000}
+    maxDistance: 1
+    spawnChance: 0.75
+  - prop: {fileID: 11400000, guid: d49eabf0cf4f56386a1b32d126245267, type: 2}
+    maxDistance: 1
+    spawnChance: 0.25
+  _randomRotation: 0

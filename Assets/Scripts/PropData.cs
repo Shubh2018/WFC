@@ -1,19 +1,6 @@
 using UnityEngine;
+using System.Collections.Generic;
 using System;
-
-public enum PropPlacement
-{
-    Floor,
-    Wall,
-    Ceiling
-};
-
-public enum Prop
-{
-    Decoration,
-    Objective,
-    Enemy
-};
 
 public enum PropSpawnTagEnum {
     Small,
@@ -34,30 +21,35 @@ public enum PropLimitTypeEnum {
 public class PropData : ScriptableObject
 {
     [SerializeField] private GameObject _prop;
-
-    //Neighbor List
-
-    [SerializeField] private PropPlacement placement;
     [SerializeField] private int _limitCount;
     [SerializeField] private PropLimitTypeEnum _limitType;
+    [SerializeField] private PropPlacementType placement;
+    [SerializeField] private int _maxCount;
     [SerializeField] private bool _checkOrentation;
     [SerializeField] private PropSpawnTagEnum _spawnTag;
-
-    [SerializeField] private Prop _propType;
+    [SerializeField] private PropType _propType;
     [SerializeField] [Range(0, 1)] private float _spawnChance = 0.5f;
-
     [SerializeField] private NodeType _nodeTypeToSpawnIn;
+    [SerializeField] private EnvironmentType _environment;
+    [SerializeField] private List<PropData> _neighbors;
     public static PropHierarchy Props = new PropHierarchy(null, Guid.Empty);
 
     public GameObject Prop => _prop;
-    public PropPlacement Placement => placement;
     public int LimitCount => _limitCount;
     public PropLimitTypeEnum LimitType => _limitType;
+    public PropPlacementType Placement => placement;
 
     public bool CheckOrientation => _checkOrentation;
     public PropSpawnTagEnum SpawnTag => _spawnTag;
-    public Prop PropType => _propType;
-    
+
+//To Add - 
+    //Spawning Position
+    //NodeType
+    //StructureType
+
+    public int MaxCount => _maxCount;
+    public PropType PropType => _propType;
     public float SpawnChance => _spawnChance;
-    public NodeType NodeTypeToSpawnIn => _nodeTypeToSpawnIn;
+    public EnvironmentType Environment => _environment;
+    public List<PropData> Neighbors => _neighbors;
 }

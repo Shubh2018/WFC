@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4715303074342295706}
   - component: {fileID: 8787280866305870331}
   - component: {fileID: -368183188410852150}
-  - component: {fileID: 5207250556998408717}
+  - component: {fileID: -2994383692812545613}
   m_Layer: 0
   m_Name: Shelf_Framed
   m_TagString: Untagged
@@ -114,7 +114,7 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 9089992606673786912, guid: edcc86a903182d0429c0d7b2c727fec0, type: 3}
---- !u!114 &5207250556998408717
+--- !u!114 &-2994383692812545613
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -126,15 +126,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
-  _center: {x: 0, y: 1.6, z: 0}
+  _center: {x: 0, y: 0, z: 0}
   _rayCenter: {x: 0, y: 0, z: 0}
-  _overlapDimensions: {x: 2, y: 3.25, z: 1}
+  _overlapDimensions: {x: 0, y: 0, z: 0}
   _propLayer:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 0
   _nodeLayer:
     serializedVersion: 2
-    m_Bits: 128
-  _raycastLength: 1
+    m_Bits: 0
+  _raycastLength: 1.5
   _lamp: 0
   _radius: 0.1

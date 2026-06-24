@@ -16,7 +16,7 @@ MonoBehaviour:
   placement: 0
   _maxCount: 4
   _checkOrentation: 1
-  _limitOnePerRoom: 0
+  _limitOnePerRoom: 1
   _propType: 1
   _spawnChance: 0.5
   _nodeTypeToSpawnIn: 0

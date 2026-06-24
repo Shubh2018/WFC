@@ -16,7 +16,9 @@ MonoBehaviour:
   Weight: 2
   IsStairPiece: 0
   CanHaveObjective: 0
-  Deadend: 0
+  IsDeadEnd: 0
+  nodeType: 8
+  environmentType: 2
   ClockwiseRotationSteps: 0
   Up:
     name: 0
@@ -42,3 +44,8 @@ MonoBehaviour:
     name: 3
     symmetry: 1
     type: 0
+  validFloorProps:
+  - {fileID: 11400000, guid: f6aaafa0312c45a7aaef2e43ee98f215, type: 2}
+  validWallProps:
+  - {fileID: 11400000, guid: 845fb54e4eb479c4995477faf75926c2, type: 2}
+  - {fileID: 11400000, guid: 4272b57546d0b43548d0c767c0153e31, type: 2}

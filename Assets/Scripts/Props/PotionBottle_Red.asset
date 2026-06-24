@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acd5196af078d4e74b8bdc1ce7cdea58, type: 3}
+  m_Name: PotionBottle_Red
+  m_EditorClassIdentifier: Assembly-CSharp::Prop
+  _prop: {fileID: -4828114938519984982, guid: 44e723b3d5b0e8c478e3b502b94369d5, type: 3}
+  _spawnChance: 0.8
+  _parent: {fileID: 0}
+  _propType: 0
+  _nodeTypeToSpawnIn: 0
+  _environmentsToSpawnIn: 2
+  _structureType: []
+  _neighbors:
+  - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
+    maxDistance: 0.6
+    spawnChance: 0.45
+  - prop: {fileID: 11400000, guid: d49eabf0cf4f56386a1b32d126245267, type: 2}
+    maxDistance: 0.8
+    spawnChance: 0.15
+  - prop: {fileID: 11400000, guid: 1e5646d1134267c3f987db1dbe4ca19d, type: 2}
+    maxDistance: 1
+    spawnChance: 0
+  - prop: {fileID: 11400000}
+    maxDistance: 0.6
+    spawnChance: 0.25
+  - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
+    maxDistance: 0.8
+    spawnChance: 0.2
+  - prop: {fileID: 11400000, guid: 34350ee187d01f744978363773e6185e, type: 2}
+    maxDistance: 0.2
+    spawnChance: 0.2
+  - prop: {fileID: 11400000, guid: bef57d5fec758110bb92bd49c98d8325, type: 2}
+    maxDistance: 0.2
+    spawnChance: 0.2

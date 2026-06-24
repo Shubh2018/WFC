@@ -45,10 +45,10 @@ public struct Spawner
     {
         switch(prop.Placement)
         {
-            case PropPlacement.Floor:
+            case PropPlacementType.Floor:
                 _floorPrefabs.Add(prop);
                 break;
-            case PropPlacement.Wall:
+            case PropPlacementType.Wall:
                 _wallPrefabs.Add(prop);
                 break;
             default:
@@ -74,7 +74,7 @@ public class MeshSampler : MonoBehaviour
     private Spawner _gameObjectsToSpawn;
 
     private Dictionary<Mesh, int[]> _triangles;
-    private Dictionary<Mesh, Vector3[]> _vertices;
+    private Dictionary<Mesh, Vector3[]> _vertices; 
 
     private readonly List<Sample> _floorSamples = new List<Sample>();
     private readonly List<Sample> _wallSamples = new List<Sample>();
@@ -96,11 +96,17 @@ public class MeshSampler : MonoBehaviour
     private List<Sample> _samplePointsAll = new List<Sample>();
 
     private List<GameObject> _spawnedObjects = new List<GameObject>();
-
     private float _spawnChance = 0.3f;
     private int _spawnHierarchy = 5;
     private int _currentHierachyLevel = 0;
     public Guid _parentId;
+    private Dictionary<PropData, int> _props = new Dictionary<PropData, int>();
+    private Dictionary<string, int> _propCount = new Dictionary<string, int>();
+
+    public Dictionary<string, int> PropCount => _propCount;
+
+    private int _floorPropGraphLevel;
+    private int _wallPropGraphLevel;
 
     public string PropText { get; private set; }
 
@@ -118,10 +124,12 @@ public class MeshSampler : MonoBehaviour
         _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
     }
 
-    public void SetRadiusAndTries(float radius, int tries)
+    public void SetSamplingGraphProperties(float radius, int tries, int floorPropGraphLevel, int wallPropGraphLevel)
     {
         _radius = radius;
         _tries = tries;
+        _floorPropGraphLevel = floorPropGraphLevel;
+        _wallPropGraphLevel = wallPropGraphLevel;
     }
 
     public void SetParent(Guid parentId)
@@ -159,13 +167,12 @@ public class MeshSampler : MonoBehaviour
         _samplesInMid.Clear();
 
         _meshFilter.Clear();
+        _props.Clear();
 
         foreach(var spawnedObject in _spawnedObjects)
             DestroyImmediate(spawnedObject);
 
         _spawnedObjects.Clear();
-
-        Debug.Log($"FloorSamples: {_floorSamplesAll.Count}");
     }
 
     private bool WithinDisOfCam(Vector3 pos, float maxDistance)
@@ -219,6 +226,8 @@ public class MeshSampler : MonoBehaviour
     // Method to sample the meshes. Return a list of Sample
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
     {
+        Debug.Log($"Sampled Mesh: {mesh.transform.name}");
+
         List<Sample> samples = new List<Sample>();
         List<int> active = new List<int>();
 
@@ -435,19 +444,15 @@ public class MeshSampler : MonoBehaviour
     {
         PropText = "";
 
+        _props.Clear();
         _wallSamples.Clear();
         _floorSamples.Clear();
         _samplesNearWalls.Clear();
 
         (Vector3 min, Vector3 max) = BuildBoundingBox(samples.Select(v => v.sample).ToArray());
 
-        float minDist = 4f;
-        float maxDist = 4.5f;
-
-        float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 1.1f;
+        float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 0.25f;
         float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.25f;
-
-        float mid = (Mathf.Abs((min.y + max.y) / 2) + max.y) / 2;
 
         _floorSamples.AddRange(samples.FindAll(s => (s.sample.y < thresholdMin) &&
                                                     Vector3.Dot(s.triangleNormal, Vector3.up) > 0 &&
@@ -458,31 +463,261 @@ public class MeshSampler : MonoBehaviour
         samples.RemoveAll(s => Vector3.Dot(s.triangleNormal, Vector3.up) > 0);
         _floorSamplesAll.AddRange(_floorSamples);
     
-        _wallSamples.AddRange(samples.FindAll(s => Mathf.Abs(mid - s.sample.y) < 0.1f));
+        _wallSamples.AddRange(samples.FindAll(s => s.sample.y > thresholdMin));
+        _wallSamples.RemoveAll((s) => Vector3.Dot(s.sample, Vector3.up) == 1 || Vector3.Dot(s.sample, Vector3.up) == -1);
         _wallSamplesAll.AddRange(_wallSamples);
 
-        for (int i = 0; i < _wallSamples.Count; i++)
+        return (min, max);
+    }
+
+    private void FilterWallSamples(SpawnPosition spawnPos, int rem, Vector3 min, Vector3 max, Vector3 mid, Vector3 halfMin, Vector3 halfMax, out List<Sample> samples)
+    {
+        samples = new List<Sample>();
+
+        if(rem == 0)
         {
-            for (int j = 0; j < _floorSamples.Count; j++)
+            samples.AddRange(_wallSamples.FindAll((s) => s.sample.z > mid.z && s.sample.z < mid.z));
+
+            switch(spawnPos)
             {
-                Vector3 floorSample = _floorSamples[j].sample;
-                floorSample.y = _wallSamples[i].sample.y;
-                
-                if (Vector3.Distance(_wallSamples[i].sample, floorSample) > minDist
-                 && Vector3.Distance(_wallSamples[i].sample, floorSample) <= maxDist)
-                {
-                    _samplesNearWalls.Add(_floorSamples[j]);
-                    _floorSamples.RemoveAt(j);
-                }
-                
-                else
-                {
-                    _samplesInMid.Add(_floorSamples[j]);
-                }
+                case SpawnPosition.Center: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.z > halfMin.z && s.sample.z < halfMax.z) && (s.sample.y > halfMin.y && s.sample.y < halfMax.y)));
+                    break;
+
+                case SpawnPosition.North: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.z > halfMin.z && s.sample.z < halfMax.z) && (s.sample.y > halfMax.y && s.sample.y < max.y)));
+                    break;
+
+                case SpawnPosition.South: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.z > halfMin.z && s.sample.z < halfMax.z) && (s.sample.y < halfMin.y && s.sample.y > min.y)));
+                    break;
+
+                case SpawnPosition.East: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.z > halfMax.z && s.sample.z < max.z) && (s.sample.y > halfMin.y && s.sample.y < halfMax.y)));
+                    break;
+
+                case SpawnPosition.West: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.z > min.z && s.sample.z < halfMin.z) && (s.sample.y > halfMin.y && s.sample.y < halfMax.y)));
+                    break;
+
+                case SpawnPosition.NorthEast: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.z > halfMax.z && s.sample.z < max.z) && (s.sample.y > halfMax.y && s.sample.y < max.y)));
+                    break;
+
+                case SpawnPosition.NorthWest: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.z > min.z && s.sample.z < halfMin.z) && (s.sample.y > halfMax.y && s.sample.y < max.y)));
+                    break;
+
+                case SpawnPosition.SouthEast: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.z > halfMax.z && s.sample.z < max.z) && (s.sample.y > min.y && s.sample.y < halfMin.y)));
+                    break;
+
+                case SpawnPosition.SouthWest: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.z > min.z && s.sample.z < halfMin.z) && (s.sample.y > min.y && s.sample.y < halfMin.y)));
+                    break;
+
+                default: 
+                    samples.AddRange(_wallSamples);
+                    break;
             }
         }
 
-        return (min, max);
+        else
+        {
+            samples.AddRange(_wallSamples.FindAll((s) => s.sample.x > mid.x && s.sample.x < mid.x));
+
+            switch(spawnPos)
+            {
+                case SpawnPosition.Center: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.x > halfMin.x && s.sample.x < halfMax.x) && (s.sample.y > halfMin.y && s.sample.y < halfMax.y)));
+                    break;
+
+                case SpawnPosition.North: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.x > halfMin.x && s.sample.x < halfMax.x) && (s.sample.y > halfMax.y && s.sample.y < max.y)));
+                    break;
+
+                case SpawnPosition.South: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.x > halfMin.x && s.sample.x < halfMax.x) && (s.sample.y < halfMin.y && s.sample.y > min.y)));
+                    break;
+
+                case SpawnPosition.East: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.x > halfMax.x && s.sample.x < max.x) && (s.sample.y > halfMin.y && s.sample.y < halfMax.y)));
+                    break;
+
+                case SpawnPosition.West: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.x > min.x && s.sample.x < halfMin.x) && (s.sample.y > halfMin.y && s.sample.y < halfMax.y)));
+                    break;
+
+                case SpawnPosition.NorthEast: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.x > halfMax.x && s.sample.x < max.x) && (s.sample.y > halfMax.y && s.sample.y < max.y)));
+                    break;
+
+                case SpawnPosition.NorthWest: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.x > min.x && s.sample.x < halfMin.x) && (s.sample.y > halfMax.y && s.sample.y < max.y)));
+                    break;
+
+                case SpawnPosition.SouthEast: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.x > halfMax.x && s.sample.x < max.x) && (s.sample.y > min.y && s.sample.y < halfMin.y)));
+                    break;
+
+                case SpawnPosition.SouthWest: 
+                    samples.AddRange(_wallSamples.FindAll((s) => (s.sample.x > min.x && s.sample.x < halfMin.x) && (s.sample.y > min.y && s.sample.y < halfMin.y)));
+                    break;
+
+                default: 
+                    samples.AddRange(_wallSamples);
+                    break;
+            }
+        }
+    }
+
+    private List<Sample> GetWallSamplesBySpawnPosition(int rem, SpawnPosition spawnPos, Vector3 min, Vector3 max, bool useStaticPosition)
+    {
+        // min = transform.InverseTransformPoint(min);
+        // max = transform.InverseTransformPoint(max);
+
+        Vector3 mid = (min + max) / 2;
+        Vector3 halfMin = (min + mid) / 2;
+        Vector3 halfMax = (mid + max) / 2;
+
+        // List<Sample> samples = new List<Sample>();
+
+        FilterWallSamples(spawnPos, rem, min, max, mid, halfMin, halfMax, out List<Sample> samples);
+
+        if(useStaticPosition)
+        {
+            float d = float.PositiveInfinity;
+
+            min = Vector3.positiveInfinity;
+            max = Vector3.negativeInfinity;
+
+            Sample closestSample = new Sample
+            {
+                sample = Vector3.zero,
+                triangleNormal = Vector3.zero
+            };
+
+            foreach(var s in samples)
+            {
+                min.x = Mathf.Min(s.sample.x, min.x);
+                min.y = Mathf.Min(s.sample.y, min.y);
+                min.z = Mathf.Min(s.sample.z, min.z);
+
+                max.x = Mathf.Max(s.sample.x, max.x);
+                max.y = Mathf.Max(s.sample.y, max.y);
+                max.z = Mathf.Max(s.sample.z, max.z);
+            }
+
+            min = transform.InverseTransformPoint(min);
+            max = transform.InverseTransformPoint(max);
+
+            mid = (min + max) / 2;
+
+            foreach(var s in samples)
+            {
+                float distance = Vector3.Distance(s.sample, mid);
+
+                if(distance < d)
+                {
+                    d = distance;
+                    closestSample = s;
+                }    
+            }
+
+            samples.Clear();
+            samples.Add(closestSample);
+        }
+
+        return samples;
+    }
+
+    private List<Sample> GetFloorSamplesBySpawnPosition(SpawnPosition spawnPos, Vector3 min, Vector3 max, bool useStaticPosition)
+    {
+        min = transform.InverseTransformPoint(min);
+        max = transform.InverseTransformPoint(max);
+
+        Vector3 mid = (min + max) / 2;
+
+        Vector3 halfMin = (min + mid) / 2;
+        Vector3 halfMax = (mid + max) / 2;
+
+        List<Sample> samples = new List<Sample>();
+
+        if(!useStaticPosition)
+        {
+            switch(spawnPos)
+            {
+                case SpawnPosition.North: 
+                    samples.AddRange(_floorSamples.FindAll((s) => s.sample.z > halfMax.z && s.sample.x < halfMax.x && s.sample.x > halfMin.x));
+                    break;
+                case SpawnPosition.South: 
+                    samples.AddRange(_floorSamples.FindAll((s) => s.sample.z < halfMin.z && s.sample.x < halfMax.x && s.sample.x > halfMin.x));
+                    break;
+                case SpawnPosition.East:  
+                    samples.AddRange(_floorSamples.FindAll((s) => s.sample.x > halfMax.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z));
+                    break;
+                case SpawnPosition.West:  
+                    samples.AddRange(_floorSamples.FindAll((s) => s.sample.x < halfMin.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z));
+                    break;
+                case SpawnPosition.NorthEast: 
+                    samples.AddRange(_floorSamples.FindAll((s) => s.sample.x > halfMax.x && s.sample.z > halfMax.z));
+                    break;
+                case SpawnPosition.NorthWest: 
+                    samples.AddRange(_floorSamples.FindAll((s) => s.sample.x < halfMin.x && s.sample.z > halfMax.z));
+                    break;
+                case SpawnPosition.SouthEast: 
+                    samples.AddRange(_floorSamples.FindAll((s) => s.sample.x > halfMax.x && s.sample.z < halfMin.z));
+                    break;
+                case SpawnPosition.SouthWest: 
+                    samples.AddRange(_floorSamples.FindAll((s) => s.sample.x < halfMin.x && s.sample.z < halfMin.z));
+                    break;
+                case SpawnPosition.Center: 
+                    samples.AddRange(_floorSamples.FindAll((s) => s.sample.x > halfMin.x && s.sample.x < halfMax.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z));
+                    break;
+                default: 
+                    samples.AddRange(_floorSamples);
+                    break;
+            }
+        }
+
+        else
+        {
+            switch(spawnPos)
+            {
+                case SpawnPosition.North: 
+                    samples.Add(new Sample{sample = new Vector3(mid.x, min.y, max.z), triangleNormal = Vector3.up});
+                    break;
+                case SpawnPosition.South: 
+                    samples.Add(new Sample{sample = new Vector3(mid.x, min.y, min.z), triangleNormal = Vector3.up});
+                    break;
+                case SpawnPosition.East:  
+                    samples.Add(new Sample{sample = new Vector3(max.x, min.y, mid.z), triangleNormal = Vector3.up});
+                    break;
+                case SpawnPosition.West:  
+                    samples.Add(new Sample{sample = new Vector3(min.x, min.y, mid.z), triangleNormal = Vector3.up});
+                    break;
+                case SpawnPosition.NorthEast: 
+                    samples.Add(new Sample{sample = new Vector3(max.x, min.y, max.z), triangleNormal = Vector3.up});
+                    break;
+                case SpawnPosition.NorthWest: 
+                    samples.Add(new Sample{sample = new Vector3(min.x, min.y, max.z), triangleNormal = Vector3.up});
+                    break;
+                case SpawnPosition.SouthEast: 
+                    samples.Add(new Sample{sample = new Vector3(max.x, min.y, min.z), triangleNormal = Vector3.up});
+                    break;
+                case SpawnPosition.SouthWest: 
+                    samples.Add(new Sample{sample = min, triangleNormal = Vector3.up});
+                    break;
+                case SpawnPosition.Center: 
+                    samples.Add(new Sample{sample = new Vector3(mid.x, min.y, mid.z), triangleNormal = Vector3.up});
+                    break;
+                default: 
+                    samples.Add(new Sample{sample = Vector3.zero, triangleNormal = Vector3.up});
+                    break;
+            }
+        }
+
+        return samples;
     }
 
     private IEnumerator SpawnFloorProps(GameObject nodeObj, Vector3 midPoint, bool canHaveObjectes, Func<Vector3, PropData, bool, bool> spawnFilterFunc)
@@ -624,4 +859,113 @@ public class MeshSampler : MonoBehaviour
             Debug.Log("Done spawning wall props");
         }
     }
+
+    /*
+        private int SpawnFloorProps(NodeData node, GameObject nodeObj, Vector3 min, Vector3 max)
+    {
+        int overlapCount = 0;
+        Prop prop = node.GetRandomPropCDF(PropPlacementType.Floor);
+
+        if(!prop) return 0;
+        
+        List<Sample> samplesInRange = new List<Sample>();
+        samplesInRange.AddRange(GetFloorSamplesBySpawnPosition(prop.SpawnPosition, min, max, prop.UseStaticPositions));
+
+        Sample spawnSample = samplesInRange[Random.Range(0, samplesInRange.Count)];
+        samplesInRange.Remove(spawnSample);
+        _floorSamples.Remove(spawnSample);
+
+        PropObject propObj = Instantiate(prop.PropObject, spawnSample.sample, Quaternion.Euler(new Vector3(0.0f, Random.Range(0.0f, 360.0f), 0.0f)));
+        propObj.transform.SetParent(nodeObj.transform);
+    
+        int i = 0;
+
+        while(i < _floorPropGraphLevel - 1)
+        {
+            i += 1;
+
+            PropNeighborProperty randomPropNeighbor = prop.GetRandomProp(node);
+
+            if(randomPropNeighbor == null) continue;
+
+            Prop propNeighbor = randomPropNeighbor.prop;
+
+            float propMaxDistance = randomPropNeighbor.maxDistance;
+
+            samplesInRange.Clear();
+
+            samplesInRange.AddRange(_floorSamples.FindAll((s) => Vector3.Distance(s.sample, spawnSample.sample) >= propMaxDistance 
+                                        && Vector3.Distance(s.sample, spawnSample.sample) < propMaxDistance * 2));
+            
+            if(samplesInRange.Count == 0) continue;
+            spawnSample = samplesInRange[Random.Range(0, samplesInRange.Count)];
+
+            samplesInRange.Remove(spawnSample);
+            _floorSamples.Remove(spawnSample);
+
+            propObj = Instantiate(propNeighbor.PropObject, spawnSample.sample, Quaternion.Euler(0, Random.Range(0f, 360f), 0f));
+            propObj.transform.SetParent(nodeObj.transform);
+
+            propObj.UpdateRotation();
+
+            prop = propNeighbor;
+        }
+
+        return overlapCount;
+    }
+
+    private int SpawnWallProps(NodeData node, GameObject go, Vector3 min, Vector3 max)
+    {
+        int overlapCount = 0;
+
+        int i = 0;
+
+        Vector3 div = go.transform.eulerAngles / 90.0f;
+        int rem = (int)(div.y % 2);
+
+        Prop prop = node.GetRandomPropCDF(PropPlacementType.Wall);
+
+        if(prop == null) return 0;
+        
+        List<Sample> samplesList = GetWallSamplesBySpawnPosition(rem, prop.SpawnPosition, min, max, prop.UseStaticPositions);
+
+        if(samplesList.Count <= 0) return 0;
+
+        Sample randomSample = samplesList[Random.Range(0, samplesList.Count)];
+        
+        PropObject propObj = Instantiate(prop.PropObject, go.transform);
+        propObj.transform.position = randomSample.sample;
+        propObj.transform.forward = randomSample.triangleNormal;
+
+        samplesList.Clear();
+
+        while (i < _wallPropGraphLevel- 1)
+        {
+            i += 1;
+
+            PropNeighborProperty neighbor = prop.GetRandomProp(node);
+            Prop neighborProp = neighbor.prop;
+            
+            float spawnChance = Random.Range(0.0f, 1.0f);
+
+            if(spawnChance > neighbor.spawnChance) break;
+
+            rem = 1- rem;
+
+            samplesList.AddRange(GetWallSamplesBySpawnPosition(rem, neighborProp.SpawnPosition, min, max, neighborProp.UseStaticPositions));
+
+            randomSample = samplesList[Random.Range(0, samplesList.Count)];
+
+            propObj = Instantiate(neighborProp.PropObject, go.transform);
+            propObj.transform.position = randomSample.sample;
+            propObj.transform.forward = randomSample.triangleNormal;
+
+            samplesList.Clear();
+            // samplesList.RemoveAll((s) => s.sample.x == randomSample.sample.x || s.sample.z == randomSample.sample.z);
+        }
+
+        return overlapCount;
+    }
+}
+    */
 }

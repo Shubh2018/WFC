@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acd5196af078d4e74b8bdc1ce7cdea58, type: 3}
+  m_Name: Table
+  m_EditorClassIdentifier: Assembly-CSharp::Prop
+  _prop: {fileID: 640680981845428240, guid: c533c10f37d12c941bf5dfea26e26cac, type: 3}
+  _spawnChance: 1
+  _parent: {fileID: 0}
+  _propType: 0
+  _spawnPositions: 1
+  _useStaticPositions: 1
+  _nodeTypeToSpawnIn: 8
+  _environmentsToSpawnIn: 2
+  _structureType: []
+  _neighbors:
+  - prop: {fileID: 11400000, guid: a87c0d20ba356db119fd0ad4a4c0a7f7, type: 2}
+    maxDistance: 1
+    spawnChance: 0.6

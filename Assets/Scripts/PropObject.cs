@@ -45,7 +45,7 @@ public class PropObject : MonoBehaviour
         {
             if (Physics.Raycast(this.transform.position + _rayCenter, this.transform.forward, out RaycastHit hit, _raycastLength, _nodeLayer))
             {
-                rotation += UnityEngine.Random.Range(-30.0f, 30.0f);
+                rotation += 90.0f;
                 this.transform.localEulerAngles = new Vector3(this.transform.localEulerAngles.x, rotation, this.transform.localEulerAngles.z);
             }
 

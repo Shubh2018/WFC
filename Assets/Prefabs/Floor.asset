@@ -14,7 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
   Prefab: {fileID: 1248503722284166450, guid: 52d94e38d55a4af4581de7012dd17250, type: 3}
   Weight: 1
-  IgnoreSelf: 0
+  IsStairPiece: 0
+  CanHaveObjective: 0
+  IsDeadEnd: 0
+  nodeType: 0
+  environmentType: 0
   ClockwiseRotationSteps: 0
   Up:
     name: 0
@@ -40,3 +44,5 @@ MonoBehaviour:
     name: 6
     symmetry: 1
     type: 0
+  validFloorProps: []
+  validWallProps: []

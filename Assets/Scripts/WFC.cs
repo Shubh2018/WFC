@@ -5,8 +5,6 @@ using System.Linq;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.LowLevelPhysics;
-using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 // Represents a tile that needs to be collapsed
@@ -113,7 +111,7 @@ public class PathNode
 
         if (index >= pathCount - 1)
         {
-            potentialNodes.RemoveAll((node) => !node.IsDeadEnd);
+            potentialNodes.RemoveAll((node) => node.nodeType != NodeData.NodeType.Deadend);
         }
         
         // Check if this node is part of a staircase
@@ -165,6 +163,8 @@ public class WFC : MonoBehaviour
     [SerializeField] private float _samplingRadius = 0.5f;
     [SerializeField] private int _samplingTries = 30;
     [SerializeField] private bool _overrideObjList = false;
+    [SerializeField] private int _floorPropGraphLevel = 2;
+    [SerializeField] private int _wallPropGraphLevel = 2;
 
     [SerializeField] private int _levelCount = 0;
 
@@ -293,6 +293,11 @@ public class WFC : MonoBehaviour
             sampler.enableGizmosSamplePoints = pdsSamplePoints;
             sampler.samplesRenderDistance = samplesRenderDistance;
         }
+    }
+
+    public void SetGraphLevel()
+    {
+        
     }
 
     public void OnDrawGizmos()
@@ -438,7 +443,7 @@ public class WFC : MonoBehaviour
         List<NodeData> nodes = new List<NodeData>(_nodes);
         nodes.AddRange(_nodesGenerated);
 
-        MeshNode.SampleTiles(sampler, nodes, _gameObjectsToSpawn, _samplingRadius, _samplingTries);
+        MeshNode.SampleTiles(sampler, nodes, _gameObjectsToSpawn, _samplingRadius, _samplingTries, _floorPropGraphLevel, _wallPropGraphLevel);
     }
 
     public void ClearTiles(bool clearAll = false) 
@@ -764,7 +769,7 @@ public class WFC : MonoBehaviour
         mesh?.Init();
         mesh?.Generate(node, _overrideObjList ? _gameObjectsToSpawn : null);
 
-        if (mesh == null) Debug.LogWarning($"Node Prefab '{node.Prefab.name}' does not have a MeshNode!");
+        if (mesh == null) UnityEngine.Debug.LogWarning($"Node Prefab '{node.Prefab.name}' does not have a MeshNode!");
 
         return 0;
     }
