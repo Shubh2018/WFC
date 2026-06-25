@@ -98,8 +98,8 @@ public class MeshSurface : MonoBehaviour
 
         if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxPropCount, _maxPropCount);
 
-        _meshSampler.SetSpawnerData(_spawnViaSpawner ? _gameObjectsToSpawn : (Spawner) spawner, _spawnHierarchy, _currentHierachyLevel);
-        _meshSampler.SpawnProps(gameObject, false, (Vector3 sample, Prop prop, bool propType) => IsPropContained(sample, prop.PropObject));
+        // _meshSampler.SetSpawnerData(_spawnViaSpawner ? _gameObjectsToSpawn : (Spawner) spawner, _spawnHierarchy, _currentHierachyLevel);
+        // _meshSampler.SpawnProps(gameObject, false, (Vector3 sample, Prop prop, bool propType) => IsPropContained(sample, prop.PropObject));
     }
 
     private bool IsPropContained(Vector3 sample, PropObject obj)

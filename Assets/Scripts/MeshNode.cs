@@ -103,6 +103,6 @@ public class MeshNode : MonoBehaviour
         else spawner = _gameObjectsToSpawn;
 
         meshSampler.SetSpawnerData((Spawner) spawner, _spawnHierarchy, _currentHierachyLevel);
-        meshSampler.SpawnProps(gameObject, _nodeData.CanHaveObjective);
+        meshSampler.SpawnProps(node, gameObject, _nodeData.CanHaveObjective);
     }
 }
