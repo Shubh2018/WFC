@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 using System;
+using UnityEditor.Tilemaps;
 
 [System.Serializable]
 public struct Sample
@@ -882,6 +883,8 @@ public class MeshSampler : MonoBehaviour
 
         while(i < _floorPropGraphLevel - 1)
         {
+            propObj.CheckOverlapBox(propObj.transform.position, propObj.transform.rotation);
+            
             i += 1;
 
             PropNeighborProperty randomPropNeighbor = prop.GetRandomProp(node);
