@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Prop
   _prop: {fileID: -467876852072747623, guid: be2c581d1fc050dc9a0afa702c45547b, type: 3}
   _spawnChance: 0.75
-  _parent: {fileID: 0}
   _propPlacement: 1
   _propType: 0
-  _spawnPositions: 2
+  _limitType: 0
+  _spawnTag: 2
+  _spawnPositions: 0
   _useStaticPositions: 1
   _nodeTypeToSpawnIn: -1
   _environmentsToSpawnIn: -1
@@ -26,3 +27,4 @@ MonoBehaviour:
   - prop: {fileID: 11400000, guid: 845fb54e4eb479c4995477faf75926c2, type: 2}
     maxDistance: 0
     spawnChance: 0.85
+  _limitCount: 10

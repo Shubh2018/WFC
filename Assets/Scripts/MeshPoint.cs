@@ -30,8 +30,8 @@ public class MeshPoint : MonoBehaviour
             - (X) check for size of the object to prevent instantiating too large objects
             - (X) check for obstacles and prevent spawning if blocked
             - Fix bugs:
-             > small empty tile node
-             > fix points not sorted correctly
+             > (X) small empty tile node
+             > (X) fix points not sorted correctly
              > (X) prop overlapping not fixed
              > (X) max object count per room is not transfered to MeshSurface or MeshPoint
              > check tile node collision to prevent spawning props (right now only props are checked)

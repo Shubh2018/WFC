@@ -1,0 +1,28 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
+        <ui:GroupBox name="_overviewGroup" text="Overview" focusable="false" enabled="true" style="border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgb(29, 29, 29); border-right-color: rgb(29, 29, 29); border-top-color: rgb(29, 29, 29); border-bottom-color: rgb(29, 29, 29); padding-right: 5px; padding-left: 5px; align-items: stretch; margin-top: 6px;">
+            <uie:ObjectField label="Prefab" data-source-type="NodeData, Assembly-CSharp" data-source-path="Prefab" binding-path="Prefab" name="_prefabField"/>
+            <ui:IntegerField label="Weight" value="1" name="_weightField" data-source-type="NodeData, Assembly-CSharp" data-source-path="Weight" max-length="3"/>
+        </ui:GroupBox>
+        <ui:GroupBox name="_detailsGroup" text="Details" focusable="false" enabled="true" style="border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgb(29, 29, 29); border-right-color: rgb(29, 29, 29); border-top-color: rgb(29, 29, 29); border-bottom-color: rgb(29, 29, 29); padding-right: 5px; padding-left: 5px; align-items: stretch; margin-top: 6px;">
+            <ui:EnumField label="Node Type" value="Corner" type="NodeData+NodeType, Assembly-CSharp" name="_nodeTypeEnumField" data-source-type="NodeData, Assembly-CSharp" data-source-path="nodeType" binding-path="nodeType" include-obsolete-values="false"/>
+            <ui:EnumField label="Environment" value="Objective" type="NodeData+EnvironmentType, Assembly-CSharp" name="_environmentEnumField" data-source-type="NodeData, Assembly-CSharp" data-source-path="environmentType" binding-path="environmentType" include-obsolete-values="false"/>
+        </ui:GroupBox>
+        <ui:GroupBox name="_statesGroup" text="States" focusable="false" enabled="true" style="border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgb(29, 29, 29); border-right-color: rgb(29, 29, 29); border-top-color: rgb(29, 29, 29); border-bottom-color: rgb(29, 29, 29); padding-right: 5px; padding-left: 5px; align-items: stretch; margin-top: 6px;">
+            <ui:Toggle label="Staircase" name="_isStaircasePieceToggle" data-source-type="NodeData, Assembly-CSharp" data-source-path="IsStairPiece" binding-path="IsStairPiece"/>
+            <ui:Toggle label="Objectives" name="_canHaveObjectivesToggle" data-source-type="NodeData, Assembly-CSharp" data-source-path="CanHaveObjective" binding-path="CanHaveObjective"/>
+            <ui:Toggle label="Dead End" name="_isDeadEndToggle" data-source-type="NodeData, Assembly-CSharp" data-source-path="IsDeadEnd" binding-path="IsDeadEnd"/>
+        </ui:GroupBox>
+        <ui:GroupBox name="_facesGroup" text="Faces" focusable="false" enabled="true" style="border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgb(29, 29, 29); border-right-color: rgb(29, 29, 29); border-top-color: rgb(29, 29, 29); border-bottom-color: rgb(29, 29, 29); padding-right: 5px; padding-left: 5px; align-items: stretch; margin-top: 6px;">
+            <uie:PropertyField name="_faceUpPropertyField" data-source-type="NodeData, Assembly-CSharp" data-source-path="Up" binding-path="Up" label="Up" picking-mode="Ignore" focusable="true" style="margin-left: 15px;"/>
+            <uie:PropertyField name="_faceDownPropertyField" data-source-type="NodeData, Assembly-CSharp" data-source-path="Down" binding-path="Down" label="Down" style="margin-left: 15px;"/>
+            <uie:PropertyField name="_faceLeftPropertyField" data-source-type="NodeData, Assembly-CSharp" data-source-path="Left" binding-path="Left" label="Left" style="margin-left: 15px;"/>
+            <uie:PropertyField name="_faceRightPropertyField" data-source-type="NodeData, Assembly-CSharp" data-source-path="Right" binding-path="Right" label="Right" style="margin-left: 15px;"/>
+            <uie:PropertyField name="_faceFrontPropertyField" data-source-type="NodeData, Assembly-CSharp" data-source-path="Front" binding-path="Front" label="Front" style="margin-left: 15px;"/>
+            <uie:PropertyField name="_faceBackPropertyField" data-source-type="NodeData, Assembly-CSharp" data-source-path="Back" binding-path="Back" label="Back" style="margin-left: 15px;"/>
+        </ui:GroupBox>
+        <ui:GroupBox name="_exceptionsPropsGroup" text="Exceptions" focusable="false" enabled="true" style="border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgb(29, 29, 29); border-right-color: rgb(29, 29, 29); border-top-color: rgb(29, 29, 29); border-bottom-color: rgb(29, 29, 29); padding-right: 5px; padding-left: 5px; align-items: stretch; margin-top: 6px;">
+            <ui:ListView name="_exceptionsPropsListView" data-source-type="NodeData, Assembly-CSharp" data-source-path="exceptionsProps" header-title="Props" show-add-remove-footer="true" allow-add="true" show-foldout-header="true" binding-path="exceptionsProps" style="margin-left: 15px;"/>
+        </ui:GroupBox>
+    </ui:VisualElement>
+</ui:UXML>

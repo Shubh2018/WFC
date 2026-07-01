@@ -131,7 +131,7 @@ MonoBehaviour:
   _overlapDimensions: {x: 0.7, y: 0.8, z: 0.7}
   _propLayer:
     serializedVersion: 2
-    m_Bits: 384
+    m_Bits: 256
   _nodeLayer:
     serializedVersion: 2
     m_Bits: 128

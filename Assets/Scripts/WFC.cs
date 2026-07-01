@@ -158,7 +158,7 @@ public class WFC : MonoBehaviour
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
     [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
     [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
-    [SerializeField] private Spawner _gameObjectsToSpawn;
+    //[SerializeField] private Spawner _gameObjectsToSpawn;
 
     [SerializeField] private float _samplingRadius = 0.5f;
     [SerializeField] private int _samplingTries = 30;
@@ -239,6 +239,7 @@ public class WFC : MonoBehaviour
     public void ClearPath() {
         path.StopFindingPath();
         path.ClearPath();
+        pathNodes.Clear();
     }
 
     public void StartCollapse(Action<int> doneFuncHook) 
@@ -293,11 +294,6 @@ public class WFC : MonoBehaviour
             sampler.enableGizmosSamplePoints = pdsSamplePoints;
             sampler.samplesRenderDistance = samplesRenderDistance;
         }
-    }
-
-    public void SetGraphLevel()
-    {
-        
     }
 
     public void OnDrawGizmos()
@@ -443,7 +439,7 @@ public class WFC : MonoBehaviour
         List<NodeData> nodes = new List<NodeData>(_nodes);
         nodes.AddRange(_nodesGenerated);
 
-        MeshNode.SampleTiles(sampler, nodes, _gameObjectsToSpawn, _samplingRadius, _samplingTries, _floorPropGraphLevel, _wallPropGraphLevel);
+        MeshNode.SampleTiles(sampler, nodes, _samplingRadius, _samplingTries, _samplesPerNode, _floorPropGraphLevel, _wallPropGraphLevel);
     }
 
     public void ClearTiles(bool clearAll = false) 
@@ -767,7 +763,7 @@ public class WFC : MonoBehaviour
         // Spawn props on the node
         MeshNode mesh = obj.GetComponent<MeshNode>();
         mesh?.Init();
-        mesh?.Generate(node, _overrideObjList ? _gameObjectsToSpawn : null);
+        mesh?.Generate(node);
 
         if (mesh == null) UnityEngine.Debug.LogWarning($"Node Prefab '{node.Prefab.name}' does not have a MeshNode!");
 

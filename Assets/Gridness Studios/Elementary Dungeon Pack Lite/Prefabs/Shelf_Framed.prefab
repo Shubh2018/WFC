@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8787280866305870331}
   - component: {fileID: -368183188410852150}
   - component: {fileID: -2994383692812545613}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Shelf_Framed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -129,12 +129,6 @@ MonoBehaviour:
   _center: {x: 0, y: 0, z: 0}
   _rayCenter: {x: 0, y: 0, z: 0}
   _overlapDimensions: {x: 0, y: 0, z: 0}
-  _propLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  _nodeLayer:
-    serializedVersion: 2
-    m_Bits: 0
   _raycastLength: 1.5
   _lamp: 0
   _radius: 0.1

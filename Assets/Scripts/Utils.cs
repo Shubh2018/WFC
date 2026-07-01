@@ -3,6 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.ConstrainedExecution;
 
 public static class Utils
 {
@@ -109,5 +110,17 @@ public static class Utils
             PropSpawnTagEnum.Any => true,
             _ => false
         });
+    }
+
+    // Loads and returns a list of all props based on their placement type
+    public static List<Prop> LoadProps(PropPlacementType placementType)
+    {
+        Spawner spawner = LoadProps("Assets/Scripts/Props/", (Prop prop) => prop.Placement == placementType);
+        
+        return placementType switch {
+            PropPlacementType.Wall => spawner.WallPrefabs,
+            PropPlacementType.Floor => spawner.FloorPrefabs,
+            _ => null
+        };
     }
 }

@@ -53,7 +53,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.37, y: 0.65, z: 0.7}
+  m_Size: {x: 1, y: 0.65, z: 0.7}
   m_Center: {x: 0, y: 0.3, z: 0}
 --- !u!114 &3964047321964316565
 MonoBehaviour:
@@ -67,18 +67,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
-  _center: {x: 0, y: 0.4, z: 0}
   _rayCenter: {x: 0, y: 0.4, z: 0}
-  _overlapDimensions: {x: 1.37, y: 0.5, z: 1.37}
-  _propLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  _nodeLayer:
-    serializedVersion: 2
-    m_Bits: 128
   _raycastLength: 2
-  _lamp: 0
-  _radius: 0.1
 --- !u!1001 &6565948957760492833
 PrefabInstance:
   m_ObjectHideFlags: 0

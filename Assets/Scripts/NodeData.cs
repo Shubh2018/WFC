@@ -81,8 +81,7 @@ public class NodeData : ScriptableObject
     public NodeFaceHorizontal Front;
     public NodeFaceHorizontal Back;
 
-    [FormerlySerializedAs("validProps")] public List<Prop> validFloorProps;
-    public List<Prop> validWallProps;
+    public List<Prop> exceptionsProps;
 
     public void SetRotation(float rotation)
     {
@@ -157,12 +156,7 @@ public class NodeData : ScriptableObject
 
     public Prop GetRandomPropCDF(PropPlacementType placementType)
     {
-        List<Prop> props = new List<Prop>();
-
-        if (placementType == PropPlacementType.Floor)
-            props = new List<Prop>(validFloorProps);
-        else if (placementType == PropPlacementType.Wall)
-            props = new List<Prop>(validWallProps);
+        List<Prop> props = new List<Prop>(Utils.LoadProps(placementType).Where((Prop p) => !exceptionsProps.Contains(p)));
 
         if(props.Count <= 0) return null;
 

@@ -18,7 +18,7 @@ public class MeshNodeEditor : Editor
         rootTree = new VisualElement();
         editorVisualTree.CloneTree(rootTree);
 
-        Toggle spawnToggle = rootTree.Q<Toggle>("_spawnToggle");
+        /*Toggle spawnToggle = rootTree.Q<Toggle>("_spawnToggle");
         spawnToggle.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => {
             EnumField spawnTypeField = rootTree.Q<EnumField>("_spawnTypeField");
             IntegerField maxFloorCount = rootTree.Q<IntegerField>("_maxFloorCountField");
@@ -37,7 +37,7 @@ public class MeshNodeEditor : Editor
                 maxFloorCount.style.display = DisplayStyle.Flex;
                 maxWallCount.style.display = DisplayStyle.Flex;
             }
-        });
+        });*/
 
         return rootTree;
     }

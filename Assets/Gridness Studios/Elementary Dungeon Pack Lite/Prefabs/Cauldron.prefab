@@ -105,12 +105,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
-  _center: {x: 0, y: 0.5, z: 0}
-  _rayCenter: {x: 0, y: 0.025, z: 0}
-  _overlapDimensions: {x: 0.8, y: 0.8, z: 0.8}
+  _center: {x: 0, y: 0.45, z: 0}
+  _rayCenter: {x: 0, y: 0, z: 0}
+  _overlapDimensions: {x: 0.8, y: 0.9, z: 0.8}
   _propLayer:
     serializedVersion: 2
-    m_Bits: 384
+    m_Bits: 256
   _nodeLayer:
     serializedVersion: 2
     m_Bits: 128

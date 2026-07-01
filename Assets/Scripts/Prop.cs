@@ -57,7 +57,6 @@ public class Prop : ScriptableObject
 {
     [SerializeField] private PropObject _prop;
     [SerializeField] [Range(0.0f, 1.0f)] private float _spawnChance = 0.0f;
-    [SerializeField] private Prop _parent;
     [SerializeField] private PropPlacementType _propPlacement;
     [SerializeField] private PropType _propType;
     [SerializeField] private PropLimitTypeEnum _limitType;
@@ -68,9 +67,7 @@ public class Prop : ScriptableObject
     [SerializeField] private NodeData.EnvironmentType _environmentsToSpawnIn;
     [SerializeField] private List<Structure> _structureType;
     [SerializeField] private List<PropNeighborProperty> _neighbors;
-    [SerializeField] private bool _checkOrentation;
     [SerializeField] private int _limitCount;
-    [SerializeField] private int _maxCount;
 
     public static PropHierarchy Props = new PropHierarchy(null, Guid.Empty);
 
@@ -85,27 +82,31 @@ public class Prop : ScriptableObject
     public bool UseStaticPositions => _useStaticPositions;
     public PropLimitTypeEnum LimitType => _limitType;
     public PropSpawnTagEnum SpawnTag => _spawnTag;
-    public bool CheckOrientation => _checkOrentation;
     public int LimitCount => _limitCount;
-    public int MaxCount => _maxCount;
 
     public Prop(Prop p)
     {
         _prop = p._prop;
         _spawnChance = p._spawnChance;
-        _parent = p._parent;
         _propType = p._propType;
         _nodeTypeToSpawnIn = p._nodeTypeToSpawnIn;
         _structureType = new List<Structure>(p._structureType);
         _neighbors = new List<PropNeighborProperty>(p._neighbors);
         _spawnPositions = p._spawnPositions;
         _useStaticPositions = p._useStaticPositions;
+        _limitType = p._limitType;
+        _spawnTag = p._spawnTag;
+        _limitCount = p._limitCount;
     }
 
     public PropNeighborProperty GetRandomProp(NodeData node)
     {
         if(!CompareNode(_nodeTypeToSpawnIn, node.nodeType)) return null;
+        return GetRandomProp();
+    }
 
+    public PropNeighborProperty GetRandomProp()
+    {
         List<PropNeighborProperty> neighbors = new List<PropNeighborProperty>(_neighbors);
 
         neighbors.RemoveAll((n) => n.spawnChance == 0.0f);

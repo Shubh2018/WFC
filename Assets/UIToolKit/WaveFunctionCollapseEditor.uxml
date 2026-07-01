@@ -45,9 +45,6 @@
                 <ui:FloatField label="Radius" value="0.5" binding-path="_samplingRadius" name="Radius" data-source-path="_samplingRadius" tabindex="3"/>
                 <ui:IntegerField label="Tries" value="30" binding-path="_samplingTries" name="Tries" data-source-path="_samplingTries" tabindex="3"/>
                 <ui:IntegerField label="Samples Per Node" value="5" name="NodeSamples" max-length="25" binding-path="_samplesPerNode" data-source-path="_samplesPerNode"/>
-                <ui:Toggle label="Utilise Global Objects" name="OverrideObjList" data-source-path="_overrideObjList" binding-path="_overrideObjList"/>
-                <uie:PropertyField name="Objects" binding-path="_gameObjectsToSpawn" data-source-path="_gameObjectsToSpawn" label="Game Objects To Spawn" tabindex="3" enabled="true" style="display: none;"/>
-                <uie:PropertyField name="Objects" binding-path="_gameObjectsToSpawn" data-source-path="_gameObjectsToSpawn" label="Game Objects To Spawn" tabindex="3"/>
                 <ui:IntegerField label="Floor Prop Graph Level" value="0" name="FloorPropGraphLevel" binding-path="_floorPropGraphLevel"/>
                 <ui:IntegerField label="Wall Prop Graph Level" value="0" name="WallPropGraphLevel" binding-path="_wallPropGraphLevel"/>
             </ui:Tab>

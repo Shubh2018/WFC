@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 2474167371185856612}
   - component: {fileID: 6853756361512703203}
   - component: {fileID: 7593909513259295357}
-  - component: {fileID: 3546419075668120153}
   - component: {fileID: 8873400715260981595}
-  m_Layer: 0
+  - component: {fileID: 1530713727069306480}
+  m_Layer: 8
   m_Name: Chair_Small.001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,8 +92,26 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &3546419075668120153
-MeshCollider:
+--- !u!114 &8873400715260981595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3146705093901032357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PropObject
+  _center: {x: 0, y: 0.23792587, z: -0.00000011920929}
+  _rayCenter: {x: 0, y: 0, z: 0}
+  _overlapDimensions: {x: 0.5368879, y: 0.4758518, z: 0.5368879}
+  _raycastLength: 1.5
+  _lamp: 0
+  _radius: 0.1
+--- !u!65 &1530713727069306480
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -110,27 +128,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 7394552946779828004, guid: edcc86a903182d0429c0d7b2c727fec0, type: 3}
---- !u!114 &8873400715260981595
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3146705093901032357}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PropObject
-  _center: {x: 0, y: 0.25, z: 0}
-  _overlapDimensions: {x: 0.4, y: 0.4, z: 0.4}
-  _propLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  _nodeLayer:
-    serializedVersion: 2
-    m_Bits: 128
+  serializedVersion: 3
+  m_Size: {x: 0.5368879, y: 0.4758518, z: 0.5368879}
+  m_Center: {x: 0, y: 0.23792587, z: -0.00000011920929}

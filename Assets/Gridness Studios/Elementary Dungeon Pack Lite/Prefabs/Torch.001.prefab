@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8076866308431420103}
   - component: {fileID: 7769894917561011699}
   - component: {fileID: 4812528741861764482}
+  - component: {fileID: -1398563841134837180}
   m_Layer: 8
   m_Name: Torch.001
   m_TagString: Untagged
@@ -105,18 +106,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
-  _center: {x: 0, y: 0, z: 0.25}
   _rayCenter: {x: 0, y: 0, z: 0}
-  _overlapDimensions: {x: 0.6, y: 0.65, z: 0.4}
-  _propLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  _nodeLayer:
-    serializedVersion: 2
-    m_Bits: 128
   _raycastLength: 1.5
-  _lamp: 1
-  _radius: 0.75
+--- !u!65 &-1398563841134837180
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510141063021254879}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.44147888, y: 0.7591774, z: 0.48212}
+  m_Center: {x: 0.000011578202, y: -0.10652688, z: 0.25887233}
 --- !u!1 &8712300021360254310
 GameObject:
   m_ObjectHideFlags: 0

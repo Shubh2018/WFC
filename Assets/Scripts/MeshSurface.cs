@@ -98,8 +98,8 @@ public class MeshSurface : MonoBehaviour
 
         if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxPropCount, _maxPropCount);
 
-        // _meshSampler.SetSpawnerData(_spawnViaSpawner ? _gameObjectsToSpawn : (Spawner) spawner, _spawnHierarchy, _currentHierachyLevel);
-        // _meshSampler.SpawnProps(gameObject, false, (Vector3 sample, Prop prop, bool propType) => IsPropContained(sample, prop.PropObject));
+        _meshSampler.SetSpawner(_spawnViaSpawner ? _gameObjectsToSpawn : (Spawner) spawner);
+        _meshSampler.SpawnProps(gameObject, (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject));
     }
 
     private bool IsPropContained(Vector3 sample, PropObject obj)
@@ -107,7 +107,17 @@ public class MeshSurface : MonoBehaviour
         Vector3 angles = transform.parent ? transform.parent.eulerAngles : Vector3.zero;
 
         Bounds myBounds = new Bounds(transform.position, _surfaceSize);
-        Bounds otherBounds = new Bounds(Utils.RotatePointAroundPivot(sample, transform.position, angles * -1), obj.OverlapDimenstions);
+        Bounds otherBounds = new Bounds(Utils.RotatePointAroundPivot(sample, transform.position, angles * -1), obj.GetSize());
+
+        /*if (myBounds.Contains(otherBounds.min) && myBounds.Contains(otherBounds.max))
+        {
+            GameObject objTest = new GameObject();
+            objTest.name = $"{obj}_testPos";
+            objTest.transform.position = sample;
+            objTest.transform.SetParent(transform);
+            Debug.Log($"prop: {obj.name}, position: {sample}, rotated position: {Utils.RotatePointAroundPivot(sample, transform.position, angles * -1)}, angle: {angles}, overlap: {obj.OverlapDimenstions}");
+            Debug.Log($"surface, pos: {transform.position}, size: {_surfaceSize}");
+        }*/
 
         return myBounds.Contains(otherBounds.min) && myBounds.Contains(otherBounds.max);
     }

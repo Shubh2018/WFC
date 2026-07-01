@@ -29,7 +29,7 @@ public class SampleData
 public class MeshNode : MonoBehaviour
 {
     private NodeData _nodeData;
-    [SerializeField] private bool _spawnViaSpawner = false;
+    //[SerializeField] private bool _spawnViaSpawner = false;
     [SerializeField] private PropSpawnTagEnum _spawnTypeTag;
     [SerializeField] private Spawner _gameObjectsToSpawn;
     [SerializeField] public int _spawnHierarchy = 5;
@@ -41,7 +41,6 @@ public class MeshNode : MonoBehaviour
     // Static variables
     public static List<SampleData> generatedSamples = new List<SampleData>();
     public static MeshSampler meshSampler = null;
-    public static int samplingAmount = 5;
     public static Spawner? spawner = null;
 
     public void Init()
@@ -50,7 +49,7 @@ public class MeshNode : MonoBehaviour
         Prop.Props.AddEntry(Guid.Empty, _id, gameObject, true);
     }
 
-    public static void SampleTiles(MeshSampler sampler, List<NodeData> nodes, Spawner spawner, float radius, int tries, int floorGraphLevel, int wallGraphLevel)
+    public static void SampleTiles(MeshSampler sampler, List<NodeData> nodes, float radius, int tries, int sampleAmount, int floorGraphLevel, int wallGraphLevel)
     {
         meshSampler = sampler;
         meshSampler.SetSamplingGraphProperties(radius, tries, floorGraphLevel, wallGraphLevel);
@@ -66,14 +65,14 @@ public class MeshNode : MonoBehaviour
             MeshFilter filter = sampleData.nodeData.Prefab.GetComponent<MeshFilter>();
             sampleData.nodeData.SetRotation(sampleData.nodeData.ClockwiseRotationSteps * 90.0f);
             
-            for (int i = 0; i < samplingAmount; i++)
+            for (int i = 0; i < sampleAmount; i++)
                 sampleData.samples.Add(new Samples(meshSampler.GetSamples(filter)));
             
             generatedSamples.Add(sampleData);
         }
     }
 
-    public void Generate(NodeData node, Spawner? objs)
+    public void Generate(NodeData node)
     {
         if (_currentHierachyLevel > _spawnHierarchy) return;
 
@@ -97,12 +96,15 @@ public class MeshNode : MonoBehaviour
         }
 
         meshSampler.AddSamples(selectedSamples);
+        meshSampler.SetSpawnerData(_spawnHierarchy, _currentHierachyLevel, _maxFloorCount, _maxWallCount);
+        meshSampler.SpawnProps(node, gameObject);
+    }
 
-        if (objs != null) spawner = objs;
-        else if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxFloorCount, _maxWallCount);
-        else spawner = _gameObjectsToSpawn;
+    private bool IsPropContained(Vector3 sample, PropObject obj)
+    {
+        Bounds myBounds = new Bounds(transform.position, GetComponent<Collider>().bounds.size);
+        Bounds otherBounds = new Bounds(sample, obj.GetSize());
 
-        meshSampler.SetSpawnerData((Spawner) spawner, _spawnHierarchy, _currentHierachyLevel);
-        meshSampler.SpawnProps(node, gameObject, _nodeData.CanHaveObjective);
+        return myBounds.Contains(otherBounds.min) && myBounds.Contains(otherBounds.max);
     }
 }

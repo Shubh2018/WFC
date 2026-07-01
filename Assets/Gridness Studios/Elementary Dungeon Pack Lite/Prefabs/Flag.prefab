@@ -10,7 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6984773608006322204}
   - component: {fileID: -467876852072747623}
-  m_Layer: 0
+  - component: {fileID: -521469375371959707}
+  m_Layer: 8
   m_Name: Flag
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -45,18 +46,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
-  _center: {x: 0, y: 0, z: 0}
   _rayCenter: {x: 0, y: 0, z: 0}
-  _overlapDimensions: {x: 0, y: 0, z: 0}
-  _propLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  _nodeLayer:
-    serializedVersion: 2
-    m_Bits: 0
   _raycastLength: 1.5
-  _lamp: 0
-  _radius: 0.1
+--- !u!65 &-521469375371959707
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1802755777250450584}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5864745875127270116
 GameObject:
   m_ObjectHideFlags: 0
