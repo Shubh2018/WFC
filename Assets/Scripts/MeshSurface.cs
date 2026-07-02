@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
 using System;
+using Unity.Transforms;
 
 public class MeshSurface : MonoBehaviour
 {
@@ -15,12 +16,10 @@ public class MeshSurface : MonoBehaviour
     [SerializeField] private PropSpawnTagEnum _spawnTypeTag;
     [SerializeField] private Spawner _gameObjectsToSpawn;
     [SerializeField] private Vector3 _surfaceSize = Vector3.one;
-    [SerializeField] public int _spawnHierarchy = 5;
+    [SerializeField] private int _spawnHierarchy = 5;
     [SerializeField] private int _maxPropCount = 1;
-    private int _currentHierachyLevel = 0;
-    private static Spawner? spawner = null;
-    private Guid _id;
-    private Guid _parentId;
+    //private static Spawner? spawner = null;
+    private PropHierarchy.PropHierachyInfo _hierarchyInfo;
 
     private void OnDrawGizmos()
     {
@@ -62,7 +61,7 @@ public class MeshSurface : MonoBehaviour
         }
     }
 
-    public void Init(Guid parentId, int maxHierarchyLevel, int currentLevel)
+    public void Init(PropHierarchy.PropHierachyInfo parentHierachyInfo)
     {
         OnValidate();
 
@@ -74,32 +73,33 @@ public class MeshSurface : MonoBehaviour
         _meshFilter.sharedMesh = Utils.CreatePlaneMesh(_surfaceSize / 2);
         _meshRenderer.material.color = Color.grey;
 
-        _currentHierachyLevel = currentLevel;
-        _spawnHierarchy = Mathf.Min(maxHierarchyLevel, _spawnHierarchy);
-        _id = Guid.NewGuid();
-        _parentId = parentId;
+        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierachyInfo, _spawnHierarchy);
 
-        Prop.Props.AddEntry(_parentId, _id, transform.parent?.gameObject);
+        Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, transform.parent?.gameObject);
 
         Generate();
     }
 
     private void Generate()
     {
-        if (_currentHierachyLevel > _spawnHierarchy) return;
+        if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
         
+        _meshSampler.SetSpawnerData(_hierarchyInfo);
         _meshSampler.SetSamplingGraphProperties(0.25f, 1, 1, 1);
-        _meshSampler.SetParent(_id);
 
         _samples = _meshSampler.GetSamples(_meshFilter);
 
         _meshSampler.Clear();
         _meshSampler.AddSamples(_samples);
 
-        if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxPropCount, _maxPropCount);
+        Spawner spawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxPropCount, _maxPropCount);
 
-        _meshSampler.SetSpawner(_spawnViaSpawner ? _gameObjectsToSpawn : (Spawner) spawner);
-        _meshSampler.SpawnProps(gameObject, (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject));
+        Func<Prop> propFloorSpawnerFunc = () => spawner.FloorPrefabs[UnityEngine.Random.Range(0, spawner.FloorPrefabs.Count)];
+        Func<Prop> propWallSpawnerFunc = () => spawner.WallPrefabs[UnityEngine.Random.Range(0, spawner.WallPrefabs.Count)];
+        Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc = (Prop prop) => prop.GetRandomProp();
+        Func<Vector3, Prop, bool> spawnFilterFunc = (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject);
+
+        _meshSampler.SpawnProps(gameObject, spawner.maxFloorPropCount, spawner.maxWallPropCount, propFloorSpawnerFunc, propWallSpawnerFunc, propNeighborSpawnerFunc, spawnFilterFunc);
     }
 
     private bool IsPropContained(Vector3 sample, PropObject obj)

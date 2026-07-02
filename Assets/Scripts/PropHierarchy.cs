@@ -15,6 +15,38 @@ public class PropHierarchy
     public bool IsRoot; // True if it is the root, else false
     public bool IsRoom; // True if this entry is part of a node, else false
 
+    // Struct used to pass data around
+    public struct PropHierachyInfo
+    {
+        public Guid id;
+        public Guid parentId;
+        public int maxHierachyLevel;
+        public int currentHierachyLevel;
+
+        public PropHierachyInfo(Guid parentId, int maxHierachyLevel, int currentHierachyLevel)
+        {
+            id = Guid.NewGuid();
+
+            this.parentId = parentId;
+            this.maxHierachyLevel = maxHierachyLevel;
+            this.currentHierachyLevel = currentHierachyLevel;
+        }
+
+        public PropHierachyInfo(PropHierachyInfo parentHierachy, int localMaxHierarchyLevel)
+        {
+            id = Guid.NewGuid();
+
+            parentId = parentHierachy.parentId;
+            maxHierachyLevel = Mathf.Min(parentHierachy.maxHierachyLevel, localMaxHierarchyLevel);
+            currentHierachyLevel = parentHierachy.currentHierachyLevel + 1;
+        }
+
+        public bool IsCurrentHierachyLarger()
+        {
+            return currentHierachyLevel > maxHierachyLevel;
+        }
+    }
+
     // Constructor for the class, sets up an instance for a given parent
     public PropHierarchy(PropHierarchy parentInstance, Guid instanceId, bool isRoom = false)
     {

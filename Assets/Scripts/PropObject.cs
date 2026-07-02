@@ -5,20 +5,13 @@ using System.Linq;
 
 public class PropObject : MonoBehaviour
 {
-    //[SerializeField] private Vector3 _center;
     [SerializeField] private Vector3 _rayCenter;
-    //[SerializeField] private Vector3 _overlapDimensions;
     [SerializeField] private float _raycastLength = 1.5f;
-
-    //public Vector3 OverlapDimenstions => _overlapDimensions;
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.matrix = transform.localToWorldMatrix;
-        
-        //Gizmos.DrawWireCube(_center, _overlapDimensions);
-        //Gizmos.DrawWireSphere(_center, _raycastLength);
     }
 
     public bool CheckOverlapBox(Vector3 pos, Quaternion rot)
@@ -56,13 +49,13 @@ public class PropObject : MonoBehaviour
         }
     }
 
-    public void UpdateChildren(Guid parentId, int maxHierarchyLevel, int currentLevel)
+    public void UpdateChildren(PropHierarchy.PropHierachyInfo parentHierarchy)
     {
         foreach (MeshSurface surface in GetComponentsInChildren<MeshSurface>())
-            surface.Init(parentId, maxHierarchyLevel, currentLevel);
+            surface.Init(parentHierarchy);
 
         foreach (MeshPoint point in GetComponentsInChildren<MeshPoint>())
-            point.Init(parentId, maxHierarchyLevel, currentLevel);
+            point.Init(parentHierarchy);
     }
 
     public void IsOverlappingNode()

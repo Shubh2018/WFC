@@ -151,14 +151,13 @@ public class WFC : MonoBehaviour
     [SerializeField] private int _width;
     [SerializeField] private int _length;
     [SerializeField] private int _height;
-    [SerializeField] private int _samplesPerNode;
+    [SerializeField] public int _samplesPerNode;
     
     [SerializeField] private Vector3Int _tileSize = Vector3Int.one;
     
     [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
     [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
     [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
-    //[SerializeField] private Spawner _gameObjectsToSpawn;
 
     [SerializeField] private float _samplingRadius = 0.5f;
     [SerializeField] private int _samplingTries = 30;

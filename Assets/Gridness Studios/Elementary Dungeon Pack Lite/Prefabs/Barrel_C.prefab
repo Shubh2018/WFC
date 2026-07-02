@@ -29,7 +29,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4377933626515690895}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0.061048545, z: 0, w: 0.99813485}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
@@ -126,18 +126,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
-  _center: {x: 0, y: 0.5, z: 0}
   _rayCenter: {x: 0, y: 0.05, z: 0}
-  _overlapDimensions: {x: 0.7, y: 0.8, z: 0.7}
-  _propLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  _nodeLayer:
-    serializedVersion: 2
-    m_Bits: 128
   _raycastLength: 0.65
-  _lamp: 0
-  _radius: 0.1
 --- !u!54 &-2677419581700156472
 Rigidbody:
   m_ObjectHideFlags: 0

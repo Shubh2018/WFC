@@ -99,6 +99,23 @@ public class Prop : ScriptableObject
         _limitCount = p._limitCount;
     }
 
+    public PropObject Spawn(Vector3 position, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
+    {
+        Quaternion rot = Quaternion.Euler(new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360.0f), 0.0f));
+
+        if (!Props.CanSpawnProp(parentHierarchy.parentId, this)) return null;
+        if (!spawnFilterFunc(position, this)) return null;
+        if (_prop.CheckOverlapBox(position, rot)) return null;
+
+        PropObject propObj = Instantiate(_prop, position, rot);
+        propObj.transform.SetParent(parent.transform);
+
+        Props.Increase(parentHierarchy.parentId, _prop.name);
+        propObj.UpdateChildren(parentHierarchy);
+
+        return propObj;
+    }
+
     public PropNeighborProperty GetRandomProp(NodeData node)
     {
         if(!CompareNode(_nodeTypeToSpawnIn, node.nodeType)) return null;

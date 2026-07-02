@@ -1,5 +1,61 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &634952338369367558
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6120286969945142257}
+  - component: {fileID: 5416268805423390290}
+  m_Layer: 0
+  m_Name: point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6120286969945142257
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 634952338369367558}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.789, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3399158795423394286}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5416268805423390290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 634952338369367558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21a928cc2bfd2a2798e835e043d196b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeshPoint
+  _forcedToSpawn: 1
+  _spawnViaSpawner: 1
+  _spawnTypeTag: 0
+  _gameObjectsToSpawn:
+    _wallPrefabs: []
+    _floorPrefabs:
+    - {fileID: 11400000, guid: a87c0d20ba356db119fd0ad4a4c0a7f7, type: 2}
+    - {fileID: 11400000, guid: 6b2f40d067621b4edb3c9003ad17137c, type: 2}
+    - {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
+    maxWallPropCount: 0
+    maxFloorPropCount: 1
+  _spawnHierarchy: 5
 --- !u!1 &6407656621620974084
 GameObject:
   m_ObjectHideFlags: 0
@@ -15,7 +71,7 @@ GameObject:
   - component: {fileID: 1768130804916935124}
   - component: {fileID: 5412951434647363478}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: surface
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -186,6 +242,7 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7083847590429766466}
+  - {fileID: 6120286969945142257}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &626187070522757240
@@ -257,9 +314,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
-  _center: {x: 0, y: 0.44909117, z: -0.0000002682209}
   _rayCenter: {x: 0, y: 0, z: 0}
-  _overlapDimensions: {x: 1.9249948, y: 0.89818305, z: 1.4018302}
   _raycastLength: 1.5
 --- !u!65 &2220992796401586796
 BoxCollider:

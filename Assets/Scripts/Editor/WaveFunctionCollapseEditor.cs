@@ -1,6 +1,8 @@
 using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEngine;
+using System;
+using Unity.Entities.UniversalDelegates;
 
 [CustomEditor(typeof(WFC))]
 public class WaveFunctionCollapseEditor : Editor
@@ -55,11 +57,7 @@ public class WaveFunctionCollapseEditor : Editor
         Slider collapseSpeedSlider = rootTree.Q<Slider>("_collapseSpeedSlider");
         collapseSpeedSlider.RegisterCallback<ChangeEvent<float>>(UpdateCollapseTime);
 
-        /*Toggle overrideObjListToggle = rootTree.Q<Toggle>("OverrideObjList");
-        overrideObjListToggle.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => {
-            VisualElement objectsToSpawnField = rootTree.Q("Objects");
-            objectsToSpawnField.style.display = evt.newValue ? DisplayStyle.Flex : DisplayStyle.None;
-        });*/
+        RegisterIntFieldCallback("NodeSamples", 1, 10);
 
         // Debug Settings (A*)
         Toggle togglePathLine = rootTree.Q<Toggle>("_togglePath");
@@ -94,15 +92,15 @@ public class WaveFunctionCollapseEditor : Editor
         Toggle togglePDSSamplePoints = rootTree.Q<Toggle>("_togglePDSSamplePoints");
         Slider sliderPDSSamplesRenderDistance = rootTree.Q<Slider>("_sliderPDSSamplesRenderDistance");
         
-        togglePDSFloorSamples.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+        togglePDSFloorSamples.RegisterCallback((ChangeEvent<bool> evt) => 
             WaveFunctionCollapse.SavePDSSettings(evt.newValue, togglePDSWallSamples.value, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
         );
 
-        togglePDSWallSamples.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+        togglePDSWallSamples.RegisterCallback((ChangeEvent<bool> evt) => 
             WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, evt.newValue, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
         );
 
-        togglePDSSamplePoints.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => {
+        togglePDSSamplePoints.RegisterCallback((ChangeEvent<bool> evt) => {
             if (evt.newValue) {
                 WaveFunctionCollapse.SavePDSSettings(false, false, true, sliderPDSSamplesRenderDistance.value);
                 togglePDSFloorSamples.value = false;
@@ -118,7 +116,7 @@ public class WaveFunctionCollapseEditor : Editor
             }
         });
 
-        sliderPDSSamplesRenderDistance.RegisterCallback<ChangeEvent<float>>((ChangeEvent<float> evt) =>
+        sliderPDSSamplesRenderDistance.RegisterCallback((ChangeEvent<float> evt) =>
             WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, togglePDSSamplePoints.value, evt.newValue)
         );
         
@@ -144,6 +142,22 @@ public class WaveFunctionCollapseEditor : Editor
         SetGenLabels(0, 0.0, 1.0f);
         
         return rootTree;
+    }
+
+    // Limits an int field automatically to be within a range of a minimum and maximum value
+    private void RegisterIntFieldCallback(string fieldName, int min, int max)
+    {
+        IntegerField field = rootTree.Q<IntegerField>(fieldName);
+        if (field == null) return;
+
+        Func<int, int> minMaxFunc = (int data) => Math.Max(min, Math.Min(max, data));
+
+        field.RegisterCallback((InputEvent evt) => {
+            if (!string.IsNullOrEmpty(evt.newData))
+                field.value = minMaxFunc(Int32.Parse(evt.newData));
+        });
+
+        field.RegisterCallback((KeyDownEvent key) => field.value = minMaxFunc(field.value));
     }
 
     private void SetGenLabels(int tiles, double time, float delay)

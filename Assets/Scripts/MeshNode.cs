@@ -29,14 +29,12 @@ public class SampleData
 public class MeshNode : MonoBehaviour
 {
     private NodeData _nodeData;
-    //[SerializeField] private bool _spawnViaSpawner = false;
     [SerializeField] private PropSpawnTagEnum _spawnTypeTag;
     [SerializeField] private Spawner _gameObjectsToSpawn;
     [SerializeField] public int _spawnHierarchy = 5;
     [SerializeField] private int _maxFloorCount = 1;
     [SerializeField] private int _maxWallCount = 1;
-    private int _currentHierachyLevel = 0;
-    private Guid _id;
+    private PropHierarchy.PropHierachyInfo _hierarchyInfo;
 
     // Static variables
     public static List<SampleData> generatedSamples = new List<SampleData>();
@@ -45,8 +43,8 @@ public class MeshNode : MonoBehaviour
 
     public void Init()
     {
-        _id = Guid.NewGuid();
-        Prop.Props.AddEntry(Guid.Empty, _id, gameObject, true);
+        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(Guid.Empty, _spawnHierarchy, 0);
+        Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, gameObject, true);
     }
 
     public static void SampleTiles(MeshSampler sampler, List<NodeData> nodes, float radius, int tries, int sampleAmount, int floorGraphLevel, int wallGraphLevel)
@@ -74,11 +72,9 @@ public class MeshNode : MonoBehaviour
 
     public void Generate(NodeData node)
     {
-        if (_currentHierachyLevel > _spawnHierarchy) return;
+        if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
 
         _nodeData = node;
-
-        meshSampler.SetParent(_id);
 
         SampleData sampleData = generatedSamples.Single(s => s.nodeData == _nodeData);
 
@@ -95,9 +91,14 @@ public class MeshNode : MonoBehaviour
             });
         }
 
+        meshSampler.SetSpawnerData(_hierarchyInfo);
         meshSampler.AddSamples(selectedSamples);
-        meshSampler.SetSpawnerData(_spawnHierarchy, _currentHierachyLevel, _maxFloorCount, _maxWallCount);
-        meshSampler.SpawnProps(node, gameObject);
+
+        Func<Prop> propFloorSpawnerFunc = () => node.GetRandomPropCDF(PropPlacementType.Floor);
+        Func<Prop> propWallSpawnerFunc = () => node.GetRandomPropCDF(PropPlacementType.Wall);
+        Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc = (Prop prop) => prop.GetRandomProp();
+
+        meshSampler.SpawnProps(gameObject, _maxFloorCount, _maxWallCount, propFloorSpawnerFunc, propWallSpawnerFunc, propNeighborSpawnerFunc);
     }
 
     private bool IsPropContained(Vector3 sample, PropObject obj)
