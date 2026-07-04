@@ -70,7 +70,7 @@ public class MeshNode : MonoBehaviour
         }
     }
 
-    public void Generate(NodeData node)
+    public void Generate(NodeData node, Vector3 size)
     {
         if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
 
@@ -80,16 +80,12 @@ public class MeshNode : MonoBehaviour
 
         if (sampleData == null || _nodeData.IsStairPiece) return;
 
-        List<Sample> selectedSamples = new List<Sample>();
         int randomSampleSet = UnityEngine.Random.Range(0, sampleData.samples.Count);
-
-        foreach (var sample in sampleData.samples[randomSampleSet].samples)
-        {                    
-            selectedSamples.Add(new Sample() {
-                sample = gameObject.transform.localPosition + sample.sample,
-                triangleNormal = sample.triangleNormal
-            });
-        }
+        List<Sample> selectedSamples = new(sampleData.samples[randomSampleSet].samples.Select((s) => new Sample()
+        {
+            sample = gameObject.transform.localPosition + s.sample,
+            triangleNormal = s.triangleNormal
+        }));
 
         meshSampler.SetSpawnerData(_hierarchyInfo);
         meshSampler.AddSamples(selectedSamples);
@@ -97,13 +93,14 @@ public class MeshNode : MonoBehaviour
         Func<Prop> propFloorSpawnerFunc = () => node.GetRandomPropCDF(PropPlacementType.Floor);
         Func<Prop> propWallSpawnerFunc = () => node.GetRandomPropCDF(PropPlacementType.Wall);
         Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc = (Prop prop) => prop.GetRandomProp();
+        Func<Vector3, Prop, bool> spawnFilterFunc = (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject, size);
 
-        meshSampler.SpawnProps(gameObject, _maxFloorCount, _maxWallCount, propFloorSpawnerFunc, propWallSpawnerFunc, propNeighborSpawnerFunc);
+        meshSampler.SpawnProps(gameObject, _maxFloorCount, _maxWallCount, propFloorSpawnerFunc, propWallSpawnerFunc, propNeighborSpawnerFunc, spawnFilterFunc);
     }
 
-    private bool IsPropContained(Vector3 sample, PropObject obj)
+    private bool IsPropContained(Vector3 sample, PropObject obj, Vector3 size)
     {
-        Bounds myBounds = new Bounds(transform.position, GetComponent<Collider>().bounds.size);
+        Bounds myBounds = new Bounds(transform.position, size);
         Bounds otherBounds = new Bounds(sample, obj.GetSize());
 
         return myBounds.Contains(otherBounds.min) && myBounds.Contains(otherBounds.max);

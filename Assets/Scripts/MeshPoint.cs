@@ -46,7 +46,7 @@ public class MeshPoint : MonoBehaviour
         float rand = UnityEngine.Random.Range(0, 1);
         bool overlap = propObj.PropObject.CheckOverlapBox(transform.position, transform.rotation, (List<Collider> cols) => cols.Except(new List<Collider>{ GetComponentInParent<BoxCollider>() }));
 
-        Debug.Log($"hierarchy: {_hierarchyInfo.currentHierachyLevel}/{_hierarchyInfo.maxHierachyLevel}, prop: {propObj.name}, spawn chance: {propObj.SpawnChance}, random chance: {rand}, forced to spawn: {_forcedToSpawn}, collide: {overlap}, spawn: {!((!_forcedToSpawn && (rand > propObj.SpawnChance)) || overlap)}");
+        //Debug.Log($"hierarchy: {_hierarchyInfo.currentHierachyLevel}/{_hierarchyInfo.maxHierachyLevel}, prop: {propObj.name}, spawn chance: {propObj.SpawnChance}, random chance: {rand}, forced to spawn: {_forcedToSpawn}, collide: {overlap}, spawn: {!((!_forcedToSpawn && (rand > propObj.SpawnChance)) || overlap)}");
 
         if((!_forcedToSpawn && (rand > propObj.SpawnChance)) || overlap) return;
 

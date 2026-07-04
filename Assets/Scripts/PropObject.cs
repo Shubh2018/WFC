@@ -5,8 +5,8 @@ using System.Linq;
 
 public class PropObject : MonoBehaviour
 {
-    [SerializeField] private Vector3 _rayCenter;
-    [SerializeField] private float _raycastLength = 1.5f;
+    //[SerializeField] private Vector3 _rayCenter;
+    //[SerializeField] private float _raycastLength = 1.5f;
 
     private void OnDrawGizmos()
     {
@@ -17,15 +17,13 @@ public class PropObject : MonoBehaviour
     public bool CheckOverlapBox(Vector3 pos, Quaternion rot)
     {
         BoxCollider col = GetComponent<BoxCollider>();
-        Debug.Log($"prop: {gameObject.name}, pos: {pos + col.center}, size: {col.size}, overlap: {Physics.OverlapBox(pos + col.center, col.size / 2, rot, LayerMask.NameToLayer("Prop")).Count() > 0}");
-        return Physics.OverlapBox(pos + col.center, col.size / 2, rot, LayerMask.NameToLayer("Prop")).Count() > 0;
+        return Physics.OverlapBox(pos + col.center, col.size / 2, rot, LayerMask.GetMask("Prop")).Count() > 0;
     }
 
     public bool CheckOverlapBox(Vector3 pos, Quaternion rot, Func<List<Collider>, IEnumerable<Collider>> func)
     {
         BoxCollider col = GetComponent<BoxCollider>();
-        Debug.Log($"prop: {gameObject.name}, pos: {pos + col.center}, size: {col.size}, overlap: {func(new List<Collider>(Physics.OverlapBox(pos + col.center, col.size / 2, rot, LayerMask.NameToLayer("Prop")))).ToList().Count > 0}");
-        return func(new List<Collider>(Physics.OverlapBox(pos + col.center, col.size / 2, rot, LayerMask.NameToLayer("Prop")))).ToList().Count > 0;
+        return func(new List<Collider>(Physics.OverlapBox(pos + col.center, col.size / 2, rot, LayerMask.GetMask("Prop")))).ToList().Count() > 0;
     }
 
     public Vector3 GetSize()
@@ -33,7 +31,7 @@ public class PropObject : MonoBehaviour
         return GetComponent<BoxCollider>().size;
     }
 
-    public void UpdateRotation()
+    /*public void UpdateRotation()
     {
         float rotation = this.transform.localEulerAngles.y;
 
@@ -47,7 +45,7 @@ public class PropObject : MonoBehaviour
 
             else break;
         }
-    }
+    }*/
 
     public void UpdateChildren(PropHierarchy.PropHierachyInfo parentHierarchy)
     {
@@ -58,7 +56,7 @@ public class PropObject : MonoBehaviour
             point.Init(parentHierarchy);
     }
 
-    public void IsOverlappingNode()
+    /*public void IsOverlappingNode()
     {
         float rotation = transform.localEulerAngles.y;
         float step = 20.0f;
@@ -77,5 +75,5 @@ public class PropObject : MonoBehaviour
                 this.transform.localEulerAngles = new Vector3(this.transform.localEulerAngles.x, rotation, this.transform.localEulerAngles.z);
             }
         }
-    }
+    }*/
 }

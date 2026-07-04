@@ -11,7 +11,6 @@ public class MeshSurface : MonoBehaviour
     private BoxCollider _boxCollider;
     private MeshFilter _meshFilter;
     private MeshRenderer _meshRenderer;
-    private List<Sample> _samples;
     [SerializeField] private bool _spawnViaSpawner = false;
     [SerializeField] private PropSpawnTagEnum _spawnTypeTag;
     [SerializeField] private Spawner _gameObjectsToSpawn;
@@ -84,13 +83,10 @@ public class MeshSurface : MonoBehaviour
     {
         if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
         
+        _meshSampler.Clear();
         _meshSampler.SetSpawnerData(_hierarchyInfo);
         _meshSampler.SetSamplingGraphProperties(0.25f, 1, 1, 1);
-
-        _samples = _meshSampler.GetSamples(_meshFilter);
-
-        _meshSampler.Clear();
-        _meshSampler.AddSamples(_samples);
+        _meshSampler.AddSamples(_meshSampler.GetSamples(_meshFilter));
 
         Spawner spawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxPropCount, _maxPropCount);
 

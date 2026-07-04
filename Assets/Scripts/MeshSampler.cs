@@ -214,8 +214,6 @@ public class MeshSampler : MonoBehaviour
     // Method to sample the meshes. Return a list of Sample
     private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
     {
-        Debug.Log($"Sampled Mesh: {mesh.transform.name}");
-
         List<Sample> samples = new List<Sample>();
         List<int> active = new List<int>();
 
@@ -276,7 +274,7 @@ public class MeshSampler : MonoBehaviour
         spawnFilterFunc = spawnFilterFunc ?? ((Vector3 sample, Prop prop) => true);
 
         StartCoroutine(SpawnFloorProps(obj, maxFloorObjs, minMesh, maxMesh, propSpawnerFloorFunc, propNeighborSpawnerFunc, spawnFilterFunc));
-        StartCoroutine(SpawnWallProps(obj, maxWallObjs, minMesh, maxMesh, propSpawnerWallFunc, propNeighborSpawnerFunc, spawnFilterFunc));
+        StartCoroutine(SpawnWallProps(obj, maxWallObjs, minMesh, maxMesh, propSpawnerWallFunc, propNeighborSpawnerFunc, (Vector3 v, Prop p) => true));
 
         _samplePoints.Clear();
     }
@@ -451,6 +449,49 @@ public class MeshSampler : MonoBehaviour
         return (min, max);
     }
 
+    private List<Sample> GetFloorSamplesBySpawnPosition(SpawnPosition spawnPos, Vector3 min, Vector3 max, bool useStaticPosition)
+    {
+        min = transform.InverseTransformPoint(min);
+        max = transform.InverseTransformPoint(max);
+
+        Vector3 mid = (min + max) / 2;
+        Vector3 halfMin = (min + mid) / 2;
+        Vector3 halfMax = (mid + max) / 2;
+
+        if (useStaticPosition) return new List<Sample> 
+        {
+            new() {
+                sample = spawnPos switch
+                {
+                    SpawnPosition.North => new Vector3(mid.x, min.y, max.z),
+                    SpawnPosition.South => new Vector3(mid.x, min.y, min.z),
+                    SpawnPosition.East => new Vector3(max.x, min.y, mid.z),
+                    SpawnPosition.West => new Vector3(min.x, min.y, mid.z),
+                    SpawnPosition.NorthEast => new Vector3(max.x, min.y, max.z),
+                    SpawnPosition.NorthWest => new Vector3(min.x, min.y, max.z),
+                    SpawnPosition.SouthEast => new Vector3(max.x, min.y, min.z),
+                    SpawnPosition.SouthWest => min,
+                    _ => Vector3.zero
+                },
+                triangleNormal = Vector3.up
+            }
+        };
+
+        return new(_floorSamples.FindAll((s) => spawnPos switch
+        {
+            SpawnPosition.North => s.sample.z > halfMax.z && s.sample.x < halfMax.x && s.sample.x > halfMin.x,
+            SpawnPosition.South => s.sample.z < halfMin.z && s.sample.x < halfMax.x && s.sample.x > halfMin.x,
+            SpawnPosition.East => s.sample.x > halfMax.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z,
+            SpawnPosition.West => s.sample.x < halfMin.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z,
+            SpawnPosition.NorthEast => s.sample.x > halfMax.x && s.sample.z > halfMax.z,
+            SpawnPosition.NorthWest => s.sample.x < halfMin.x && s.sample.z > halfMax.z,
+            SpawnPosition.SouthEast => s.sample.x > halfMax.x && s.sample.z < halfMin.z,
+            SpawnPosition.SouthWest => s.sample.x < halfMin.x && s.sample.z < halfMin.z,
+            SpawnPosition.Center => s.sample.x > halfMin.x && s.sample.x < halfMax.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z,
+            _ => true
+        }));
+    }
+
     private List<Sample> FilterWallSamples(SpawnPosition spawnPos, int rem, Vector3 min, Vector3 max, Vector3 mid, Vector3 halfMin, Vector3 halfMax)
     {
         Func<Vector3, float> remFunc = (Vector3 vec) => rem == 0 ? vec.z : vec.x;
@@ -525,49 +566,6 @@ public class MeshSampler : MonoBehaviour
         return samples;
     }
 
-    private List<Sample> GetFloorSamplesBySpawnPosition(SpawnPosition spawnPos, Vector3 min, Vector3 max, bool useStaticPosition)
-    {
-        min = transform.InverseTransformPoint(min);
-        max = transform.InverseTransformPoint(max);
-
-        Vector3 mid = (min + max) / 2;
-        Vector3 halfMin = (min + mid) / 2;
-        Vector3 halfMax = (mid + max) / 2;
-
-        if (useStaticPosition) return new List<Sample> 
-        {
-            new() {
-                sample = spawnPos switch
-                {
-                    SpawnPosition.North => new Vector3(mid.x, min.y, max.z),
-                    SpawnPosition.South => new Vector3(mid.x, min.y, min.z),
-                    SpawnPosition.East => new Vector3(max.x, min.y, mid.z),
-                    SpawnPosition.West => new Vector3(min.x, min.y, mid.z),
-                    SpawnPosition.NorthEast => new Vector3(max.x, min.y, max.z),
-                    SpawnPosition.NorthWest => new Vector3(min.x, min.y, max.z),
-                    SpawnPosition.SouthEast => new Vector3(max.x, min.y, min.z),
-                    SpawnPosition.SouthWest => min,
-                    _ => Vector3.zero
-                },
-                triangleNormal = Vector3.up
-            }
-        };
-
-        return new(_floorSamples.FindAll((s) => spawnPos switch
-        {
-            SpawnPosition.North => s.sample.z > halfMax.z && s.sample.x < halfMax.x && s.sample.x > halfMin.x,
-            SpawnPosition.South => s.sample.z < halfMin.z && s.sample.x < halfMax.x && s.sample.x > halfMin.x,
-            SpawnPosition.East => s.sample.x > halfMax.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z,
-            SpawnPosition.West => s.sample.x < halfMin.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z,
-            SpawnPosition.NorthEast => s.sample.x > halfMax.x && s.sample.z > halfMax.z,
-            SpawnPosition.NorthWest => s.sample.x < halfMin.x && s.sample.z > halfMax.z,
-            SpawnPosition.SouthEast => s.sample.x > halfMax.x && s.sample.z < halfMin.z,
-            SpawnPosition.SouthWest => s.sample.x < halfMin.x && s.sample.z < halfMin.z,
-            SpawnPosition.Center => s.sample.x > halfMin.x && s.sample.x < halfMax.x && s.sample.z > halfMin.z && s.sample.z < halfMax.z,
-            _ => true
-        }));
-    }
-
     private IEnumerator SpawnFloorProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<Prop> propSpawner, Func<Prop, PropNeighborProperty> propNeighborSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
         int floorCount = objCount;
@@ -624,12 +622,12 @@ public class MeshSampler : MonoBehaviour
             Sample sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
             PropObject propObj = prop.Spawn(sample.sample, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
-            yield return null;
-
             if (propObj == null) continue;
 
             propObj.transform.position = sample.sample;
             propObj.transform.forward = new Vector3(sample.triangleNormal.x, 0.0f, sample.triangleNormal.z);
+
+            yield return null;
 
             for (int i = 0; i < _wallPropGraphLevel; i++)
             {

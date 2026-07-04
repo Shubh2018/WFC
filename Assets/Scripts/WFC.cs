@@ -104,15 +104,10 @@ public class PathNode
         return nodes.Find((NodeData node) => node.name == name);
     }
 
-    public List<NodeData> GetPotentialNodes(int index, int pathCount)
+    public List<NodeData> GetPotentialNodes()
     {
         List<NodeData> potentialNodes = new List<NodeData>(parent.getNodes);
         potentialNodes.AddRange(parent.getNodesGen);
-
-        if (index >= pathCount - 1)
-        {
-            potentialNodes.RemoveAll((node) => node.nodeType != NodeData.NodeType.Deadend);
-        }
         
         // Check if this node is part of a staircase
         if (parent.path.CheckStaircaseOverlap(Vector3Int.FloorToInt(parent.path.CollapsedPath[pathIndicies[0]]))) 
@@ -120,9 +115,6 @@ public class PathNode
         
         // Since this node is not a staircase, filter out any staircase nodes
         potentialNodes = potentialNodes.Where(node => !node.IsStairPiece).ToList();
-
-        UnityEngine.Debug.Log($"coords: {String.Join(", ", pathIndicies)}");
-        UnityEngine.Debug.Log($"potential nodes before: {potentialNodes.Count()}");
 
         for (int i = potentialNodes.Count - 1; i >= 0; i--)
         {
@@ -136,8 +128,6 @@ public class PathNode
             || data.Down != NodeFace.Name.None && node.Down.name != data.Down)
                 potentialNodes.RemoveAt(i);
         }
-
-        UnityEngine.Debug.Log($"potential nodes after: {potentialNodes.Count()}");
 
         return potentialNodes;
     }
@@ -179,14 +169,14 @@ public class WFC : MonoBehaviour
     IEnumerator collapseTilesRoutine;
     bool doneCollapse = false;
     bool doneGeneratingPath = false;
-    enum Direction
+    enum Direction // DO NOT CHANCE THE ORDER OF ELEMENTS IN THIS ENUM!
     {
-        Up,
-        Down,
-        Left,
-        Right,
         Front,
-        Back
+        Back,
+        Right,
+        Left,
+        Up,
+        Down
     }
 
     // Public Variables
@@ -538,7 +528,7 @@ public class WFC : MonoBehaviour
 
                 // Create a tile for the given point and filter its potential nodes
                 Tile tile = new Tile(this, point, true);
-                tile.potentialNodes = currNode.GetPotentialNodes(i, path.CollapsedPath.Count);
+                tile.potentialNodes = currNode.GetPotentialNodes();
 
                 // Add the tile as one to collapse and the point as already done
                 _nodesToCollapse.Add(tile);
@@ -709,6 +699,7 @@ public class WFC : MonoBehaviour
                 {
                     if(!_nodesToCollapse.Any(n => n.pos == neighbor)) 
                     {
+                        UnityEngine.Debug.Log($"creating neighbor tile...");
                         Tile neighborTile = new Tile(this, neighbor);
 
                         _nodesToCollapse.Add(neighborTile);
@@ -717,14 +708,6 @@ public class WFC : MonoBehaviour
                 }
             }
         }
-    }
-
-    private bool CheckTileOnPath(Tile tile)
-    {
-        foreach(Vector3 pos in path.CollapsedPath)
-            if (Vector3Int.FloorToInt(pos).Equals(tile.pos))
-                return true;
-        return false;
     }
 
     private int CheckEntropy(int tilesCount)
@@ -762,19 +745,12 @@ public class WFC : MonoBehaviour
         // Spawn props on the node
         MeshNode mesh = obj.GetComponent<MeshNode>();
         mesh?.Init();
-        mesh?.Generate(node);
+        mesh?.Generate(node, TileSize);
 
         if (mesh == null) UnityEngine.Debug.LogWarning($"Node Prefab '{node.Prefab.name}' does not have a MeshNode!");
 
         return 0;
     }
-
-    private Vector3 GetRotPosVec(Vector3Int pos, int rotationSteps) => pos - rotationSteps switch {
-        1 => new Vector3(0, 0, 1),
-        2 => new Vector3(1, 0, 1),
-        3 => new Vector3(1, 0, 0),
-        _ => Vector3Int.zero
-    };
 
     private void WhittleNodes(List<NodeData> potentialNodes, NodeFaceHorizontal validType, Direction direction)
     {

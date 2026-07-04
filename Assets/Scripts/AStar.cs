@@ -296,6 +296,11 @@ public class AStar : MonoBehaviour
                     Vector3Int levelOffset = currPoint.y < nextPoint.y ? Vector3Int.down : Vector3Int.up;
                     Vector3Int newPos = nextPoint + levelOffset + offset * 3;
 
+                    bool val = Utils.CheckPosValid(newPos, _parent.getWidth, _parent.getHeight, _parent.getLength) 
+                    && !Utils.CheckVectorOverlap(points, newPos, 0.1f)
+                    && !Utils.CheckVectorOverlap(points, newPos + Vector3Int.down, 0.1f)
+                    && !Utils.CheckVectorOverlap(points, newPos + Vector3Int.up, 0.1f);
+
                     // The new point is only valid if:
                     // - It is within the level
                     // - and does not overlap with another point

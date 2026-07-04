@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum PropPlacementType
@@ -114,6 +115,11 @@ public class Prop : ScriptableObject
         propObj.UpdateChildren(parentHierarchy);
 
         return propObj;
+    }
+
+    public Vector3 GetSize()
+    {
+        return _prop.GetComponent<BoxCollider>().size;
     }
 
     public PropNeighborProperty GetRandomProp(NodeData node)
