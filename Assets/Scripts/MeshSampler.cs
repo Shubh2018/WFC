@@ -442,6 +442,10 @@ public class MeshSampler : MonoBehaviour
 
     public void SortSamplesInMesh(List<Sample> samples)
     {
+        // Clear previous added samples
+        _wallSamples.Clear();
+        _floorSamples.Clear();
+
         // list of all samples generated in this batch
         _samplePointsAll.AddRange(samples);
 
