@@ -71,18 +71,10 @@ public class MeshSampler : MonoBehaviour
     private float _radius;
     private int _tries = 30;
 
-    private Dictionary<Mesh, int[]> _triangles;
-    private Dictionary<Mesh, Vector3[]> _vertices; 
-
     private readonly List<Sample> _floorSamples = new List<Sample>();
     private readonly List<Sample> _wallSamples = new List<Sample>();
 
     private int safety = 10000;
-    private int _objectivesSpawned = 0;
-    private Material[] _meshMaterials;
-
-    private MeshCollider _collider;
-    private Mesh _combinedMesh;
 
     private List<Sample> _samplePoints = new List<Sample>();
     private List<Sample> _pointsInside = new List<Sample>();
@@ -91,6 +83,7 @@ public class MeshSampler : MonoBehaviour
 
     private List<Sample> _floorSamplesAll = new List<Sample>();
     private List<Sample> _wallSamplesAll = new List<Sample>();
+    private List<Sample> _leftoverSamplesAll = new List<Sample>();
     private List<Sample> _samplePointsAll = new List<Sample>();
 
     private PropHierarchy.PropHierachyInfo _hierarchyInfo;
@@ -107,6 +100,7 @@ public class MeshSampler : MonoBehaviour
     // Debug Settings
     public bool enableGizmosFloorSamples = false;
     public bool enableGizmosWallSamples = false;
+    public bool enableGizmosLeftoverSamples = false;
     public bool enableGizmosSamplePoints = false;
     public float samplesRenderDistance = 20;
 
@@ -139,8 +133,6 @@ public class MeshSampler : MonoBehaviour
 
     public void Clear()
     {
-        _objectivesSpawned = 0;
-
         _floorSamples.Clear();
         _wallSamples.Clear();
         _samplePoints.Clear();
@@ -148,6 +140,7 @@ public class MeshSampler : MonoBehaviour
 
         _floorSamplesAll.Clear();
         _wallSamplesAll.Clear();
+        _leftoverSamplesAll.Clear();
         _samplePointsAll.Clear();
 
         _samplesNearWalls.Clear();
@@ -191,6 +184,17 @@ public class MeshSampler : MonoBehaviour
                 if (!WithinDisOfCam(wallPoint.sample, samplesRenderDistance)) continue;
                 Gizmos.DrawSphere(wallPoint.sample, 0.1f);
                 Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .2f);
+            }
+        }
+
+        if (enableGizmosLeftoverSamples) {
+            Gizmos.color = Color.gold;
+
+            foreach (var leftoverPoint in _leftoverSamplesAll)
+            {
+                if (!WithinDisOfCam(leftoverPoint.sample, samplesRenderDistance)) continue;
+                Gizmos.DrawSphere(leftoverPoint.sample, 0.1f);
+                Gizmos.DrawRay(leftoverPoint.sample, leftoverPoint.triangleNormal * .2f);
             }
         }
 
@@ -239,9 +243,9 @@ public class MeshSampler : MonoBehaviour
                 int i2 = triangles[triIndex * 3 + 2];
 
                 Vector3 candidate = SamplePointInTriangle(vertices[i0], vertices[i1], vertices[i2]);
-                Vector3 normal = Vector3.Cross((vertices[i1] - vertices[i0]), (vertices[i2] - vertices[i0])).normalized;
+                Vector3 normal = Vector3.Cross(vertices[i1] - vertices[i0], vertices[i2] - vertices[i0]).normalized;
 
-                if ((active.Count == 0 || IsValid(candidate, radius, grid, min, cellSize, gridSize)) && IsInside(candidate, normal, mesh.transform.position))
+                if ((active.Count == 0 || IsValid(candidate, radius, grid, min, cellSize, gridSize)) && IsInside(candidate, normal, mesh.sharedMesh.bounds))
                 {
                     InsertSampleToGrid(candidate, grid, min, cellSize);
 
@@ -267,14 +271,19 @@ public class MeshSampler : MonoBehaviour
         return samples.OrderBy(s => s.sample.y).ToList();
     }
 
-    public void SpawnProps(GameObject obj, int maxFloorObjs, int maxWallObjs, Func<Prop> propSpawnerFloorFunc, Func<Prop> propSpawnerWallFunc, Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc, Func<Vector3, Prop, bool> spawnFilterFunc = null)
+    public void SpawnProps(GameObject obj, int maxFloorObjs, int maxWallObjs, Func<(Prop, int)> propSpawnerFloorFunc, Func<(Prop, int)> propSpawnerWallFunc, Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc, Func<Vector3, Prop, bool> spawnFilterFunc = null)
     {
-        (Vector3 minMesh, Vector3 maxMesh) = SortSamplesInMesh(_samplePoints);
+        (Vector3 min, Vector3 max) = BuildBoundingBox(_samplePoints.Select(v => v.sample).ToArray());
+        
+        SortSamplesInMesh(_samplePoints);
 
         spawnFilterFunc = spawnFilterFunc ?? ((Vector3 sample, Prop prop) => true);
 
-        StartCoroutine(SpawnFloorProps(obj, maxFloorObjs, minMesh, maxMesh, propSpawnerFloorFunc, propNeighborSpawnerFunc, spawnFilterFunc));
-        StartCoroutine(SpawnWallProps(obj, maxWallObjs, minMesh, maxMesh, propSpawnerWallFunc, propNeighborSpawnerFunc, (Vector3 v, Prop p) => true));
+        IEnumerator spawnFloorPropsRoutine = SpawnFloorProps(obj, maxFloorObjs, min, max, propSpawnerFloorFunc, propNeighborSpawnerFunc, spawnFilterFunc);
+        IEnumerator spawnWallPropsRoutine = SpawnWallProps(obj, maxWallObjs, min, max, propSpawnerWallFunc, propNeighborSpawnerFunc, (Vector3 v, Prop p) => true);
+
+        CoroutineManager.StartCoroutine(this, "SpawnFloorProps", spawnFloorPropsRoutine);
+        CoroutineManager.StartCoroutine(this, "SpawnWallProps", spawnWallPropsRoutine);
 
         _samplePoints.Clear();
     }
@@ -299,7 +308,7 @@ public class MeshSampler : MonoBehaviour
             Vector3 v1 = vertices[i1];
             Vector3 v2 = vertices[i2];
 
-            area[i] = Vector3.Cross((v1 - v0), (v2 - v0)).magnitude * 0.5f;
+            area[i] = Vector3.Cross(v1 - v0, v2 - v0).magnitude * 0.5f;
 
             totalArea += area[i];
             cdf[i] = totalArea;
@@ -409,44 +418,45 @@ public class MeshSampler : MonoBehaviour
         grid[g.x, g.y, g.z] = point;
     }
 
-    private bool IsInside(Vector3 sample, Vector3 normal, Vector3 meshPos)
+    // To check against samples pointing away from the mash
+    // In other words returns true if a point is on the inside of a node mesh, false if otherwise
+    private bool IsInside(Vector3 sample, Vector3 normal, Bounds bounds)
     {
-        Vector3 dir = (meshPos - sample);
+        Vector3 dir = sample - bounds.center;
 
         float d = Vector3.Dot(dir.normalized, normal);
         float floor = Vector3.Dot(dir.normalized, Vector3.up);
 
-        return (d >= 0 || floor >= 1);
+        return (d <= 0 || floor > 1) && bounds.Contains(sample);
     }
 
-    public (Vector3, Vector3) SortSamplesInMesh(List<Sample> samples)
+    // Used to check after a node mesh has been spawned that a sample is not inside of the mesh collision
+    public bool IsInsideMesh(Sample sample, Bounds bounds)
     {
-        PropText = "";
+        Vector3 pos = bounds.center;
+        Vector3 dir = (sample.sample - pos).normalized;
+        float dis = Vector3.Distance(pos, sample.sample) - 0.01f;
 
-        _props.Clear();
-        _wallSamples.Clear();
-        _floorSamples.Clear();
-        _samplesNearWalls.Clear();
+        return !Physics.Raycast(pos, dir, dis);
+    }
 
-        (Vector3 min, Vector3 max) = BuildBoundingBox(samples.Select(v => v.sample).ToArray());
-
-        float thresholdMin = Mathf.Abs((min.y + max.y) / 2) * 0.25f;
-        float thresholdMax = Mathf.Abs((min.y + max.y) / 2) * 1.25f;
-
-        _floorSamples.AddRange(samples.FindAll(s => (s.sample.y < thresholdMin) &&
-                                                    Vector3.Dot(s.triangleNormal, Vector3.up) > 0 &&
-                                                     s.sample.x > min.x && s.sample.x < max.x && s.sample.z > min.z && s.sample.z < max.z));
-        
+    public void SortSamplesInMesh(List<Sample> samples)
+    {
+        // list of all samples generated in this batch
         _samplePointsAll.AddRange(samples);
-        _floorSamples.AddRange(samples.FindAll(s => Vector3.Dot(s.triangleNormal, Vector3.up) > 0));
-        samples.RemoveAll(s => Vector3.Dot(s.triangleNormal, Vector3.up) > 0);
-        _floorSamplesAll.AddRange(_floorSamples);
-    
-        _wallSamples.AddRange(samples.FindAll(s => s.sample.y > thresholdMin));
-        _wallSamples.RemoveAll((s) => Vector3.Dot(s.sample, Vector3.up) == 1 || Vector3.Dot(s.sample, Vector3.up) == -1);
+
+        // filter wall samples
+        _wallSamples.AddRange(samples.FindAll(s => Mathf.Abs(Vector3.Dot(s.triangleNormal, Vector3.up)) <= 0.2f));
+        samples = samples.Except(_wallSamples).ToList();
         _wallSamplesAll.AddRange(_wallSamples);
 
-        return (min, max);
+        // filter floor samples
+        _floorSamples.AddRange(samples.FindAll(s => Vector3.Dot(s.sample, Vector3.up) != 1 && Vector3.Dot(s.sample, Vector3.up) != -1));
+        samples = samples.Except(_floorSamples).ToList();
+        _floorSamplesAll.AddRange(_floorSamples);
+
+        // leftover samples
+        _leftoverSamplesAll.AddRange(samples);
     }
 
     private List<Sample> GetFloorSamplesBySpawnPosition(SpawnPosition spawnPos, Vector3 min, Vector3 max, bool useStaticPosition)
@@ -519,6 +529,8 @@ public class MeshSampler : MonoBehaviour
 
         List<Sample> samples = FilterWallSamples(spawnPos, rem, min, max, mid, halfMin, halfMax);
 
+        if (samples.Count() == 0) return new List<Sample>();
+
         if(useStaticPosition)
         {
             float d = float.PositiveInfinity;
@@ -566,85 +578,124 @@ public class MeshSampler : MonoBehaviour
         return samples;
     }
 
-    private IEnumerator SpawnFloorProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<Prop> propSpawner, Func<Prop, PropNeighborProperty> propNeighborSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
+    private IEnumerator SpawnFloorProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Prop, PropNeighborProperty> propNeighborSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
         int floorCount = objCount;
+        int tries = 1000;
+        List<Prop> unspawnablePropsList = new();
 
-        while (floorCount--> 0)
+        while (floorCount > 0 && tries--> 0)
         {
-            Prop prop = propSpawner();
+            (Prop prop, int count) = propSpawner();
             if(!prop) yield break;
         
             List<Sample> samplesInRange = new List<Sample>(GetFloorSamplesBySpawnPosition(prop.SpawnPosition, min, max, prop.UseStaticPositions));
             if (samplesInRange.Count == 0) yield break;
 
-            Vector3 sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)].sample;
-            PropObject propObj = prop.Spawn(sample, nodeObj, _hierarchyInfo, spawnFilterFunc);
+            Sample sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
+            Quaternion rotation = Quaternion.Euler(new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360.0f), 0.0f));
+            PropObject propObj = prop.Spawn(sample, rotation, false, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
             yield return null;
 
-            if (propObj == null) continue;
+            if (propObj == null)
+            {
+                if (!Prop.Props.CanSpawnProp(_hierarchyInfo.id, prop)) unspawnablePropsList.Add(prop);
+                if (unspawnablePropsList.Count == count) yield break;
+                continue;
+            }
+            if (floorCount-- == 0) yield break;
 
             for (int i = 0; i < _floorPropGraphLevel; i++)
             {
                 PropNeighborProperty randomPropNeighbor = propNeighborSpawner(prop);
-                if(randomPropNeighbor == null) continue;
+                if(randomPropNeighbor == null) yield break;
 
                 float propMaxDistance = randomPropNeighbor.maxDistance;
-                samplesInRange = new List<Sample>(_floorSamples.FindAll((s) => Vector3.Distance(s.sample, sample) >= propMaxDistance && Vector3.Distance(s.sample, sample) < propMaxDistance * 2));
-                if(samplesInRange.Count == 0) continue;
+                samplesInRange = new List<Sample>(_floorSamples.FindAll((s) => Vector3.Distance(s.sample, sample.sample) >= propMaxDistance && Vector3.Distance(s.sample, sample.sample) < propMaxDistance * 2));
+                if(samplesInRange.Count == 0) yield break;
 
-                sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)].sample;
-                if (randomPropNeighbor.prop.Spawn(sample, nodeObj, _hierarchyInfo, spawnFilterFunc) == null) continue;
-
-                floorCount--;
+                sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
+                rotation = Quaternion.Euler(new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360.0f), 0.0f));
+                propObj = randomPropNeighbor.prop.Spawn(sample, rotation, false, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
                 yield return null;
+
+                if (propObj == null)
+                {
+                    if (!Prop.Props.CanSpawnProp(_hierarchyInfo.id, prop)) unspawnablePropsList.Add(prop);
+                    if (unspawnablePropsList.Count == count) yield break;
+                    continue;
+                }
+                if (floorCount-- == 0) yield break;
             }
         }
 
         Debug.Log("Done spawning floor props");
     }
 
-    private IEnumerator SpawnWallProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<Prop> propSpawner, Func<Prop, PropNeighborProperty> propNeighborSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
+    private IEnumerator SpawnWallProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Prop, PropNeighborProperty> propNeighborSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
         int rem = (int)((nodeObj.transform.eulerAngles / 90.0f).y % 2);
         int wallCount = objCount;
+        int tries = 1000;
+        List<Prop> unspawnablePropsList = new();
 
-        while (wallCount--> 0)
+        while (wallCount > 0 && tries--> 0)
         {
-            Prop prop = propSpawner();
+            (Prop prop, int count) = propSpawner();
             if (!prop) yield break;
 
-            List<Sample> samplesInRange = new List<Sample>(GetWallSamplesBySpawnPosition(rem, prop.SpawnPosition, min, max, prop.UseStaticPositions));
+            List<Sample> samplesInRange = new List<Sample>(GetWallSamplesBySpawnPosition(1 - rem, prop.SpawnPosition, min, max, prop.UseStaticPositions));
             if (samplesInRange.Count == 0) yield break;
 
             Sample sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
-            PropObject propObj = prop.Spawn(sample.sample, nodeObj, _hierarchyInfo, spawnFilterFunc);
+            Quaternion rotation = Quaternion.LookRotation(sample.triangleNormal);
+            PropObject propObj = prop.Spawn(sample, rotation, true, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
-            if (propObj == null) continue;
-
-            propObj.transform.position = sample.sample;
-            propObj.transform.forward = new Vector3(sample.triangleNormal.x, 0.0f, sample.triangleNormal.z);
+            //Debug.Log($"wall outer spawn prop: {propObj == null}");
 
             yield return null;
+
+            //Debug.Log($"prop obj: {propObj == null}, unspawnable props: {unspawnablePropsList.Count}, total props: {count}, hierarchy id: {_hierarchyInfo.id}");
+
+            if (propObj == null)
+            {
+                if (!Prop.Props.CanSpawnProp(_hierarchyInfo.id, prop)) unspawnablePropsList.Add(prop);
+                if (unspawnablePropsList.Count == count) yield break;
+                continue;
+            }
+            if (wallCount-- == 0) yield break;
+
+            propObj.transform.position = sample.sample;
+            propObj.transform.forward = sample.triangleNormal;
 
             for (int i = 0; i < _wallPropGraphLevel; i++)
             {
                 PropNeighborProperty randomPropNeighbor = propNeighborSpawner(prop);
-                if(randomPropNeighbor == null) continue;
+                if(randomPropNeighbor == null) yield break;
 
-                samplesInRange = new List<Sample>(GetWallSamplesBySpawnPosition(1 - rem, randomPropNeighbor.prop.SpawnPosition, min, max, randomPropNeighbor.prop.UseStaticPositions));
-                if (samplesInRange.Count == 0) continue;
+                samplesInRange = new List<Sample>(GetWallSamplesBySpawnPosition(rem, randomPropNeighbor.prop.SpawnPosition, min, max, randomPropNeighbor.prop.UseStaticPositions));
+                if (samplesInRange.Count == 0) yield break;
 
                 sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
-                if ((propObj = randomPropNeighbor.prop.Spawn(sample.sample, nodeObj, _hierarchyInfo, spawnFilterFunc)) == null) continue;
-                propObj.transform.position = sample.sample;
-                propObj.transform.forward = new Vector3(sample.triangleNormal.x, 0.0f, sample.triangleNormal.z);
+                rotation = Quaternion.LookRotation(sample.triangleNormal);
+                propObj = randomPropNeighbor.prop.Spawn(sample, rotation, true, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
-                wallCount--;
+                //Debug.Log($"wall inner spawn prop: {propObj}");
 
                 yield return null;
+
+                if (propObj == null)
+                {
+                    if (!Prop.Props.CanSpawnProp(_hierarchyInfo.id, prop)) unspawnablePropsList.Add(prop);
+                    if (unspawnablePropsList.Count == count) yield break;
+                    continue;
+                }
+                if (wallCount-- == 0) yield break;
+
+                propObj.transform.position = sample.sample;
+                propObj.transform.forward = sample.triangleNormal;
             }
         }
 

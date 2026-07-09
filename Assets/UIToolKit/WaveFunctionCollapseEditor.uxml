@@ -80,6 +80,7 @@
             <ui:GroupBox text="PDS" name="GroupBox" style="padding-right: 5px; padding-left: 5px; border-left-color: rgb(48, 48, 48); border-right-color: rgb(48, 48, 48); border-top-color: rgb(48, 48, 48); border-bottom-color: rgb(48, 48, 48); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px;">
                 <ui:Toggle label="Enable Floor Points" name="_togglePDSFloorSamples" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosFloorSamples" binding-path="enableGizmosFloorSamples" value="false" toggle-on-label-click="true"/>
                 <ui:Toggle label="Enable Wall Points" name="_togglePDSWallSamples" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosWallSamples" binding-path="enableGizmosWallSamples" value="false"/>
+                <ui:Toggle label="Enable Leftover Points" name="_togglePDSLeftoverSamples" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosLeftoverSamples" binding-path="enableGizmosLeftoverSamples" value="false"/>
                 <ui:Toggle label="Enable Samples" name="_togglePDSSamplePoints" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosSamplePoints" binding-path="enableGizmosSamplePoints" value="true"/>
                 <ui:Slider label="Samples Render Distance" value="20" high-value="50" name="_sliderPDSSamplesRenderDistance" style="flex-direction: column;"/>
             </ui:GroupBox>

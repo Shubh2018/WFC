@@ -1,8 +1,7 @@
 using UnityEditor;
 using UnityEngine.UIElements;
-using UnityEngine;
 using System;
-using Unity.Entities.UniversalDelegates;
+using System.Linq;
 
 [CustomEditor(typeof(WFC))]
 public class WaveFunctionCollapseEditor : Editor
@@ -89,35 +88,43 @@ public class WaveFunctionCollapseEditor : Editor
         // Debug Settings (PDS)
         Toggle togglePDSFloorSamples = rootTree.Q<Toggle>("_togglePDSFloorSamples");
         Toggle togglePDSWallSamples = rootTree.Q<Toggle>("_togglePDSWallSamples");
+        Toggle togglePDSLeftoverSamples = rootTree.Q<Toggle>("_togglePDSLeftoverSamples");
         Toggle togglePDSSamplePoints = rootTree.Q<Toggle>("_togglePDSSamplePoints");
         Slider sliderPDSSamplesRenderDistance = rootTree.Q<Slider>("_sliderPDSSamplesRenderDistance");
         
         togglePDSFloorSamples.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePDSSettings(evt.newValue, togglePDSWallSamples.value, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
+            WaveFunctionCollapse.SavePDSSettings(evt.newValue, togglePDSWallSamples.value, togglePDSLeftoverSamples.value, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
         );
 
         togglePDSWallSamples.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, evt.newValue, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
+            WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, evt.newValue, togglePDSLeftoverSamples.value, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
+        );
+
+        togglePDSLeftoverSamples.RegisterCallback((ChangeEvent<bool> evt) => 
+            WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, evt.newValue, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
         );
 
         togglePDSSamplePoints.RegisterCallback((ChangeEvent<bool> evt) => {
             if (evt.newValue) {
-                WaveFunctionCollapse.SavePDSSettings(false, false, true, sliderPDSSamplesRenderDistance.value);
+                WaveFunctionCollapse.SavePDSSettings(false, false, false, true, sliderPDSSamplesRenderDistance.value);
                 togglePDSFloorSamples.value = false;
                 togglePDSFloorSamples.SetEnabled(false);
                 togglePDSWallSamples.value = false;
                 togglePDSWallSamples.SetEnabled(false);
+                togglePDSLeftoverSamples.value = false;
+                togglePDSLeftoverSamples.SetEnabled(false);
             }
 
             else {
-                WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, false, sliderPDSSamplesRenderDistance.value);
+                WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, togglePDSLeftoverSamples.value, false, sliderPDSSamplesRenderDistance.value);
                 togglePDSFloorSamples.SetEnabled(true);
                 togglePDSWallSamples.SetEnabled(true);
+                togglePDSLeftoverSamples.SetEnabled(true);
             }
         });
 
         sliderPDSSamplesRenderDistance.RegisterCallback((ChangeEvent<float> evt) =>
-            WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, togglePDSSamplePoints.value, evt.newValue)
+            WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, togglePDSLeftoverSamples.value, togglePDSSamplePoints.value, evt.newValue)
         );
         
         // Testing tab
@@ -207,6 +214,12 @@ public class WaveFunctionCollapseEditor : Editor
 
     private void CollapseTiles(ClickEvent evt)
     {
+        if (MeshNode.generatedSamples.Count() == 0)
+        {
+            UnityEngine.Debug.LogWarning("Cannot collapse tiles because samples has not been generated...");
+            return;
+        }
+
         WaveFunctionCollapse.pauseGeneration = false;
         WaveFunctionCollapse.StartCollapse((int overlaps) => {
             ResetControls();

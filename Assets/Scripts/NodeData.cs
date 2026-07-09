@@ -154,11 +154,11 @@ public class NodeData : ScriptableObject
         }
     }
 
-    public Prop GetRandomPropCDF(PropPlacementType placementType)
+    public (Prop, int) GetRandomPropCDF(PropPlacementType placementType)
     {
         List<Prop> props = new List<Prop>(Utils.LoadProps(placementType).Where((Prop p) => !exceptionsProps.Contains(p)));
 
-        if(props.Count <= 0) return null;
+        if(props.Count <= 0) return (null, 0);
 
         props.RemoveAll((p) => p.SpawnChance == 0.0f || 
             !p.CompareNode(p.NodeTypeToSpawnIn, this.nodeType) || 
@@ -170,7 +170,7 @@ public class NodeData : ScriptableObject
         if(count <= 0) 
         {
             Debug.Log($"Null");
-            return null;
+            return (null, 0);
         }
 
         float totalProbability = 0;
@@ -203,7 +203,7 @@ public class NodeData : ScriptableObject
                 low = mid + 1;
         }
 
-        return cdf[low];
+        return (cdf[low], count);
     }
 }
 

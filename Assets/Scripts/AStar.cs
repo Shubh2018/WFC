@@ -202,14 +202,13 @@ public class AStar : MonoBehaviour
             return;
         }
 
-        pathRoutine = FindRoute(new List<Vector3Int>(path));
-        StartCoroutine(pathRoutine);
+        CoroutineManager.StartCoroutine(this, "FindRoute", FindRoute(new List<Vector3Int>(path)));
     }
 
     public void StopFindingPath() 
     {
         // Stop the coroutine
-        if (pathRoutine != null) StopCoroutine(pathRoutine);
+        CoroutineManager.StopCoroutine("FindRoute");
         pathRoutine = null;
         doneFindingPath = true;
 

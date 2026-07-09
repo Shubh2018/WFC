@@ -90,8 +90,8 @@ public class MeshSurface : MonoBehaviour
 
         Spawner spawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxPropCount, _maxPropCount);
 
-        Func<Prop> propFloorSpawnerFunc = () => spawner.FloorPrefabs[UnityEngine.Random.Range(0, spawner.FloorPrefabs.Count)];
-        Func<Prop> propWallSpawnerFunc = () => spawner.WallPrefabs[UnityEngine.Random.Range(0, spawner.WallPrefabs.Count)];
+        Func<(Prop, int)> propFloorSpawnerFunc = () => (spawner.FloorPrefabs[UnityEngine.Random.Range(0, spawner.FloorPrefabs.Count)], spawner.FloorPrefabs.Count);
+        Func<(Prop, int)> propWallSpawnerFunc = () => (spawner.WallPrefabs[UnityEngine.Random.Range(0, spawner.WallPrefabs.Count)], spawner.WallPrefabs.Count);
         Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc = (Prop prop) => prop.GetRandomProp();
         Func<Vector3, Prop, bool> spawnFilterFunc = (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject);
 

@@ -40,6 +40,7 @@ public class MeshNode : MonoBehaviour
     public static List<SampleData> generatedSamples = new List<SampleData>();
     public static MeshSampler meshSampler = null;
     public static Spawner? spawner = null;
+    public static WFC wfc = null;
 
     public void Init()
     {
@@ -47,8 +48,9 @@ public class MeshNode : MonoBehaviour
         Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, gameObject, true);
     }
 
-    public static void SampleTiles(MeshSampler sampler, List<NodeData> nodes, float radius, int tries, int sampleAmount, int floorGraphLevel, int wallGraphLevel)
+    public static void SampleTiles(MeshSampler sampler, WFC wave, List<NodeData> nodes, float radius, int tries, int sampleAmount, int floorGraphLevel, int wallGraphLevel)
     {
+        wfc = wave;
         meshSampler = sampler;
         meshSampler.SetSamplingGraphProperties(radius, tries, floorGraphLevel, wallGraphLevel);
 
@@ -76,22 +78,23 @@ public class MeshNode : MonoBehaviour
 
         _nodeData = node;
 
-        SampleData sampleData = generatedSamples.Single(s => s.nodeData == _nodeData);
+        SampleData sampleData = generatedSamples.Single(s => s.nodeData.name == _nodeData.name);
 
         if (sampleData == null || _nodeData.IsStairPiece) return;
 
+        Bounds b = new Bounds(transform.position + new Vector3(0.0f, wfc.TileSize.y / 2, 0.0f), wfc.TileSize);
         int randomSampleSet = UnityEngine.Random.Range(0, sampleData.samples.Count);
         List<Sample> selectedSamples = new(sampleData.samples[randomSampleSet].samples.Select((s) => new Sample()
         {
             sample = gameObject.transform.localPosition + s.sample,
             triangleNormal = s.triangleNormal
-        }));
+        }).Where((s) => meshSampler.IsInsideMesh(s, b)));
 
         meshSampler.SetSpawnerData(_hierarchyInfo);
         meshSampler.AddSamples(selectedSamples);
 
-        Func<Prop> propFloorSpawnerFunc = () => node.GetRandomPropCDF(PropPlacementType.Floor);
-        Func<Prop> propWallSpawnerFunc = () => node.GetRandomPropCDF(PropPlacementType.Wall);
+        Func<(Prop, int)> propFloorSpawnerFunc = () => node.GetRandomPropCDF(PropPlacementType.Floor);
+        Func<(Prop, int)> propWallSpawnerFunc = () => node.GetRandomPropCDF(PropPlacementType.Wall);
         Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc = (Prop prop) => prop.GetRandomProp();
         Func<Vector3, Prop, bool> spawnFilterFunc = (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject, size);
 

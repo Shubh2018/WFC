@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using Unity.Entities.UniversalDelegates;
+using Unity.Transforms;
 
 // Keeps track of the amount of spawned props per node, per hierarchy element (surface, point, node), and in total across everything
 public class PropHierarchy
@@ -34,8 +35,7 @@ public class PropHierarchy
 
         public PropHierachyInfo(PropHierachyInfo parentHierachy, int localMaxHierarchyLevel)
         {
-            id = Guid.NewGuid();
-
+            id = parentHierachy.id;
             parentId = parentHierachy.parentId;
             maxHierachyLevel = Mathf.Min(parentHierachy.maxHierachyLevel, localMaxHierarchyLevel);
             currentHierachyLevel = parentHierachy.currentHierachyLevel + 1;
@@ -225,12 +225,14 @@ public class PropHierarchy
     // Returns true if a specific prop can be spawned based on its conditions, else false
     public bool CanSpawnProp(Guid instanceId, Prop prop)
     {
-        return prop.LimitType switch {
-            PropLimitTypeEnum.InTotal => prop.LimitCount > SumPropTotalAmount(prop.PropObject.name),
-            PropLimitTypeEnum.PerHierarchyElement => prop.LimitCount > SumPropLocalHierachyAmount(instanceId, prop.PropObject.name),
-            PropLimitTypeEnum.PerRoom => prop.LimitCount > SumPropRoomAmount(instanceId, prop.PropObject.name),
+        bool l = prop.LimitType switch {
+            PropLimitTypeEnum.InTotal => prop.LimitCount == SumPropTotalAmount(prop.PropObject.name),
+            PropLimitTypeEnum.PerHierarchyElement => prop.LimitCount == SumPropLocalHierachyAmount(instanceId, prop.PropObject.name),
+            PropLimitTypeEnum.PerRoom => prop.LimitCount == SumPropRoomAmount(instanceId, prop.PropObject.name),
             _ => false
         };
+        Debug.Log($"can spawn prop; name: {prop.PropObject.name} limit type: {prop.LimitType}, limit count: {prop.LimitCount}, over limit: {l}");
+        return !l;
     }
 
     // Returns the total sum scattered around for a prop with a given name from the root and down
@@ -285,6 +287,7 @@ public class PropHierarchy
     public void ClearProps()
     {
         propCount.Clear();
+        propObjs.Clear();
     }
 
     // Clears all children and props countings

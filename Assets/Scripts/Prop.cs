@@ -100,21 +100,43 @@ public class Prop : ScriptableObject
         _limitCount = p._limitCount;
     }
 
-    public PropObject Spawn(Vector3 position, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
+    public PropObject Spawn(Sample sample, Quaternion rotation, bool wall, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
-        Quaternion rot = Quaternion.Euler(new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360.0f), 0.0f));
+        BoxCollider col = _prop.GetComponent<BoxCollider>();
+        Vector3 pos = sample.sample + sample.triangleNormal * 0.1f + rotation * col.center;
 
-        if (!Props.CanSpawnProp(parentHierarchy.parentId, this)) return null;
-        if (!spawnFilterFunc(position, this)) return null;
-        if (_prop.CheckOverlapBox(position, rot)) return null;
+        //Debug.Log($"spawn check, gameobject: {parent.name}, cannot spawn: {!Props.CanSpawnProp(parentHierarchy.id, this)}, filter func: {!spawnFilterFunc(sample.sample, this)}, overlap: {_prop.CheckOverlapBox(pos, rotation)}");
 
-        PropObject propObj = Instantiate(_prop, position, rot);
+        if (!Props.CanSpawnProp(parentHierarchy.id, this)) return null;
+        if (!spawnFilterFunc(sample.sample, this)) return null;
+        //Debug.Log($"pos: {pos}, rot: {rotation}, sample: {sample.sample}, prop: {_prop.name}");
+        //SpawnOverlapTest(pos, rotation, wall);
+        if (_prop.CheckOverlapBox(pos, rotation)) return null;
+
+        PropObject propObj = Instantiate(_prop, sample.sample, rotation);
         propObj.transform.SetParent(parent.transform);
 
-        Props.Increase(parentHierarchy.parentId, _prop.name);
+        Props.Increase(parentHierarchy.id, _prop.name);
         propObj.UpdateChildren(parentHierarchy);
 
         return propObj;
+    }
+
+    public void SpawnOverlapTest(Vector3 position, Quaternion rotation, bool ignoreColCenter = false)
+    {
+        BoxCollider col = _prop.GetComponent<BoxCollider>();
+
+        GameObject obj = new GameObject();
+        obj.name = _prop.name;
+        obj.transform.position = position;
+        obj.transform.rotation = rotation;
+
+        BoxCollider boxComponent = obj.AddComponent<BoxCollider>();
+        if (!ignoreColCenter) boxComponent.center = col.center;
+        boxComponent.enabled = false;
+        boxComponent.size = col.size;
+
+        ColDetectorTest colComponent = obj.AddComponent<ColDetectorTest>();
     }
 
     public Vector3 GetSize()

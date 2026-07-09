@@ -46,8 +46,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
-  _rayCenter: {x: 0, y: 0, z: 0}
-  _raycastLength: 1.5
 --- !u!65 &-521469375371959707
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -67,8 +65,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1.1, y: 2.25, z: 0.15}
+  m_Center: {x: 0, y: -1.05, z: 0.15}
 --- !u!1 &5864745875127270116
 GameObject:
   m_ObjectHideFlags: 0
