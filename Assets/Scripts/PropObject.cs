@@ -9,11 +9,11 @@ public class PropObject : MonoBehaviour
     fix bugs:
     - [X] floor samples on walls (filtereing problem)
     - [X] floor props spawning inside wall (check for collision)
-    - prop points spawning outside of a node (check to prevent this)
+    - [X] prop points spawning outside of a node (check to prevent this)
     - sample generator sometimes spawn next to no samples
     - [X] sometimes no props spawn at all
     - [X] sometimes static position means wall props spawn inside the floor
-    - look vector is zero bug
+    - [X] look vector is zero bug
     - [X] weird sampling bug
     - [X] wall props sometimes not spawning when walls face a specific way (properly related to rem)
     - [X] coroutines not working together with the interface buttons

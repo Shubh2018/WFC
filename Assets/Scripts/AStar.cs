@@ -208,7 +208,7 @@ public class AStar : MonoBehaviour
     public void StopFindingPath() 
     {
         // Stop the coroutine
-        CoroutineManager.StopCoroutine("FindRoute");
+        CoroutineManager.StopCoroutine(this, "FindRoute");
         pathRoutine = null;
         doneFindingPath = true;
 

@@ -17,7 +17,6 @@ public class MeshSurface : MonoBehaviour
     [SerializeField] private Vector3 _surfaceSize = Vector3.one;
     [SerializeField] private int _spawnHierarchy = 5;
     [SerializeField] private int _maxPropCount = 1;
-    //private static Spawner? spawner = null;
     private PropHierarchy.PropHierachyInfo _hierarchyInfo;
 
     private void OnDrawGizmos()
@@ -62,6 +61,8 @@ public class MeshSurface : MonoBehaviour
 
     public void Init(PropHierarchy.PropHierachyInfo parentHierachyInfo)
     {
+        if (!Utils.IsInsideMaze(transform.position, _surfaceSize)) return;
+
         OnValidate();
 
         _meshSampler = gameObject.GetComponent<MeshSampler>();
@@ -104,16 +105,6 @@ public class MeshSurface : MonoBehaviour
 
         Bounds myBounds = new Bounds(transform.position, _surfaceSize);
         Bounds otherBounds = new Bounds(Utils.RotatePointAroundPivot(sample, transform.position, angles * -1), obj.GetSize());
-
-        /*if (myBounds.Contains(otherBounds.min) && myBounds.Contains(otherBounds.max))
-        {
-            GameObject objTest = new GameObject();
-            objTest.name = $"{obj}_testPos";
-            objTest.transform.position = sample;
-            objTest.transform.SetParent(transform);
-            Debug.Log($"prop: {obj.name}, position: {sample}, rotated position: {Utils.RotatePointAroundPivot(sample, transform.position, angles * -1)}, angle: {angles}, overlap: {obj.OverlapDimenstions}");
-            Debug.Log($"surface, pos: {transform.position}, size: {_surfaceSize}");
-        }*/
 
         return myBounds.Contains(otherBounds.min) && myBounds.Contains(otherBounds.max);
     }

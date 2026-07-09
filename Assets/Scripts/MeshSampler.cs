@@ -634,8 +634,6 @@ public class MeshSampler : MonoBehaviour
                 if (floorCount-- == 0) yield break;
             }
         }
-
-        Debug.Log("Done spawning floor props");
     }
 
     private IEnumerator SpawnWallProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Prop, PropNeighborProperty> propNeighborSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
@@ -654,14 +652,10 @@ public class MeshSampler : MonoBehaviour
             if (samplesInRange.Count == 0) yield break;
 
             Sample sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
-            Quaternion rotation = Quaternion.LookRotation(sample.triangleNormal);
+            Quaternion rotation = sample.triangleNormal != Vector3.zero ? Quaternion.LookRotation(sample.triangleNormal) : Quaternion.identity;
             PropObject propObj = prop.Spawn(sample, rotation, true, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
-            //Debug.Log($"wall outer spawn prop: {propObj == null}");
-
             yield return null;
-
-            //Debug.Log($"prop obj: {propObj == null}, unspawnable props: {unspawnablePropsList.Count}, total props: {count}, hierarchy id: {_hierarchyInfo.id}");
 
             if (propObj == null)
             {
@@ -683,10 +677,8 @@ public class MeshSampler : MonoBehaviour
                 if (samplesInRange.Count == 0) yield break;
 
                 sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
-                rotation = Quaternion.LookRotation(sample.triangleNormal);
+                rotation = sample.triangleNormal != Vector3.zero ? Quaternion.LookRotation(sample.triangleNormal) : Quaternion.identity;
                 propObj = randomPropNeighbor.prop.Spawn(sample, rotation, true, nodeObj, _hierarchyInfo, spawnFilterFunc);
-
-                //Debug.Log($"wall inner spawn prop: {propObj}");
 
                 yield return null;
 
@@ -702,7 +694,5 @@ public class MeshSampler : MonoBehaviour
                 propObj.transform.forward = sample.triangleNormal;
             }
         }
-
-        Debug.Log("Done spawning wall props");
     }
 }

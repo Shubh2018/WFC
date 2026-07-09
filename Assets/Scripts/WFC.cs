@@ -180,6 +180,7 @@ public class WFC : MonoBehaviour
     // Public Variables
     public AStar path;
     public bool pauseGeneration = false;
+    public static WFC wfc = null;
     
     // Getters
     public int getTiles => transform.childCount;
@@ -189,8 +190,9 @@ public class WFC : MonoBehaviour
     public int getLength => _length;
     public List<NodeData> getNodes => _nodes;
     public List<NodeData> getNodesGen => _nodesGenerated;
-    
     public Vector3Int TileSize => _tileSize;
+    public Vector3 GetSize => new Vector3(_width * _tileSize.x, _height * _tileSize.y, _length * _tileSize.z);
+    public Vector3 GetCorner => GetSize / 2 - new Vector3(_tileSize.x / 2, 0.0f, _tileSize.z / 2);
     
     // Gizmos Debug Settings
     // -- WFC
@@ -237,7 +239,7 @@ public class WFC : MonoBehaviour
 
     public void StopCollapse() 
     {
-        CoroutineManager.StopCoroutine("CollapseTiles");
+        CoroutineManager.StopCoroutine(this, "CollapseTiles");
         CoroutineManager.StopAllCoroutines(gameObject.GetComponent<MeshSampler>());
     }
 
@@ -248,7 +250,7 @@ public class WFC : MonoBehaviour
 
     public void StopCollapseTesting()
     {
-        CoroutineManager.StopCoroutine("CollapseTilesTesting");
+        CoroutineManager.StopCoroutine(this, "CollapseTilesTesting");
         CoroutineManager.StopAllCoroutines(gameObject.GetComponent<MeshSampler>());
     }
 
@@ -304,7 +306,7 @@ public class WFC : MonoBehaviour
                 }
             }
             
-            if (CoroutineManager.IsAlive("CollapseTiles") || CoroutineManager.IsAlive("CollapseTilesTesting"))
+            if (CoroutineManager.IsAlive(this, new[]{ "CollapseTiles", "CollapseTilesTesting" }))
             {
                 Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
                 Gizmos.DrawWireCube(activeCollapsningTile * _tileSize - new Vector3(0.0f, _tileSize.y * -0.5f, 0.0f), _tileSize);
@@ -481,6 +483,7 @@ public class WFC : MonoBehaviour
 
     public IEnumerator CollapseTiles(Action<int> doneFuncHook)
     {
+        wfc = this;
         int overlaps = 0;
         ClearTiles();
         

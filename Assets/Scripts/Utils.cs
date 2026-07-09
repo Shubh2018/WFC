@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Collections;
 using System.Linq;
+using UnityEditor.Rendering;
 
 public static class Utils
 {
@@ -124,6 +125,15 @@ public static class Utils
             _ => null
         };
     }
+
+    // Used to check if something is inside of the WFC maze
+    public static bool IsInsideMaze(Vector3 pos, Vector3 size)
+    {
+        Bounds myBounds = new Bounds(pos, size);
+        Bounds maze = new Bounds(WFC.wfc.GetCorner, WFC.wfc.GetSize);
+
+        return maze.Contains(myBounds.min) && maze.Contains(myBounds.max);
+    }
 }
 
 public static class CoroutineManager
@@ -132,7 +142,7 @@ public static class CoroutineManager
 
     public static void StartCoroutine(MonoBehaviour mono, string name, IEnumerator func)
     {
-        if (IsAlive(name)) return;
+        if (IsAlive(mono, name)) return;
         if (!HasMonobehaviour(mono)) coroutineStatus[mono] = new();
         Debug.Log($"{mono.name} ({mono.GetType()}) started coroutine {name}");
         IEnumerator wrapper = CoroutineWrapper(mono, name, func);
@@ -140,10 +150,9 @@ public static class CoroutineManager
         coroutineStatus[mono][name] = wrapper;
     }
 
-    public static void StopCoroutine(string name)
+    public static void StopCoroutine(MonoBehaviour mono, string name)
     {
-        if (!IsAlive(name)) return;
-        MonoBehaviour mono = GetMonobehaviour(name);
+        if (!IsAlive(mono, name)) return;
         Debug.Log($"{mono.name} ({mono.GetType()}) stopped coroutine {name}");
         mono.StopCoroutine(coroutineStatus[mono][name]);
         coroutineStatus[mono].Remove(name);
@@ -163,29 +172,29 @@ public static class CoroutineManager
             StopAllCoroutines(mono);
     }
 
-    public static void EndOfRoutine(string name)
+    public static void EndOfRoutine(MonoBehaviour mono, string name)
     {
-        if (!IsAlive(name)) return;
-        MonoBehaviour mono = GetMonobehaviour(name);
+        if (!IsAlive(mono, name)) return;
         coroutineStatus[mono].Remove(name);
         if (coroutineStatus[mono].Values.Count() == 0) coroutineStatus.Remove(mono);
         Debug.Log($"{mono.name} ({mono.GetType()}) coroutine {name} finished");
     }
 
-    private static MonoBehaviour GetMonobehaviour(string name)
-    {
-        return coroutineStatus.First(m => m.Value.ContainsKey(name)).Key;
-    }
-
     private static IEnumerator CoroutineWrapper(MonoBehaviour mono, string name, IEnumerator func)
     {
         yield return mono.StartCoroutine(func);
-        EndOfRoutine(name);
+        EndOfRoutine(mono, name);
     }
 
-    public static bool IsAlive(string name)
+    public static bool IsAlive(MonoBehaviour mono, string name)
     {
-        return coroutineStatus.Any(m => m.Value.ContainsKey(name));
+        return coroutineStatus.Any(m => m.Key == mono && m.Key.GetType() == mono.GetType() && m.Value.ContainsKey(name));
+    }
+
+    public static bool IsAlive(MonoBehaviour mono, string[] names)
+    {
+        if (!HasMonobehaviour(mono)) return false;
+        return names.All(n => coroutineStatus[mono].ContainsKey(n));
     }
 
     private static bool HasMonobehaviour(MonoBehaviour mono)

@@ -39,6 +39,7 @@ public class MeshPoint : MonoBehaviour
 
     public void SpawnProp()
     {
+        if (!Utils.IsInsideMaze(transform.position, Vector3.one)) return;
         if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
         if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), 1, 1);
 
