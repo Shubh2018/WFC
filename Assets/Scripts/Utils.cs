@@ -125,15 +125,6 @@ public static class Utils
             _ => null
         };
     }
-
-    // Used to check if something is inside of the WFC maze
-    public static bool IsInsideMaze(Vector3 pos, Vector3 size)
-    {
-        Bounds myBounds = new Bounds(pos, size);
-        Bounds maze = new Bounds(WFC.wfc.GetCorner, WFC.wfc.GetSize);
-
-        return maze.Contains(myBounds.min) && maze.Contains(myBounds.max);
-    }
 }
 
 public static class CoroutineManager
@@ -168,8 +159,9 @@ public static class CoroutineManager
 
     public static void StopAllCoroutines()
     {
-        foreach (MonoBehaviour mono in coroutineStatus.Keys)
-            StopAllCoroutines(mono);
+        List<MonoBehaviour> keys = coroutineStatus.Keys.ToList();
+        foreach (MonoBehaviour key in keys)
+            StopAllCoroutines(key);
     }
 
     public static void EndOfRoutine(MonoBehaviour mono, string name)
@@ -205,5 +197,15 @@ public static class CoroutineManager
     public static bool HasAliveRoutines(MonoBehaviour mono)
     {
         return HasMonobehaviour(mono);
+    }
+
+    public static bool HasAliveRoutinesExcept(MonoBehaviour mono)
+    {
+        return HasMonobehaviour(mono) && coroutineStatus.Count() > 1;
+    }
+
+    public static bool HasAliveRoutines()
+    {
+        return coroutineStatus.Count() > 0;
     }
 }

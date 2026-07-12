@@ -104,7 +104,7 @@ public class MeshNode : MonoBehaviour
     private bool IsPropContained(Vector3 sample, PropObject obj, Vector3 size)
     {
         Bounds myBounds = new Bounds(transform.position, size);
-        Bounds otherBounds = new Bounds(sample, obj.GetSize());
+        Bounds otherBounds = new Bounds(sample, obj.GetSize);
 
         return myBounds.Contains(otherBounds.min) && myBounds.Contains(otherBounds.max);
     }

@@ -128,6 +128,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MeshSampler
   enableGizmosFloorSamples: 1
   enableGizmosWallSamples: 1
+  enableGizmosCornerSamples: 0
   enableGizmosSamplePoints: 1
   samplesRenderDistance: 1000
 --- !u!65 &6348260799984630138
@@ -314,8 +315,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PropObject
-  _rayCenter: {x: 0, y: 0, z: 0}
-  _raycastLength: 1.5
 --- !u!65 &2220992796401586796
 BoxCollider:
   m_ObjectHideFlags: 0

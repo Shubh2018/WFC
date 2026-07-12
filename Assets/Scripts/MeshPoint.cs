@@ -27,7 +27,7 @@ public class MeshPoint : MonoBehaviour
     {
         _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierachyInfo, _spawnHierarchy);
 
-        Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, transform.parent.gameObject);
+        Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, gameObject);
 
         SpawnProp();
     }
@@ -39,35 +39,22 @@ public class MeshPoint : MonoBehaviour
 
     public void SpawnProp()
     {
-        if (!Utils.IsInsideMaze(transform.position, Vector3.one)) return;
         if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
-        if (!_spawnViaSpawner) spawner = new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), 1, 1);
 
-        Prop propObj = ChooseRandomProp();
-        
-        float rand = UnityEngine.Random.Range(0, 1);
+        Prop prop = ChooseRandomProp();
+        if(!_forcedToSpawn && (UnityEngine.Random.Range(0, 1) > prop.SpawnChance)) return;
 
-        BoxCollider col = propObj.PropObject.GetComponent<BoxCollider>();
-        Quaternion rotation = Quaternion.Euler(new Vector3(0.0f, UnityEngine.Random.Range(0.0f, 360.0f), 0.0f));
-        Vector3 pos = transform.position + transform.up * 0.1f + rotation * col.center;
+        Sample sample = new Sample() {
+            sample = transform.position,
+            triangleNormal = Vector3.up,
+        };
 
-        bool overlap = propObj.PropObject.CheckOverlapBox(pos, rotation, (List<Collider> cols) => cols.Except(new List<Collider>{ GetComponentInParent<BoxCollider>() }));
-
-        if((!_forcedToSpawn && (rand > propObj.SpawnChance)) || overlap) return;
-
-        _spawnedObject = Instantiate(propObj.PropObject, transform, false);
-
-        _spawnedObject.transform.SetParent(transform);
-        _spawnedObject.transform.localPosition = Vector3.zero;
-        _spawnedObject.transform.localEulerAngles = new Vector3(0, UnityEngine.Random.Range(0, 360), 0);
-
-        Prop.Props.Increase(_hierarchyInfo.id, propObj.PropObject.name);
-        _spawnedObject.UpdateChildren(_hierarchyInfo);
+        PropObject propObj = prop.SpawnFloor(sample, gameObject, _hierarchyInfo, (Vector3 sample, Prop prop) => true);
     }
 
     public Prop ChooseRandomProp()
     {
-        Spawner propSpawner = _spawnViaSpawner ? _gameObjectsToSpawn : (Spawner) spawner;
+        Spawner propSpawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), 1, 1);
 
         List<Prop> _allProps = new List<Prop>(propSpawner.WallPrefabs);
         _allProps.AddRange(propSpawner.FloorPrefabs);

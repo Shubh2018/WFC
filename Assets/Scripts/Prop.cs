@@ -53,6 +53,13 @@ public enum PropLimitTypeEnum {
     InTotal
 };
 
+public enum PropRotationTypeEnum
+{
+    Default,
+    World,
+    Parent
+};
+
 [CreateAssetMenu(fileName = "Prop", menuName = "Props/Prop")]
 public class Prop : ScriptableObject
 {
@@ -64,11 +71,14 @@ public class Prop : ScriptableObject
     [SerializeField] private PropSpawnTagEnum _spawnTag;
     [SerializeField] private SpawnPosition _spawnPositions;
     [SerializeField] private bool _useStaticPositions;
+    [SerializeField] private bool _spawnInCorners;
     [SerializeField] private NodeData.NodeType _nodeTypeToSpawnIn;
     [SerializeField] private NodeData.EnvironmentType _environmentsToSpawnIn;
     [SerializeField] private List<Structure> _structureType;
     [SerializeField] private List<PropNeighborProperty> _neighbors;
     [SerializeField] private int _limitCount;
+    [SerializeField] private PropRotationTypeEnum _spawnRotationType;
+    [SerializeField] private float _spawnRotation;
 
     public static PropHierarchy Props = new PropHierarchy(null, Guid.Empty);
 
@@ -81,9 +91,12 @@ public class Prop : ScriptableObject
     public NodeData.EnvironmentType EnvironmentTypeToSpawnIn => _environmentsToSpawnIn;
     public float SpawnChance {set { _spawnChance = value; } get {return _spawnChance;}}
     public bool UseStaticPositions => _useStaticPositions;
+    public bool SpawnInCorners => _spawnInCorners;
     public PropLimitTypeEnum LimitType => _limitType;
     public PropSpawnTagEnum SpawnTag => _spawnTag;
     public int LimitCount => _limitCount;
+    public PropRotationTypeEnum SpawnRotationType => _spawnRotationType;
+    public float SpawnRotationAmount => _spawnRotation;
 
     public Prop(Prop p)
     {
@@ -91,27 +104,63 @@ public class Prop : ScriptableObject
         _spawnChance = p._spawnChance;
         _propType = p._propType;
         _nodeTypeToSpawnIn = p._nodeTypeToSpawnIn;
+        _propPlacement = p._propPlacement;
         _structureType = new List<Structure>(p._structureType);
         _neighbors = new List<PropNeighborProperty>(p._neighbors);
         _spawnPositions = p._spawnPositions;
         _useStaticPositions = p._useStaticPositions;
+        _spawnInCorners = p.SpawnInCorners;
         _limitType = p._limitType;
         _spawnTag = p._spawnTag;
         _limitCount = p._limitCount;
+        _spawnRotationType = p._spawnRotationType;
+        _spawnRotation = p._spawnRotation;
     }
 
-    public PropObject Spawn(Sample sample, Quaternion rotation, bool wall, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
+    // used for gizmos only
+    public Prop(SpawnPosition spawnPosition)
+    {
+        _spawnPositions = spawnPosition;
+        _useStaticPositions = true;
+    }
+
+    public PropObject SpawnFloor(Sample sample, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
+    {
+        Vector3 pos = sample.sample + sample.triangleNormal * 0.1f;
+        Vector3 rot = Vector3.one;
+
+        Func<List<Collider>, IEnumerable<Collider>> filterFunc = (List<Collider> cols) =>
+        {
+            if (parent.GetComponent<MeshSurface>() != null)
+                return cols.Where(c => c.transform.parent == parent.transform);
+            else return cols.AsEnumerable();
+        };
+
+        if (!Props.CanSpawnProp(parentHierarchy.id, this)) return null;
+        if (!spawnFilterFunc(sample.sample, this)) return null;
+        if (parent.GetType() == typeof(MeshSurface))
+            Debug.Log($"mesh surface overlap box check: {_prop.CheckOverlapBoxCircumference(pos, filterFunc) == Vector3.one}");
+        if ((rot = _prop.CheckOverlapBoxCircumference(pos, filterFunc)) == Vector3.one) return null;
+
+        PropObject propObj = Instantiate(_prop, sample.sample, Quaternion.Euler(rot));
+        propObj.transform.SetParent(parent.transform);
+
+        Props.Increase(parentHierarchy.id, _prop.name);
+        propObj.UpdateChildren(parentHierarchy);
+
+        return propObj;
+    }
+
+    public PropObject SpawnWall(Sample sample, Quaternion rotation, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
         BoxCollider col = _prop.GetComponent<BoxCollider>();
         Vector3 pos = sample.sample + sample.triangleNormal * 0.1f + rotation * col.center;
 
-        //Debug.Log($"spawn check, gameobject: {parent.name}, cannot spawn: {!Props.CanSpawnProp(parentHierarchy.id, this)}, filter func: {!spawnFilterFunc(sample.sample, this)}, overlap: {_prop.CheckOverlapBox(pos, rotation)}");
+        Func<List<Collider>, IEnumerable<Collider>> filterFunc = (List<Collider> cols) => cols.AsEnumerable();
 
         if (!Props.CanSpawnProp(parentHierarchy.id, this)) return null;
         if (!spawnFilterFunc(sample.sample, this)) return null;
-        //Debug.Log($"pos: {pos}, rot: {rotation}, sample: {sample.sample}, prop: {_prop.name}");
-        //SpawnOverlapTest(pos, rotation, wall);
-        if (_prop.CheckOverlapBox(pos, rotation)) return null;
+        if (_prop.CheckOverlapBox(pos, rotation, filterFunc)) return null;
 
         PropObject propObj = Instantiate(_prop, sample.sample, rotation);
         propObj.transform.SetParent(parent.transform);

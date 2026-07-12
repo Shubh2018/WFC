@@ -61,8 +61,6 @@ public class MeshSurface : MonoBehaviour
 
     public void Init(PropHierarchy.PropHierachyInfo parentHierachyInfo)
     {
-        if (!Utils.IsInsideMaze(transform.position, _surfaceSize)) return;
-
         OnValidate();
 
         _meshSampler = gameObject.GetComponent<MeshSampler>();
@@ -75,7 +73,7 @@ public class MeshSurface : MonoBehaviour
 
         _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierachyInfo, _spawnHierarchy);
 
-        Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, transform.parent?.gameObject);
+        Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, gameObject);
 
         Generate();
     }
@@ -104,7 +102,7 @@ public class MeshSurface : MonoBehaviour
         Vector3 angles = transform.parent ? transform.parent.eulerAngles : Vector3.zero;
 
         Bounds myBounds = new Bounds(transform.position, _surfaceSize);
-        Bounds otherBounds = new Bounds(Utils.RotatePointAroundPivot(sample, transform.position, angles * -1), obj.GetSize());
+        Bounds otherBounds = new Bounds(Utils.RotatePointAroundPivot(sample, transform.position, angles * -1), obj.GetSize);
 
         return myBounds.Contains(otherBounds.min) && myBounds.Contains(otherBounds.max);
     }

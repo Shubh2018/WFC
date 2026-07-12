@@ -2,38 +2,11 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Entities.UniversalDelegates;
 
 public class PropObject : MonoBehaviour
 {
-    /*
-    fix bugs:
-    - [X] floor samples on walls (filtereing problem)
-    - [X] floor props spawning inside wall (check for collision)
-    - [X] prop points spawning outside of a node (check to prevent this)
-    - sample generator sometimes spawn next to no samples
-    - [X] sometimes no props spawn at all
-    - [X] sometimes static position means wall props spawn inside the floor
-    - [X] look vector is zero bug
-    - [X] weird sampling bug
-    - [X] wall props sometimes not spawning when walls face a specific way (properly related to rem)
-    - [X] coroutines not working together with the interface buttons
-
-    features:
-    - add prop size spawning check
-    - [X] add warning when samples are not generated for nodes
-    */
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.matrix = transform.localToWorldMatrix;
-    }
-
-    public bool CheckOverlapBox(Vector3 pos, Quaternion rot)
-    {
-        BoxCollider col = GetComponent<BoxCollider>();
-        return Physics.OverlapBox(pos, col.size / 2, rot, LayerMask.GetMask("Prop", "Node")).Count() > 0;
-    }
+    public Vector3 GetSize => GetComponent<BoxCollider>().size;
 
     public bool CheckOverlapBox(Vector3 pos, Quaternion rot, Func<List<Collider>, IEnumerable<Collider>> func)
     {
@@ -41,9 +14,23 @@ public class PropObject : MonoBehaviour
         return func(new List<Collider>(Physics.OverlapBox(pos, col.size / 2, rot, LayerMask.GetMask("Prop", "Node")))).ToList().Count() > 0;
     }
 
-    public Vector3 GetSize()
+    // Checks for overlaps in a props 360 degree circumference, in 15 degree intervals
+    // Chooses and returns a random valid rotation afterwards
+    public Vector3 CheckOverlapBoxCircumference(Vector3 pos, Func<List<Collider>, IEnumerable<Collider>> func)
     {
-        return GetComponent<BoxCollider>().size;
+        BoxCollider col = GetComponent<BoxCollider>();
+        List<Vector3> validRotation = new();
+        Vector3 rotation = Vector3.zero;
+
+        for (int i = 0; i <= 24; i++)
+        {
+            Vector3 pos2 = pos + Quaternion.Euler(rotation) * col.center;
+            if (!CheckOverlapBox(pos2, Quaternion.Euler(rotation), func))
+                validRotation.Add(rotation);
+            rotation += new Vector3(0.0f, 15.0f, 0.0f);
+        }
+
+        return validRotation.Count > 0 ? validRotation[UnityEngine.Random.Range(0, validRotation.Count)] : Vector3.one;
     }
 
     public void UpdateChildren(PropHierarchy.PropHierachyInfo parentHierarchy)
@@ -53,5 +40,23 @@ public class PropObject : MonoBehaviour
 
         foreach (MeshPoint point in GetComponentsInChildren<MeshPoint>())
             point.Init(parentHierarchy);
+    }
+
+    public void RotateTo(PropPlacementType propType, PropRotationTypeEnum rotType, float amount)
+    {
+        if (rotType == PropRotationTypeEnum.Default) return;
+
+        bool isTypeWall = propType == PropPlacementType.Wall;
+        bool isRotWorld = rotType == PropRotationTypeEnum.World;
+
+        Vector3 angles = isRotWorld ? transform.eulerAngles : transform.localEulerAngles;
+        Quaternion rot = Quaternion.Euler(isTypeWall ? new(angles.x, angles.y, amount) : new(angles.x, amount, angles.z));
+
+        Debug.Log($"prop: {gameObject.name}, prop type: {propType}, rotation type: {rotType}, amount: {amount}, rot: {rot}");
+
+        if (isRotWorld)
+            transform.rotation = rot;
+        else
+            transform.localRotation = rot;
     }
 }

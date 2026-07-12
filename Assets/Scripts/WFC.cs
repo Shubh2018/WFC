@@ -166,7 +166,6 @@ public class WFC : MonoBehaviour
     double collapseExecutionTime = 0;
     public float collapseWaitTime = 1.0f;
     Vector3Int activeCollapsningTile;
-    bool doneGeneratingPath = false;
     enum Direction // DO NOT CHANCE THE ORDER OF ELEMENTS IN THIS ENUM!
     {
         Front,
@@ -180,6 +179,7 @@ public class WFC : MonoBehaviour
     // Public Variables
     public AStar path;
     public bool pauseGeneration = false;
+    public bool enabledCollapseButton = false;
     public static WFC wfc = null;
     
     // Getters
@@ -191,8 +191,6 @@ public class WFC : MonoBehaviour
     public List<NodeData> getNodes => _nodes;
     public List<NodeData> getNodesGen => _nodesGenerated;
     public Vector3Int TileSize => _tileSize;
-    public Vector3 GetSize => new Vector3(_width * _tileSize.x, _height * _tileSize.y, _length * _tileSize.z);
-    public Vector3 GetCorner => GetSize / 2 - new Vector3(_tileSize.x / 2, 0.0f, _tileSize.z / 2);
     
     // Gizmos Debug Settings
     // -- WFC
@@ -211,7 +209,7 @@ public class WFC : MonoBehaviour
     // -- PDS
     public bool enableGizmosFloorSamples = false;
     public bool enableGizmosWallSamples = false;
-    public bool enableGizmosLeftoverSamples = false;
+    public bool enableGizmosCornerSamples = false;
     public bool enableGizmosSamplePoints = false;
 
     public void StartFindPath(Action doneFuncHook)
@@ -219,7 +217,6 @@ public class WFC : MonoBehaviour
         if ((path = gameObject.GetComponent<AStar>()) && path == null) 
             path = gameObject.AddComponent<AStar>();
 
-        doneGeneratingPath = false;
         path.GeneratePath(this, _pathPoints);
 
         CoroutineManager.StartCoroutine(this, "GeneratePathNodes", GeneratePathNodes(doneFuncHook));
@@ -240,7 +237,7 @@ public class WFC : MonoBehaviour
     public void StopCollapse() 
     {
         CoroutineManager.StopCoroutine(this, "CollapseTiles");
-        CoroutineManager.StopAllCoroutines(gameObject.GetComponent<MeshSampler>());
+        CoroutineManager.StopAllCoroutines();
     }
 
     public void StartCollapseTesting(Action doneFuncHook, Action<int> updateFuncHook)
@@ -251,7 +248,7 @@ public class WFC : MonoBehaviour
     public void StopCollapseTesting()
     {
         CoroutineManager.StopCoroutine(this, "CollapseTilesTesting");
-        CoroutineManager.StopAllCoroutines(gameObject.GetComponent<MeshSampler>());
+        CoroutineManager.StopAllCoroutines();
     }
 
     // Used with the Unity VisualElement editor to save transitive information to the AStar object
@@ -272,7 +269,7 @@ public class WFC : MonoBehaviour
     }
 
     // Used with the Unity VisualElement editor to save transitive information to the Mesh Sampler object
-    public void SavePDSSettings(bool pdsFloorSamples, bool pdsWallSamples, bool pdsLeftoverSamples, bool pdsSamplePoints, float samplesRenderDistance)
+    public void SavePDSSettings(bool pdsFloorSamples, bool pdsWallSamples, bool pdsCornerSamples, bool pdsSamplePoints, float samplesRenderDistance)
     {
         MeshSampler sampler = gameObject.GetComponent<MeshSampler>();
 
@@ -280,7 +277,7 @@ public class WFC : MonoBehaviour
         if (sampler) {
             sampler.enableGizmosFloorSamples = pdsFloorSamples;
             sampler.enableGizmosWallSamples = pdsWallSamples;
-            sampler.enableGizmosLeftoverSamples = pdsLeftoverSamples;
+            sampler.enableGizmosCornerSamples = pdsCornerSamples;
             sampler.enableGizmosSamplePoints = pdsSamplePoints;
             sampler.samplesRenderDistance = samplesRenderDistance;
         }
@@ -423,13 +420,14 @@ public class WFC : MonoBehaviour
         }
     }
 
-    public void SampleTiles()
+    public void SampleTiles(Action doneFuncHook)
     {
         MeshSampler sampler = gameObject.GetComponent<MeshSampler>();
         List<NodeData> nodes = new List<NodeData>(_nodes);
         nodes.AddRange(_nodesGenerated);
 
         MeshNode.SampleTiles(sampler, this, nodes, _samplingRadius, _samplingTries, _samplesPerNode, _floorPropGraphLevel, _wallPropGraphLevel);
+        doneFuncHook();
     }
 
     public void ClearTiles(bool clearAll = false) 
@@ -475,7 +473,6 @@ public class WFC : MonoBehaviour
 
         UnityEngine.Debug.Log($"Total paths: {path.CollapsedPath.Count}");
 
-        doneGeneratingPath = true;
         doneFuncHook();
 
         UnityEngine.Debug.Log("done generating path nodes...");
@@ -578,7 +575,7 @@ public class WFC : MonoBehaviour
 
                 overlaps += CollapseTile(tile);
 
-                yield return new WaitUntil(() => !CoroutineManager.HasAliveRoutines(GetComponent<MeshSampler>()));
+                yield return new WaitUntil(() => !CoroutineManager.HasAliveRoutinesExcept(this));
 
                 _nodesToCollapse.RemoveAt(tileChosenIndex);
             }

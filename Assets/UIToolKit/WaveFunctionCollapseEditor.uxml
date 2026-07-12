@@ -24,7 +24,7 @@
             </ui:Tab>
             <ui:Tab label="Collapse" tabindex="2" enabled="true">
                 <ui:GroupBox name="CollapseGroup" style="flex-direction: column; flex-grow: 0; justify-content: space-evenly; align-content: stretch; align-self: center;">
-                    <ui:Button text="Start Collapse" name="_collapseTiles" data-source-type="WFC, Assembly-CSharp" style="flex-direction: row; flex-wrap: nowrap; align-content: stretch; align-self: center; justify-content: space-evenly;"/>
+                    <ui:Button text="Start Collapse" name="_collapseTiles" data-source-type="WFC, Assembly-CSharp" enabled="false" data-source-path="" binding-path="" style="flex-direction: row; flex-wrap: nowrap; align-content: stretch; align-self: center; justify-content: space-evenly;"/>
                 </ui:GroupBox>
                 <ui:GroupBox name="SettingsGroup" style="justify-content: center;">
                     <ui:Slider label="Collapse Speed" value="1" high-value="2.5" name="_collapseSpeedSlider" low-value="0" fill="true" enabled="false" usage-hints="None"/>
@@ -80,7 +80,7 @@
             <ui:GroupBox text="PDS" name="GroupBox" style="padding-right: 5px; padding-left: 5px; border-left-color: rgb(48, 48, 48); border-right-color: rgb(48, 48, 48); border-top-color: rgb(48, 48, 48); border-bottom-color: rgb(48, 48, 48); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px;">
                 <ui:Toggle label="Enable Floor Points" name="_togglePDSFloorSamples" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosFloorSamples" binding-path="enableGizmosFloorSamples" value="false" toggle-on-label-click="true"/>
                 <ui:Toggle label="Enable Wall Points" name="_togglePDSWallSamples" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosWallSamples" binding-path="enableGizmosWallSamples" value="false"/>
-                <ui:Toggle label="Enable Leftover Points" name="_togglePDSLeftoverSamples" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosLeftoverSamples" binding-path="enableGizmosLeftoverSamples" value="false"/>
+                <ui:Toggle label="Enable Corner Points" name="_togglePDSCornerSamples" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosCornerSamples" binding-path="enableGizmosCornerSamples" value="false"/>
                 <ui:Toggle label="Enable Samples" name="_togglePDSSamplePoints" data-source-type="WFC, Assembly-CSharp" data-source-path="enableGizmosSamplePoints" binding-path="enableGizmosSamplePoints" value="true"/>
                 <ui:Slider label="Samples Render Distance" value="20" high-value="50" name="_sliderPDSSamplesRenderDistance" style="flex-direction: column;"/>
             </ui:GroupBox>

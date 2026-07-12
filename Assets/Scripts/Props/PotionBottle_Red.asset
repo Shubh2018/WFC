@@ -20,6 +20,7 @@ MonoBehaviour:
   _spawnTag: 0
   _spawnPositions: 0
   _useStaticPositions: 0
+  _spawnInCorners: 1
   _nodeTypeToSpawnIn: 1
   _environmentsToSpawnIn: 2
   _structureType: []
