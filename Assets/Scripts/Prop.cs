@@ -60,7 +60,7 @@ public enum PropRotationTypeEnum
     Parent
 };
 
-[CreateAssetMenu(fileName = "Prop", menuName = "Props/Prop")]
+[CreateAssetMenu(fileName = "Prop", menuName = "WFC/Prop")]
 public class Prop : ScriptableObject
 {
     [SerializeField] private PropObject _prop;
@@ -72,8 +72,8 @@ public class Prop : ScriptableObject
     [SerializeField] private SpawnPosition _spawnPositions;
     [SerializeField] private bool _useStaticPositions;
     [SerializeField] private bool _spawnInCorners;
-    [SerializeField] private NodeData.NodeType _nodeTypeToSpawnIn;
-    [SerializeField] private NodeData.EnvironmentType _environmentsToSpawnIn;
+    [SerializeField] private Node.NodeType _nodeTypeToSpawnIn;
+    [SerializeField] private Node.EnvironmentType _environmentsToSpawnIn;
     [SerializeField] private List<Structure> _structureType;
     [SerializeField] private List<PropNeighborProperty> _neighbors;
     [SerializeField] private int _limitCount;
@@ -86,9 +86,9 @@ public class Prop : ScriptableObject
     public PropType PropType => _propType;
     public SpawnPosition SpawnPosition => _spawnPositions;
     public List<PropNeighborProperty> Neighbors => _neighbors;
-    public NodeData.NodeType NodeTypeToSpawnIn => _nodeTypeToSpawnIn;
+    public Node.NodeType NodeTypeToSpawnIn => _nodeTypeToSpawnIn;
     public PropPlacementType Placement => _propPlacement;
-    public NodeData.EnvironmentType EnvironmentTypeToSpawnIn => _environmentsToSpawnIn;
+    public Node.EnvironmentType EnvironmentTypeToSpawnIn => _environmentsToSpawnIn;
     public float SpawnChance {set { _spawnChance = value; } get {return _spawnChance;}}
     public bool UseStaticPositions => _useStaticPositions;
     public bool SpawnInCorners => _spawnInCorners;
@@ -171,7 +171,7 @@ public class Prop : ScriptableObject
         return propObj;
     }
 
-    public void SpawnOverlapTest(Vector3 position, Quaternion rotation, bool ignoreColCenter = false)
+    /*public void SpawnOverlapTest(Vector3 position, Quaternion rotation, bool ignoreColCenter = false)
     {
         BoxCollider col = _prop.GetComponent<BoxCollider>();
 
@@ -186,14 +186,14 @@ public class Prop : ScriptableObject
         boxComponent.size = col.size;
 
         ColDetectorTest colComponent = obj.AddComponent<ColDetectorTest>();
-    }
+    }*/
 
     public Vector3 GetSize()
     {
         return _prop.GetComponent<BoxCollider>().size;
     }
 
-    public PropNeighborProperty GetRandomProp(NodeData node)
+    public PropNeighborProperty GetRandomProp(Node node)
     {
         if(!CompareNode(_nodeTypeToSpawnIn, node.nodeType)) return null;
         return GetRandomProp();
@@ -267,7 +267,7 @@ public class Structure
 [Serializable]
 public class NodeProperty
 {
-    public NodeData.NodeType _spawnInNode;
+    public Node.NodeType _spawnInNode;
     [Range(0.0f, 1.0f)] public float spawnChance;
 }
 

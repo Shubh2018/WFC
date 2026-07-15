@@ -20,6 +20,7 @@ MonoBehaviour:
   _spawnTag: 0
   _spawnPositions: 1
   _useStaticPositions: 1
+  _spawnInCorners: 0
   _nodeTypeToSpawnIn: -1
   _environmentsToSpawnIn: -1
   _structureType: []
@@ -28,3 +29,5 @@ MonoBehaviour:
     maxDistance: 0
     spawnChance: 0.85
   _limitCount: 1
+  _spawnRotationType: 0
+  _spawnRotation: 0

@@ -47,3 +47,5 @@ MonoBehaviour:
     maxDistance: 0.2
     spawnChance: 0.2
   _limitCount: 10
+  _spawnRotationType: 0
+  _spawnRotation: 0

@@ -4,30 +4,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Node : IEquatable<Node>
+class NodeData : IEquatable<NodeData>
 {
-    public Node parent;
+    public NodeData parent;
     public Vector3Int position;
     public double g, h, f; 
 
-    public Node(Node parent, Vector3Int position)
+    public NodeData(NodeData parent, Vector3Int position)
     {
         this.parent = parent;
         this.position = position;
         this.g = this.h = this.f = 0.0f;
     }
 
-    public bool Equals(Node other)
+    public bool Equals(NodeData other)
     {
         if (this.position == null) return false;
         return this.position.Equals(other.position);
     }
 
-    public bool IsDirTo(Node other)
+    public bool IsDirTo(NodeData other)
     {
         if (other == null) return false;
-        for (int i = 6; i < Utils.offsets3.Length; i++)
-            if (position == (other.position + Utils.offsets3[i]))
+        for (int i = 6; i < Misc.offsets3.Length; i++)
+            if (position == (other.position + Misc.offsets3[i]))
                 return true;
         return false;
     }
@@ -62,10 +62,10 @@ public class StairCase
     // Used to check if this staircase piece contains a specific vector coordinate
     public bool CheckContainsPos(Vector3Int pos)
     {
-        return (Utils.VecCmp(pos, bottomEntrance, 0.5f)
-             || Utils.VecCmp(pos, bottomStairs, 0.5f)
-             || Utils.VecCmp(pos, topCorner, 0.5f)
-             || Utils.VecCmp(pos, topExit, 0.5f));
+        return (Misc.VecCmp(pos, bottomEntrance, 0.5f)
+             || Misc.VecCmp(pos, bottomStairs, 0.5f)
+             || Misc.VecCmp(pos, topCorner, 0.5f)
+             || Misc.VecCmp(pos, topExit, 0.5f));
     }
 
     // Draws the gizmo box for the staircase
@@ -111,8 +111,8 @@ public class AStar : MonoBehaviour
     IEnumerator pathRoutine;
     private List<Vector3> constructedPath = new List<Vector3>();
     private List<StairCase> staircases = new List<StairCase>();
-    private List<Node> openList = new List<Node>();
-    private List<Node> closedList = new List<Node>();
+    private List<NodeData> openList = new List<NodeData>();
+    private List<NodeData> closedList = new List<NodeData>();
     private bool doneFindingPath = false;
 
     // Getters
@@ -173,7 +173,7 @@ public class AStar : MonoBehaviour
         {
             Gizmos.color = Color.orange;
 
-            foreach(Node node in openList)
+            foreach(NodeData node in openList)
             {
                 Gizmos.DrawWireCube(_parent.TileSize * node.position, Vector3.Scale(Vector3.one, _parent.TileSize));
             }
@@ -184,7 +184,7 @@ public class AStar : MonoBehaviour
         {
             Gizmos.color = Color.green;
 
-            foreach(Node node in closedList)
+            foreach(NodeData node in closedList)
             {
                 Gizmos.DrawWireCube(_parent.TileSize * node.position, Vector3.Scale(Vector3.one, _parent.TileSize));
             }
@@ -229,10 +229,10 @@ public class AStar : MonoBehaviour
         if (lineRenderer) lineRenderer.positionCount = 0;
     }
 
-    private List<Vector3> CollapsePath(Node endNode)
+    private List<Vector3> CollapsePath(NodeData endNode)
     {
         List<Vector3> path = new List<Vector3>();
-        Node current = endNode;
+        NodeData current = endNode;
 
         while (current != null)
         {
@@ -255,7 +255,7 @@ public class AStar : MonoBehaviour
             Vector3Int p1 = path[i];
 
             // If the point is outside the level
-            if (!Utils.CheckPosValid(p1, _parent.getWidth, _parent.getHeight, _parent.getLength)) return false;
+            if (!Misc.CheckPosValid(p1, _parent.getWidth, _parent.getHeight, _parent.getLength)) return false;
 
             // If the two points are vertically more than 1 grid tile away from eachother
             if (i < (path.Count - 1) && Math.Abs(p1.y - path[i+1].y) > 1) return false;
@@ -266,7 +266,7 @@ public class AStar : MonoBehaviour
                 Vector3Int p3 = path[j];
 
                 if (i == j) continue; // This point is the same in both instances, continue
-                if (Utils.VecCmp(p1, p3, 0.0f)) return false; // If the point is at the same location as another point
+                if (Misc.VecCmp(p1, p3, 0.0f)) return false; // If the point is at the same location as another point
             }
         }
 
@@ -289,25 +289,25 @@ public class AStar : MonoBehaviour
             {
                 // Find a direction in which there are space for the staircase
                 // The order is randomised to make it more interesting
-                foreach (Vector3Int offset in Utils.offsets2.OrderBy(i => Guid.NewGuid()).ToList())
+                foreach (Vector3Int offset in Misc.offsets2.OrderBy(i => Guid.NewGuid()).ToList())
                 {
                     // Make sure the new point is placed with the correct offset and level according to the next point
                     Vector3Int levelOffset = currPoint.y < nextPoint.y ? Vector3Int.down : Vector3Int.up;
                     Vector3Int newPos = nextPoint + levelOffset + offset * 3;
 
-                    bool val = Utils.CheckPosValid(newPos, _parent.getWidth, _parent.getHeight, _parent.getLength) 
-                    && !Utils.CheckVectorOverlap(points, newPos, 0.1f)
-                    && !Utils.CheckVectorOverlap(points, newPos + Vector3Int.down, 0.1f)
-                    && !Utils.CheckVectorOverlap(points, newPos + Vector3Int.up, 0.1f);
+                    bool val = Misc.CheckPosValid(newPos, _parent.getWidth, _parent.getHeight, _parent.getLength) 
+                    && !Misc.CheckVectorOverlap(points, newPos, 0.1f)
+                    && !Misc.CheckVectorOverlap(points, newPos + Vector3Int.down, 0.1f)
+                    && !Misc.CheckVectorOverlap(points, newPos + Vector3Int.up, 0.1f);
 
                     // The new point is only valid if:
                     // - It is within the level
                     // - and does not overlap with another point
                     // - nor overlaps with a previously autogenerated point either above or below
-                    if (Utils.CheckPosValid(newPos, _parent.getWidth, _parent.getHeight, _parent.getLength) 
-                    && !Utils.CheckVectorOverlap(points, newPos, 0.1f)
-                    && !Utils.CheckVectorOverlap(points, newPos + Vector3Int.down, 0.1f)
-                    && !Utils.CheckVectorOverlap(points, newPos + Vector3Int.up, 0.1f))
+                    if (Misc.CheckPosValid(newPos, _parent.getWidth, _parent.getHeight, _parent.getLength) 
+                    && !Misc.CheckVectorOverlap(points, newPos, 0.1f)
+                    && !Misc.CheckVectorOverlap(points, newPos + Vector3Int.down, 0.1f)
+                    && !Misc.CheckVectorOverlap(points, newPos + Vector3Int.up, 0.1f))
                     {
                         // List of all the points making up a staircase
                         Vector3Int p1 = newPos - offset;
@@ -359,8 +359,8 @@ public class AStar : MonoBehaviour
             List<Vector3> tempPath = new List<Vector3>();
 
             // Setup data
-            Node startNode = new Node(null, points[j]);
-            Node endNode = new Node(null, points[j+1]);
+            NodeData startNode = new NodeData(null, points[j]);
+            NodeData endNode = new NodeData(null, points[j+1]);
 
             openList.Add(startNode);
 
@@ -370,12 +370,12 @@ public class AStar : MonoBehaviour
             while (openList.Count > 0)
             {
                 // Get the current node
-                Node currentNode = openList[0];
+                NodeData currentNode = openList[0];
                 int currentIndex = 0;
 
                 for (int i = 0; i < openList.Count; i++)
                 {
-                    Node item = openList[i];
+                    NodeData item = openList[i];
 
                     // The node is only acceptable if it is closer and only moves diagonal inside a staircase
                     if (item.f < currentNode.f
@@ -404,19 +404,19 @@ public class AStar : MonoBehaviour
                 }
 
                 // Generate children
-                List<Node> children = new List<Node>();
+                List<NodeData> children = new List<NodeData>();
 
-                foreach (Vector3Int offset in Utils.offsets3)
+                foreach (Vector3Int offset in Misc.offsets3)
                 {
                     // Get node position
                     Vector3Int nodePosition = (currentNode.position + offset);
 
                     // Make sure within range of the level
-                    if (!Utils.CheckPosValid(nodePosition, _parent.getWidth, _parent.getHeight, _parent.getLength))
+                    if (!Misc.CheckPosValid(nodePosition, _parent.getWidth, _parent.getHeight, _parent.getLength))
                         continue;
 
                     // Create new node
-                    Node newNode = new Node(currentNode, nodePosition);
+                    NodeData newNode = new NodeData(currentNode, nodePosition);
 
                     // Append
                     children.Add(newNode);
@@ -425,10 +425,10 @@ public class AStar : MonoBehaviour
                 // Loop through children
                 for (int k = 0; k < children.Count; k++)
                 {
-                    Node childNode = children[k];
+                    NodeData childNode = children[k];
 
                     // Child is on the closed list
-                    foreach (Node closedChild in closedList)
+                    foreach (NodeData closedChild in closedList)
                         if (childNode.Equals(closedChild))
                             continue;
 
@@ -445,7 +445,7 @@ public class AStar : MonoBehaviour
                     childNode.f = childNode.g + childNode.h;
 
                     // Child is already in the open list
-                    foreach (Node openNode in openList)
+                    foreach (NodeData openNode in openList)
                         if (childNode.Equals(openNode) && childNode.g > openNode.g)
                             continue;
                     

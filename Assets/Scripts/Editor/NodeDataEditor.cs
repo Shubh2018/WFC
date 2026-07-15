@@ -3,16 +3,16 @@ using UnityEngine.UIElements;
 using UnityEngine;
 using System;
 
-[CustomEditor(typeof(NodeData))]
+[CustomEditor(typeof(Node))]
 public class NodeDataEditor : Editor
 {
     public VisualTreeAsset editorVisualTree;
     private VisualElement rootTree;
-    private NodeData nodeData;
+    private Node nodeData;
     
     public override VisualElement CreateInspectorGUI()
     {
-        nodeData = (NodeData) target;
+        nodeData = (Node) target;
         
         rootTree = new VisualElement();
         editorVisualTree.CloneTree(rootTree);

@@ -2,6 +2,8 @@ using UnityEditor;
 using UnityEngine.UIElements;
 using System;
 using System.Linq;
+using System.Diagnostics;
+using UnityEditorInternal;
 
 [CustomEditor(typeof(WFC))]
 public class WaveFunctionCollapseEditor : Editor
@@ -198,6 +200,7 @@ public class WaveFunctionCollapseEditor : Editor
         WaveFunctionCollapse.GenerateTiles();
         WaveFunctionCollapse.SampleTiles(() => 
         {
+            WaveFunctionCollapse.doneGeneratingSamples = true;
             WaveFunctionCollapse.enabledCollapseButton = true;
             SetButtonState("_collapseTiles", true);
         });
@@ -231,6 +234,12 @@ public class WaveFunctionCollapseEditor : Editor
 
     private void CollapseTiles(ClickEvent evt)
     {
+        if (!WaveFunctionCollapse.doneGeneratingSamples)
+        {
+            UnityEngine.Debug.LogWarning("Samples has not been generated!");
+            return;
+        }
+
         WaveFunctionCollapse.pauseGeneration = false;
         WaveFunctionCollapse.StartCollapse((int overlaps) => {
             ResetControls();

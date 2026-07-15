@@ -192,6 +192,7 @@ Transform:
   - {fileID: 6370979371212048971}
   - {fileID: 3902468716983675332}
   - {fileID: 6322882451462775691}
+  - {fileID: 5062951923858543284}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4715303074342295706
@@ -284,6 +285,62 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.7754112, y: 2.961084, z: 0.68122435}
   m_Center: {x: 0, y: 1.480542, z: -0.00000035762787}
+--- !u!1 &3340184280365747518
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5062951923858543284}
+  - component: {fileID: 4856709794296576060}
+  m_Layer: 0
+  m_Name: GameObject (6)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5062951923858543284
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3340184280365747518}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.64, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6116531347517222288}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4856709794296576060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3340184280365747518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21a928cc2bfd2a2798e835e043d196b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeshPoint
+  _forcedToSpawn: 1
+  _spawnViaSpawner: 1
+  _spawnTypeTag: 0
+  _gameObjectsToSpawn:
+    _wallPrefabs: []
+    _floorPrefabs:
+    - {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
+    - {fileID: 11400000, guid: a87c0d20ba356db119fd0ad4a4c0a7f7, type: 2}
+    - {fileID: 11400000, guid: 6b2f40d067621b4edb3c9003ad17137c, type: 2}
+    maxWallPropCount: 0
+    maxFloorPropCount: 1
+  _spawnHierarchy: 5
 --- !u!1 &3496213362907997078
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,9 +1,5 @@
 using UnityEngine;
-using UnityEditor;
-using System.Collections.Generic;
-using System.IO;
 using System;
-using Unity.Transforms;
 
 public class MeshSurface : MonoBehaviour
 {
@@ -17,6 +13,7 @@ public class MeshSurface : MonoBehaviour
     [SerializeField] private Vector3 _surfaceSize = Vector3.one;
     [SerializeField] private int _spawnHierarchy = 5;
     [SerializeField] private int _maxPropCount = 1;
+    private WFC wfc;
     private PropHierarchy.PropHierachyInfo _hierarchyInfo;
 
     private void OnDrawGizmos()
@@ -68,8 +65,10 @@ public class MeshSurface : MonoBehaviour
         _meshFilter = gameObject.GetComponent<MeshFilter>();
         _meshRenderer = gameObject.GetComponent<MeshRenderer>();
 
-        _meshFilter.sharedMesh = Utils.CreatePlaneMesh(_surfaceSize / 2);
+        _meshFilter.sharedMesh = Misc.CreatePlaneMesh(_surfaceSize / 2);
         _meshRenderer.material.color = Color.grey;
+
+        wfc = FindFirstObjectByType<WFC>();
 
         _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierachyInfo, _spawnHierarchy);
 
@@ -80,6 +79,11 @@ public class MeshSurface : MonoBehaviour
 
     private void Generate()
     {
+        if (!wfc.IsInside(GetComponent<BoxCollider>().bounds))
+        {
+            DestroyImmediate(gameObject);
+            return;
+        }
         if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
         
         _meshSampler.Clear();
@@ -87,7 +91,7 @@ public class MeshSurface : MonoBehaviour
         _meshSampler.SetSamplingGraphProperties(0.25f, 1, 1, 1);
         _meshSampler.AddSamples(_meshSampler.GetSamples(_meshFilter));
 
-        Spawner spawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), _maxPropCount, _maxPropCount);
+        Spawner spawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(AssetManager.LoadFilteredProps(_spawnTypeTag), _maxPropCount, _maxPropCount);
 
         Func<(Prop, int)> propFloorSpawnerFunc = () => (spawner.FloorPrefabs[UnityEngine.Random.Range(0, spawner.FloorPrefabs.Count)], spawner.FloorPrefabs.Count);
         Func<(Prop, int)> propWallSpawnerFunc = () => (spawner.WallPrefabs[UnityEngine.Random.Range(0, spawner.WallPrefabs.Count)], spawner.WallPrefabs.Count);
@@ -102,7 +106,7 @@ public class MeshSurface : MonoBehaviour
         Vector3 angles = transform.parent ? transform.parent.eulerAngles : Vector3.zero;
 
         Bounds myBounds = new Bounds(transform.position, _surfaceSize);
-        Bounds otherBounds = new Bounds(Utils.RotatePointAroundPivot(sample, transform.position, angles * -1), obj.GetSize);
+        Bounds otherBounds = new Bounds(Misc.RotatePointAroundPivot(sample, transform.position, angles * -1), obj.GetSize);
 
         return myBounds.Contains(otherBounds.min) && myBounds.Contains(otherBounds.max);
     }

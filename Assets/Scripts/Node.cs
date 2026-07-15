@@ -1,8 +1,6 @@
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
-using System;
-using UnityEngine.Serialization;
 
 public class NodeFace
 {
@@ -43,26 +41,26 @@ public class NodeFaceVertical : NodeFace
 }
 
 [CreateAssetMenu(fileName = "Node", menuName = "WFC/Node")]
-public class NodeData : ScriptableObject
+public class Node : ScriptableObject
 {
     [System.Flags]
     public enum NodeType
     {
-        Corner = 1<<0,
-        Corridor = 1<<1,
-        Deadend = 1<<2,
-        Intersection = 1<<3,
-        Junction = 1<<4,
-        Staircase = 1<<5,
+        Corner,
+        Corridor,
+        Deadend,
+        Intersection,
+        Junction,
+        Staircase
     };
 
     [System.Flags]
     public enum EnvironmentType
     {
-        Objective = 1<<0,
-        Study = 1<<1,
-        Cellar = 1<<2,
-        Garden = 1<<3,
+        Objective,
+        Study,
+        Cellar,
+        Garden
     };
     
     public GameObject Prefab;
@@ -70,6 +68,7 @@ public class NodeData : ScriptableObject
     public bool IsStairPiece;
     public bool CanHaveObjective = false;
     public bool IsDeadEnd = false;
+    public bool AllowBeamSpawn = false;
     public NodeType nodeType;
     public EnvironmentType environmentType;
     [HideInInspector] public int ClockwiseRotationSteps; // Set automatically as the tile is rotated
@@ -156,7 +155,7 @@ public class NodeData : ScriptableObject
 
     public (Prop, int) GetRandomPropCDF(PropPlacementType placementType)
     {
-        List<Prop> props = new List<Prop>(Utils.LoadProps(placementType).Where((Prop p) => !exceptionsProps.Contains(p)));
+        List<Prop> props = new List<Prop>(AssetManager.LoadProps(placementType).Where((Prop p) => !exceptionsProps.Contains(p)));
 
         if(props.Count <= 0) return (null, 0);
 

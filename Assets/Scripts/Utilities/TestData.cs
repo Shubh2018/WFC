@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEngine;
 
-public class TestData
+public static class TestData
 {
     private static string _fileName = string.Empty;
     

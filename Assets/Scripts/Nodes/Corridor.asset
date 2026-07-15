@@ -10,17 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: StraightCross
+  m_Name: Corridor
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 1840926091823767162, guid: 477a0da27babecd698d6cc9b2f028d30, type: 3}
-  Weight: 1
+  Prefab: {fileID: 4608806688974668763, guid: 4bc560b761295bf45814036f2380791e, type: 3}
+  Weight: 2
+  IsStairPiece: 0
+  CanHaveObjective: 0
+  IsDeadEnd: 0
+  AllowBeamSpawn: 0
+  nodeType: 2
+  environmentType: 0
   ClockwiseRotationSteps: 0
   Up:
     name: 0
     invariantRotation: 1
     rotationIndex: 0
   Down:
-    name: 1
+    name: 0
     invariantRotation: 1
     rotationIndex: 0
   Left:
@@ -39,3 +45,4 @@ MonoBehaviour:
     name: 2
     symmetry: 1
     type: 0
+  exceptionsProps: []

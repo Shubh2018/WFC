@@ -17,7 +17,18 @@ public class PropEditor : Editor
         rootTree = new VisualElement();
         editorVisualTree.CloneTree(rootTree);
 
+        EnumField enumPlacementType = rootTree.Q<EnumField>("_placementEnumField");
         Toggle toggleSpawnInCorners = rootTree.Q<Toggle>("_spawnInCornersToggle");
+        toggleSpawnInCorners.SetEnabled(((PropPlacementType) enumPlacementType.value) != PropPlacementType.Wall);
+        
+        enumPlacementType.RegisterCallback<ChangeEvent<Enum>>((evt) =>
+        {
+            bool IsWallType = ((PropPlacementType) evt.newValue) == PropPlacementType.Wall;
+
+            toggleSpawnInCorners.SetEnabled(!IsWallType);
+            toggleSpawnInCorners.value = false;
+        });
+
         toggleSpawnInCorners.RegisterCallback((ChangeEvent<bool> evt) =>
         {
             rootTree.Q<Toggle>("_staticToggle").SetEnabled(!evt.newValue);

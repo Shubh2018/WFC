@@ -2,10 +2,19 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Entities.UniversalDelegates;
 
 public class PropObject : MonoBehaviour
 {
+    /*
+    todo:
+    - [X] Add doors between room / structure types
+    - [X] Fix junctions not spawning samples
+    - Add a room / structure layout planner (also make environments and prop type work again)
+    - Add a player path where props cannot spawn
+    - Add prop relations with rotation
+    - Do cleanup to make sure every feature works
+    */
+
     public Vector3 GetSize => GetComponent<BoxCollider>().size;
 
     public bool CheckOverlapBox(Vector3 pos, Quaternion rot, Func<List<Collider>, IEnumerable<Collider>> func)
@@ -51,8 +60,6 @@ public class PropObject : MonoBehaviour
 
         Vector3 angles = isRotWorld ? transform.eulerAngles : transform.localEulerAngles;
         Quaternion rot = Quaternion.Euler(isTypeWall ? new(angles.x, angles.y, amount) : new(angles.x, amount, angles.z));
-
-        Debug.Log($"prop: {gameObject.name}, prop type: {propType}, rotation type: {rotType}, amount: {amount}, rot: {rot}");
 
         if (isRotWorld)
             transform.rotation = rot;

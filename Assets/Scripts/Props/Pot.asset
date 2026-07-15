@@ -20,9 +20,9 @@ MonoBehaviour:
   _spawnTag: 0
   _spawnPositions: 0
   _useStaticPositions: 0
-  _spawnInCorners: 1
-  _nodeTypeToSpawnIn: 27
-  _environmentsToSpawnIn: 8
+  _spawnInCorners: 0
+  _nodeTypeToSpawnIn: 3
+  _environmentsToSpawnIn: 0
   _structureType: []
   _neighbors:
   - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
@@ -41,3 +41,5 @@ MonoBehaviour:
     maxDistance: 0.8
     spawnChance: 0.2
   _limitCount: 1
+  _spawnRotationType: 0
+  _spawnRotation: 0

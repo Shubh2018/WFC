@@ -31,7 +31,7 @@ public class MeshSurfaceEditor : Editor
             BoxCollider col = surface.GetComponent<BoxCollider>();
 
             if (filter) 
-                filter.sharedMesh = Utils.CreatePlaneMesh(evt.newValue / 2);
+                filter.sharedMesh = Misc.CreatePlaneMesh(evt.newValue / 2);
             
             if (renderer)
                 renderer.material.color = Color.grey;

@@ -26,3 +26,5 @@ MonoBehaviour:
   _structureType: []
   _neighbors: []
   _limitCount: 2
+  _spawnRotationType: 0
+  _spawnRotation: 0

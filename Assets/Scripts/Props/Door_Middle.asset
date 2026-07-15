@@ -10,24 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: acd5196af078d4e74b8bdc1ce7cdea58, type: 3}
-  m_Name: Table
+  m_Name: Door_Middle
   m_EditorClassIdentifier: Assembly-CSharp::Prop
-  _prop: {fileID: 640680981845428240, guid: c533c10f37d12c941bf5dfea26e26cac, type: 3}
-  _spawnChance: 0.8
+  _prop: {fileID: 1305282043195735651, guid: 4adae8232505e0e45b64cc3b61e9d9e1, type: 3}
+  _spawnChance: 0
   _propPlacement: 0
   _propType: 0
   _limitType: 0
-  _spawnTag: 2
+  _spawnTag: 1
   _spawnPositions: 0
   _useStaticPositions: 0
   _spawnInCorners: 0
-  _nodeTypeToSpawnIn: -1
-  _environmentsToSpawnIn: -1
+  _nodeTypeToSpawnIn: 0
+  _environmentsToSpawnIn: 0
   _structureType: []
-  _neighbors:
-  - prop: {fileID: 11400000, guid: a87c0d20ba356db119fd0ad4a4c0a7f7, type: 2}
-    maxDistance: 1
-    spawnChance: 0.6
-  _limitCount: 1
+  _neighbors: []
+  _limitCount: 0
   _spawnRotationType: 0
   _spawnRotation: 0

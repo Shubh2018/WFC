@@ -11,7 +11,7 @@ using Random = UnityEngine.Random;
 public class Tile
 {
     public Vector3Int pos;
-    public List<NodeData> potentialNodes;
+    public List<Node> potentialNodes;
     public List<Tile> neighbors;
     public bool shouldBeUpdated;
 
@@ -21,7 +21,7 @@ public class Tile
         neighbors = new List<Tile>();
         shouldBeUpdated = update;
 
-        potentialNodes = new List<NodeData>(parent.getNodes);
+        potentialNodes = new List<Node>(parent.getNodes);
         potentialNodes.AddRange(parent.getNodesGen);
         potentialNodes = potentialNodes.Where(node => !node.IsStairPiece).ToList();
     }
@@ -88,37 +88,37 @@ public class PathNode
         if (!pathIndicies.Contains(index)) pathIndicies.Add(index);
     }
 
-    private NodeData FindStairCaseNode(List<NodeData> nodes)
+    private Node FindStairCaseNode(List<Node> nodes)
     {
         StairCase stairs = parent.path.GetStaircase(pathIndicies[0]);
         Vector3Int pos = Vector3Int.FloorToInt(parent.path.CollapsedPath[pathIndicies[0]]);
         string name = "";
 
-        if (Utils.VecCmp(stairs.bottomEntrance, pos, 0.5f)) name = "StaircaseEnd";
-        else if (Utils.VecCmp(stairs.bottomStairs, pos, 0.5f)) name = "StaircaseFront";
-        else if (Utils.VecCmp(stairs.topExit, pos, 0.5f)) name = "StaircaseTopFront";
-        else if (Utils.VecCmp(stairs.topCorner, pos, 0.5f)) name = "StaircaseTopEnd";
+        if (Misc.VecCmp(stairs.bottomEntrance, pos, 0.5f)) name = "StaircaseEnd";
+        else if (Misc.VecCmp(stairs.bottomStairs, pos, 0.5f)) name = "StaircaseFront";
+        else if (Misc.VecCmp(stairs.topExit, pos, 0.5f)) name = "StaircaseTopFront";
+        else if (Misc.VecCmp(stairs.topCorner, pos, 0.5f)) name = "StaircaseTopEnd";
 
         name = stairs.rotation > 0 ? $"{name}_{stairs.rotation * 90}" : name;
 
-        return nodes.Find((NodeData node) => node.name == name);
+        return nodes.Find((Node node) => node.name == name);
     }
 
-    public List<NodeData> GetPotentialNodes()
+    public List<Node> GetPotentialNodes()
     {
-        List<NodeData> potentialNodes = new List<NodeData>(parent.getNodes);
+        List<Node> potentialNodes = new List<Node>(parent.getNodes);
         potentialNodes.AddRange(parent.getNodesGen);
         
         // Check if this node is part of a staircase
         if (parent.path.CheckStaircaseOverlap(Vector3Int.FloorToInt(parent.path.CollapsedPath[pathIndicies[0]]))) 
-            return new List<NodeData> { FindStairCaseNode(potentialNodes) };
+            return new List<Node> { FindStairCaseNode(potentialNodes) };
         
         // Since this node is not a staircase, filter out any staircase nodes
         potentialNodes = potentialNodes.Where(node => !node.IsStairPiece).ToList();
 
         for (int i = potentialNodes.Count - 1; i >= 0; i--)
         {
-            NodeData node = potentialNodes[i];
+            Node node = potentialNodes[i];
 
             if (data.Left != NodeFace.Name.None && node.Left.name != data.Left
             || data.Right != NodeFace.Name.None && node.Right.name != data.Right
@@ -145,8 +145,8 @@ public class WFC : MonoBehaviour
     
     [SerializeField] private Vector3Int _tileSize = Vector3Int.one;
     
-    [SerializeField] private List<NodeData> _nodes = new List<NodeData>();
-    [SerializeField] private List<NodeData> _nodesGenerated = new List<NodeData>();
+    [SerializeField] private List<Node> _nodes = new List<Node>();
+    [SerializeField] private List<Node> _nodesGenerated = new List<Node>();
     [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
 
     [SerializeField] private float _samplingRadius = 0.5f;
@@ -160,7 +160,7 @@ public class WFC : MonoBehaviour
     public string PropText { get; private set; } = "";
 
     // Private Variables
-    NodeData[,,] _grid;
+    Node[,,] _grid;
     List<Tile> _nodesToCollapse = new List<Tile>();
     List<PathNode> pathNodes = new List<PathNode>();
     double collapseExecutionTime = 0;
@@ -179,6 +179,7 @@ public class WFC : MonoBehaviour
     // Public Variables
     public AStar path;
     public bool pauseGeneration = false;
+    public bool doneGeneratingSamples = false;
     public bool enabledCollapseButton = false;
     public static WFC wfc = null;
     
@@ -188,8 +189,8 @@ public class WFC : MonoBehaviour
     public int getWidth => _width;
     public int getHeight => _height;
     public int getLength => _length;
-    public List<NodeData> getNodes => _nodes;
-    public List<NodeData> getNodesGen => _nodesGenerated;
+    public List<Node> getNodes => _nodes;
+    public List<Node> getNodesGen => _nodesGenerated;
     public Vector3Int TileSize => _tileSize;
     
     // Gizmos Debug Settings
@@ -362,7 +363,7 @@ public class WFC : MonoBehaviour
                     for (int z = 0; z < _length; z++)
                     {
                         if (!_grid[x, y, z]) continue;
-                        NodeData node = _grid[x, y, z];
+                        Node node = _grid[x, y, z];
                         Vector3Int tilePos = _tileSize * new Vector3Int(x, y, z);
 
                         if (enableGizmosFacesText)
@@ -385,6 +386,32 @@ public class WFC : MonoBehaviour
     }
     
     public void SetLevelCount(int count) => _levelCount = count;
+    public (Vector3, Vector3) GetBoundary()
+    {
+        Vector3 min = new Vector3(_tileSize.x / -2, 0.0f, _tileSize.z / -2);
+        Vector3 max = Vector3.Scale(_tileSize, new(_width, _height, _length)) + min;
+
+        return (min, max);
+    }
+
+    // Check point is inside WFC bounderies
+    public bool IsInside(Vector3 point)
+    {
+        (Vector3 min, Vector3 max) = GetBoundary();
+
+        return point.x >= min.x
+            && point.x <= max.x
+            && point.y >= min.y
+            && point.y <= max.y
+            && point.z >= min.z
+            && point.z <= max.z;
+    }
+
+    // Check if a boundary (like from a collider) is inside the WFC bounderies
+    public bool IsInside(Bounds bounds)
+    {
+        return IsInside(bounds.min) && IsInside(bounds.max);
+    }
 
     // Generate new tiles by creating new ones by rotating the current ones
     public void GenerateTiles()
@@ -393,7 +420,7 @@ public class WFC : MonoBehaviour
         _nodesGenerated.Clear();
 
         // Go through all created nodes and rotate those that need it
-        foreach(NodeData currNode in _nodes) 
+        foreach(Node currNode in _nodes) 
         {
             // Only rotate nodes with a positive weight that are not symmetrical all the way around
             if (!currNode.ShouldRotate()) continue;
@@ -405,11 +432,11 @@ public class WFC : MonoBehaviour
                 if(j > 0 && currNode.IsBilateralSymmetric()) break;
 
                 // Setup new tile data
-                NodeData newNode = Instantiate(currNode);
+                Node newNode = Instantiate(currNode);
 
                 newNode.name = currNode.name + "_" + ((j + 1) * 90);
                 newNode.ClockwiseRotationSteps = j + 1;
-                newNode.nodeType = (NodeData.NodeType) Random.Range(0, 3);
+                newNode.nodeType = (Node.NodeType) Random.Range(0, 3);
 
                 // Rotate the node
                 newNode.Rotate(j + 1);
@@ -422,8 +449,9 @@ public class WFC : MonoBehaviour
 
     public void SampleTiles(Action doneFuncHook)
     {
+        doneGeneratingSamples = false;
         MeshSampler sampler = gameObject.GetComponent<MeshSampler>();
-        List<NodeData> nodes = new List<NodeData>(_nodes);
+        List<Node> nodes = new List<Node>(_nodes);
         nodes.AddRange(_nodesGenerated);
 
         MeshNode.SampleTiles(sampler, this, nodes, _samplingRadius, _samplingTries, _samplesPerNode, _floorPropGraphLevel, _wallPropGraphLevel);
@@ -489,7 +517,7 @@ public class WFC : MonoBehaviour
 
         UnityEngine.Debug.Log("Collapse Tiles...");
 
-        _grid = new NodeData[_width, _height, _length];
+        _grid = new Node[_width, _height, _length];
 
         _nodesToCollapse.Clear();
 
@@ -635,7 +663,7 @@ public class WFC : MonoBehaviour
         doneFuncHook();
     }
 
-    private double[] CalculateNodesWeights(List<NodeData> nodes) {
+    private double[] CalculateNodesWeights(List<Node> nodes) {
         double[] weights = new double[nodes.Count];
         double totalWeight = nodes.Sum(n => n.Weight);
 
@@ -662,13 +690,13 @@ public class WFC : MonoBehaviour
     {
         if(!tile.shouldBeUpdated) return; // No neighbor has been collapsed for this tile, so no need to recheck its options
 
-        for(int i = 0; i < Utils.offsets.Length; i++)
+        for(int i = 0; i < Misc.offsets.Length; i++)
         {
-            Vector3Int neighbor = tile.pos + Utils.offsets[i];
+            Vector3Int neighbor = tile.pos + Misc.offsets[i];
 
-            if(Utils.CheckPosValid(neighbor, _width, _height, _length))
+            if(Misc.CheckPosValid(neighbor, _width, _height, _length))
             {
-                NodeData neighborNode = _grid[neighbor.x, neighbor.y, neighbor.z];
+                Node neighborNode = _grid[neighbor.x, neighbor.y, neighbor.z];
 
                 if(neighborNode)
                 {
@@ -724,7 +752,7 @@ public class WFC : MonoBehaviour
     private int CollapseTile(Tile tile)
     {
         // Get node object
-        NodeData node = _grid[tile.pos.x, tile.pos.y, tile.pos.z];
+        Node node = _grid[tile.pos.x, tile.pos.y, tile.pos.z];
 
         // Make sure that this tile's neighbors get marked to get updated
         foreach (Tile t in tile.neighbors)
@@ -753,7 +781,7 @@ public class WFC : MonoBehaviour
         return 0;
     }
 
-    private void WhittleNodes(List<NodeData> potentialNodes, NodeFaceHorizontal validType, Direction direction)
+    private void WhittleNodes(List<Node> potentialNodes, NodeFaceHorizontal validType, Direction direction)
     {
         for(int i = potentialNodes.Count - 1; i >= 0; i--)
         {
@@ -778,7 +806,7 @@ public class WFC : MonoBehaviour
         }
     }
 
-    private void WhittleNodes(List<NodeData> potentialNodes, NodeFaceVertical validType, Direction direction)
+    private void WhittleNodes(List<Node> potentialNodes, NodeFaceVertical validType, Direction direction)
     {
         for(int i = potentialNodes.Count - 1; i >= 0; i--)
         {

@@ -195,20 +195,6 @@ public class MeshSampler : MonoBehaviour
                     Gizmos.DrawSphere(wallPoint.sample, 0.1f);
                     Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .2f);
                 }
-
-                /*Gizmos.color = Color.darkBlue;
-                (Vector3 min, Vector3 max) = BuildBoundingBox(wallList.Select(v => v.sample).ToArray());
-                
-                for (int i = 0; i < Enum.GetNames(typeof(SpawnPosition)).Count(); i++)
-                {
-                    Prop p = new Prop((SpawnPosition) i);
-                    List<Sample> s = GetWallSamplesBySpawnPosition(0, p, min, max);
-                    s.AddRange(GetWallSamplesBySpawnPosition(1, p, min, max));
-                    
-                    if (!WithinDisOfCam(s[0].sample, samplesRenderDistance)) continue;
-                    Gizmos.DrawSphere(s[0].sample, 0.1f);
-                    Gizmos.DrawRay(s[0].sample, s[0].triangleNormal * .2f);
-                }*/
             }
         }
 

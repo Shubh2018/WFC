@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 7613687411510550139}
   - component: {fileID: 6393064947278683357}
   - component: {fileID: 1510143991882835821}
-  - component: {fileID: 6564709535239613873}
   - component: {fileID: -5539168988680357707}
+  - component: {fileID: 5158388037089118420}
   m_Layer: 8
   m_Name: Wall_DoorStand
   m_TagString: Untagged
@@ -92,7 +92,19 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &6564709535239613873
+--- !u!114 &-5539168988680357707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8644115839786080152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PropObject
+--- !u!65 &5158388037089118420
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -111,17 +123,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3, y: 4.6547894, z: 0.91017824}
+  m_Size: {x: 4.9064894, y: 4.6547894, z: 0.91017824}
   m_Center: {x: -0.026769042, y: 2.3100684, z: -0.0000009834766}
---- !u!114 &-5539168988680357707
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8644115839786080152}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PropObject

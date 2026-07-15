@@ -10,26 +10,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 561f06698056baf40898c9634d248779, type: 3}
-  m_Name: Intersection
+  m_Name: Corner
   m_EditorClassIdentifier: Assembly-CSharp::NodeData
-  Prefab: {fileID: 9197163299549263030, guid: 14db96896a5d4964ea9de084359f7564, type: 3}
+  Prefab: {fileID: 3705999419518530822, guid: 9ec73e733d114444b8f6cf6aa24d3bcd, type: 3}
   Weight: 2
   IsStairPiece: 0
   CanHaveObjective: 0
   IsDeadEnd: 0
-  nodeType: 8
-  environmentType: 2
+  AllowBeamSpawn: 0
+  nodeType: 1
+  environmentType: 0
   ClockwiseRotationSteps: 0
   Up:
     name: 0
     invariantRotation: 1
-    rotationIndex: 0
+    rotationIndex: 1
   Down:
     name: 0
     invariantRotation: 1
     rotationIndex: 0
   Left:
-    name: 3
+    name: 2
     symmetry: 1
     type: 0
   Right:
@@ -37,15 +38,11 @@ MonoBehaviour:
     symmetry: 1
     type: 0
   Front:
-    name: 3
+    name: 2
     symmetry: 1
     type: 0
   Back:
     name: 3
     symmetry: 1
     type: 0
-  validFloorProps:
-  - {fileID: 11400000, guid: f6aaafa0312c45a7aaef2e43ee98f215, type: 2}
-  validWallProps:
-  - {fileID: 11400000, guid: 845fb54e4eb479c4995477faf75926c2, type: 2}
-  - {fileID: 11400000, guid: 4272b57546d0b43548d0c767c0153e31, type: 2}
+  exceptionsProps: []

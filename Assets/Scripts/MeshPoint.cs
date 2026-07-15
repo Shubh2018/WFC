@@ -13,6 +13,7 @@ public class MeshPoint : MonoBehaviour
     private PropObject _spawnedObject;
     private PropHierarchy.PropHierachyInfo _hierarchyInfo;
     private static Spawner? spawner = null;
+    private WFC wfc;
 
     private void OnDrawGizmos()
     {
@@ -29,16 +30,25 @@ public class MeshPoint : MonoBehaviour
 
         Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, gameObject);
 
+        wfc = FindFirstObjectByType<WFC>();
+
         SpawnProp();
     }
 
     public void Init()
     {
+        wfc = FindFirstObjectByType<WFC>();
+
         SpawnProp();
     }
 
     public void SpawnProp()
     {
+        if (!wfc.IsInside(transform.position))
+        {
+            DestroyImmediate(gameObject);
+            return;
+        }
         if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
 
         Prop prop = ChooseRandomProp();
@@ -54,7 +64,7 @@ public class MeshPoint : MonoBehaviour
 
     public Prop ChooseRandomProp()
     {
-        Spawner propSpawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(Utils.LoadFilteredProps(_spawnTypeTag), 1, 1);
+        Spawner propSpawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(AssetManager.LoadFilteredProps(_spawnTypeTag), 1, 1);
 
         List<Prop> _allProps = new List<Prop>(propSpawner.WallPrefabs);
         _allProps.AddRange(propSpawner.FloorPrefabs);
