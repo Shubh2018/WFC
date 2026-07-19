@@ -183,9 +183,6 @@ public static class Misc
                 return ret;
             });
             propsRequired.Reverse();
-
-            Debug.Log("required props:");
-            propsRequired.ForEach(p => Debug.Log(p.PropObject.name));
             
             // If the prop is required then return it until all of them has been spawned
             if (propsRequired.Count > 0) return (propsRequired[0], count);

@@ -197,7 +197,9 @@ public class PropNeighborProperty
 {
     public Prop prop;
     public float maxDistance;
-    [Range(0.0f, 1.0f)] public float SpawnChance;
+    [Range(0.0f, 1.0f)] private float _spawnChance;
+
+    public float SpawnChance {set { _spawnChance = value; } get {return _spawnChance;}}
 
     public PropNeighborProperty() {}
 
