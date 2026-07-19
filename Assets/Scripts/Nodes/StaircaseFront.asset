@@ -17,6 +17,7 @@ MonoBehaviour:
   IsStairPiece: 1
   CanHaveObjective: 0
   IsDeadEnd: 0
+  AllowBeamSpawn: 0
   nodeType: 32
   ClockwiseRotationSteps: 0
   Up:
@@ -43,4 +44,5 @@ MonoBehaviour:
     name: 4
     symmetry: 1
     type: 0
-  validProps: []
+  exceptionsProps: []
+  meshNodeRef: {fileID: 0}

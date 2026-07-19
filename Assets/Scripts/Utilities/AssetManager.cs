@@ -5,7 +5,26 @@ using UnityEditor;
 
 public static class AssetManager
 {
-    private static string propsPath = "Assets/Scripts/Props/";
+    private static string asssetPath = "Assets/Scripts";
+    private static string propsPath = $"{asssetPath}/Props/";
+    private static string environmentsPath = $"{asssetPath}/Environments";
+
+    // Load a random environment based on which kind of nodes that they allow to use
+    // If a node type has no valid environments, no props will spawn there
+    public static Environment LoadRandomEnvironment(Node.NodeType nodeType)
+    {
+        string[] assets = Directory.GetFiles(environmentsPath, "*.asset");
+        List<Environment> envs = new();
+
+        foreach(string env in assets)
+        {
+            Environment currEnv = AssetDatabase.LoadAssetAtPath<Environment>(env);
+            if (currEnv.LegalNodesEntries.HasFlag(nodeType)) envs.Add(currEnv);
+        }
+
+        if (envs.Count == 0) return null;
+        return envs[UnityEngine.Random.Range(0, envs.Count - 1)];
+    }
 
     // Loads a single prop asset inside of a folder
     public static Prop LoadProp(string path, Func<Prop, bool> filterFunc)
@@ -14,7 +33,7 @@ public static class AssetManager
 
         foreach(string prop in assets)
         {
-            Prop propData = (Prop) AssetDatabase.LoadAssetAtPath(prop, typeof(Prop));
+            Prop propData = AssetDatabase.LoadAssetAtPath<Prop>(prop);
             if (filterFunc(propData)) return propData;
         }
 
@@ -35,7 +54,7 @@ public static class AssetManager
 
         foreach(string prop in assets)
         {
-            Prop propData = (Prop) AssetDatabase.LoadAssetAtPath(prop, typeof(Prop));
+            Prop propData = AssetDatabase.LoadAssetAtPath<Prop>(prop);
             if (filterFunc(propData)) spawner.AddProp(propData);
         }
 

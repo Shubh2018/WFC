@@ -10,10 +10,7 @@ public class MeshPoint : MonoBehaviour
     [SerializeField] private PropSpawnTagEnum _spawnTypeTag;
     [SerializeField] private Spawner _gameObjectsToSpawn;
     [SerializeField] public int _spawnHierarchy = 5;
-    private PropObject _spawnedObject;
     private PropHierarchy.PropHierachyInfo _hierarchyInfo;
-    private static Spawner? spawner = null;
-    private WFC wfc;
 
     private void OnDrawGizmos()
     {
@@ -26,49 +23,53 @@ public class MeshPoint : MonoBehaviour
 
     public void Init(PropHierarchy.PropHierachyInfo parentHierachyInfo)
     {
-        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierachyInfo, _spawnHierarchy);
+        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierachyInfo.id, parentHierachyInfo.maxHierachyLevel, parentHierachyInfo.currentHierachyLevel);
 
         Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, gameObject);
-
-        wfc = FindFirstObjectByType<WFC>();
 
         SpawnProp();
     }
 
     public void Init()
     {
-        wfc = FindFirstObjectByType<WFC>();
-
         SpawnProp();
     }
 
     public void SpawnProp()
     {
+        if(!ShouldSpawn()) return;
+
+        Spawner propSpawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(AssetManager.LoadFilteredProps(_spawnTypeTag), 1, 1);
+
+        List<Prop> allProps = new List<Prop>(propSpawner.WallPrefabs);
+        allProps.AddRange(propSpawner.FloorPrefabs);
+
+        while (allProps.Count > 0)
+        {
+            (Prop prop, int count) = Misc.GetRandomPropCDF(allProps, _hierarchyInfo);
+
+            if (!prop) return;
+
+            List<Sample> samples = new() { new() {
+                sample = transform.position,
+                triangleNormal = Vector3.up,
+            }};
+
+            PropObject propObj = prop.SpawnFloor(samples, gameObject, _hierarchyInfo, (Vector3 sample, Prop prop) => true);
+            if (propObj) return;
+            allProps.Remove(prop);
+        }
+    }
+
+    private bool ShouldSpawn()
+    {
+        WFC wfc = FindFirstObjectByType<WFC>();
         if (!wfc.IsInside(transform.position))
         {
             DestroyImmediate(gameObject);
-            return;
+            return false;
         }
-        if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
-
-        Prop prop = ChooseRandomProp();
-        if(!_forcedToSpawn && (UnityEngine.Random.Range(0, 1) > prop.SpawnChance)) return;
-
-        Sample sample = new Sample() {
-            sample = transform.position,
-            triangleNormal = Vector3.up,
-        };
-
-        PropObject propObj = prop.SpawnFloor(sample, gameObject, _hierarchyInfo, (Vector3 sample, Prop prop) => true);
-    }
-
-    public Prop ChooseRandomProp()
-    {
-        Spawner propSpawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(AssetManager.LoadFilteredProps(_spawnTypeTag), 1, 1);
-
-        List<Prop> _allProps = new List<Prop>(propSpawner.WallPrefabs);
-        _allProps.AddRange(propSpawner.FloorPrefabs);
-
-        return _allProps[UnityEngine.Random.Range(0, _allProps.Count)];
+        if (_hierarchyInfo.IsCurrentHierachyLarger()) return false;
+        return true;
     }
 }

@@ -33,6 +33,8 @@ public class PropEditor : Editor
         {
             rootTree.Q<Toggle>("_staticToggle").SetEnabled(!evt.newValue);
             rootTree.Q<GroupBox>("_spawningRotationGroup").SetEnabled(!evt.newValue);
+            
+            toggleSpawnInCorners.value = evt.newValue;
         });
 
         EnumField enumSpawnType = rootTree.Q<EnumField>("_rotationEnumField");

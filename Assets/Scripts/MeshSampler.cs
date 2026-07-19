@@ -32,6 +32,15 @@ public struct Spawner
         maxWallPropCount = maxWallProps ?? spawner.maxWallPropCount;
     }
 
+    public Spawner(List<Prop> floorProps, List<Prop> wallProps)
+    {
+        _wallPrefabs = wallProps;
+        _floorPrefabs = floorProps;
+
+        maxFloorPropCount = floorProps.Count;
+        maxWallPropCount = wallProps.Count;
+    }
+
     public Spawner(int maxFloorProps = 5, int maxWallProps = 5)
     {
         _wallPrefabs = new List<Prop>();
@@ -169,19 +178,6 @@ public class MeshSampler : MonoBehaviour
                     Gizmos.DrawSphere(floorPoint.sample, 0.1f);
                     Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .2f);
                 }
-
-                /*Gizmos.color = Color.darkBlue;
-                (Vector3 min, Vector3 max) = BuildBoundingBox(floorList.Select(v => v.sample).ToArray());
-                
-                for (int i = 0; i < Enum.GetNames(typeof(SpawnPosition)).Count(); i++)
-                {
-                    Prop p = new Prop((SpawnPosition) i);
-                    Sample s = GetFloorSamplesBySpawnPosition(p, min, max)[0];
-                    
-                    if (!WithinDisOfCam(s.sample, samplesRenderDistance)) continue;
-                    Gizmos.DrawSphere(s.sample, 0.1f);
-                    Gizmos.DrawRay(s.sample, s.triangleNormal * .2f);
-                }*/
             }
         }
 
@@ -450,13 +446,14 @@ public class MeshSampler : MonoBehaviour
     }
 
     // Used to check after a node mesh has been spawned that a sample is not inside of the mesh collision
-    public bool IsInsideMesh(Sample sample, Bounds bounds)
+    public bool IsInsideMesh(Sample sample, Vector3[] samplePoints)
     {
-        Vector3 pos = bounds.center;
-        Vector3 dir = (sample.sample - pos).normalized;
-        float dis = Vector3.Distance(pos, sample.sample) - 0.01f;
-
-        return !Physics.Raycast(pos, dir, dis);
+        return !samplePoints.Any(pos =>
+        {
+            Vector3 dir = (sample.sample - pos).normalized;
+            float dis = Vector3.Distance(pos, sample.sample) - 0.01f;
+            return !Physics.Raycast(pos, dir, dis);
+        });
     }
 
     public void SortSamplesInMesh(List<Sample> samples)
@@ -527,32 +524,38 @@ public class MeshSampler : MonoBehaviour
         }));
     }
 
-    private List<Sample> FilterWallSamples(SpawnPosition spawnPos, int rem, Vector3 min, Vector3 max, Vector3 mid, Vector3 halfMin, Vector3 halfMax)
+    private List<Sample> FilterWallSamples(SpawnPosition spawnPos, Vector3 min, Vector3 max, Vector3 mid, Vector3 halfMin, Vector3 halfMax)
     {
-        Func<Vector3, float> remFunc = (Vector3 vec) => rem == 0 ? vec.z : vec.x;
-
-        return new List<Sample>(_wallSamples.FindAll((s) => remFunc(s.sample) > remFunc(mid) && remFunc(s.sample) < remFunc(mid))).Concat(_wallSamples.FindAll((s) => spawnPos switch
+        Func<int, Func<Vector3, float>> remFunc = (int rem) => (Vector3 vec) => rem == 0 ? vec.z : vec.x;
+        Func<Func<Vector3, float>, List<Sample>> samplesFunc = (remFunc) => new List<Sample>(_wallSamples.FindAll((s) => remFunc(s.sample) > remFunc(mid) && remFunc(s.sample) < remFunc(mid)))
+        .Concat(_wallSamples.FindAll((s) => spawnPos switch
         {
-            SpawnPosition.North => (remFunc(s.sample) > remFunc(halfMin) && remFunc(s.sample) < remFunc(halfMax)) && (s.sample.y > halfMax.y && s.sample.y < max.y),
-            SpawnPosition.South => (remFunc(s.sample) > remFunc(halfMin) && remFunc(s.sample) < remFunc(halfMax)) && (s.sample.y < halfMin.y && s.sample.y > min.y),
-            SpawnPosition.East => (remFunc(s.sample) > remFunc(halfMax) && remFunc(s.sample) < remFunc(max)) && (s.sample.y > halfMin.y && s.sample.y < halfMax.y),
-            SpawnPosition.West => (remFunc(s.sample) > remFunc(min) && remFunc(s.sample) < remFunc(halfMin)) && (s.sample.y > halfMin.y && s.sample.y < halfMax.y),
-            SpawnPosition.NorthEast => (remFunc(s.sample) > remFunc(halfMax) && remFunc(s.sample) < remFunc(max)) && (s.sample.y > halfMax.y && s.sample.y < max.y),
-            SpawnPosition.NorthWest => (remFunc(s.sample) > remFunc(min) && remFunc(s.sample) < remFunc(halfMin)) && (s.sample.y > halfMax.y && s.sample.y < max.y),
-            SpawnPosition.SouthEast => (remFunc(s.sample) > remFunc(halfMax) && remFunc(s.sample) < remFunc(max)) && (s.sample.y > min.y && s.sample.y < halfMin.y),
-            SpawnPosition.SouthWest => (remFunc(s.sample) > remFunc(min) && remFunc(s.sample) < remFunc(halfMin)) && (s.sample.y > min.y && s.sample.y < halfMin.y),
-            SpawnPosition.Center => (remFunc(s.sample) > remFunc(halfMin) && remFunc(s.sample) < remFunc(halfMax)) && (s.sample.y > halfMin.y && s.sample.y < halfMax.y),
+            SpawnPosition.North => remFunc(s.sample) > remFunc(halfMin) && remFunc(s.sample) < remFunc(halfMax) && s.sample.y > halfMax.y && s.sample.y < max.y,
+            SpawnPosition.South => remFunc(s.sample) > remFunc(halfMin) && remFunc(s.sample) < remFunc(halfMax) && s.sample.y < halfMin.y && s.sample.y > min.y,
+            SpawnPosition.East => remFunc(s.sample) > remFunc(halfMax) && remFunc(s.sample) < remFunc(max) && s.sample.y > halfMin.y && s.sample.y < halfMax.y,
+            SpawnPosition.West => remFunc(s.sample) > remFunc(min) && remFunc(s.sample) < remFunc(halfMin) && s.sample.y > halfMin.y && s.sample.y < halfMax.y,
+            SpawnPosition.NorthEast => remFunc(s.sample) > remFunc(halfMax) && remFunc(s.sample) < remFunc(max) && s.sample.y > halfMax.y && s.sample.y < max.y,
+            SpawnPosition.NorthWest => remFunc(s.sample) > remFunc(min) && remFunc(s.sample) < remFunc(halfMin) && s.sample.y > halfMax.y && s.sample.y < max.y,
+            SpawnPosition.SouthEast => remFunc(s.sample) > remFunc(halfMax) && remFunc(s.sample) < remFunc(max) && s.sample.y > min.y && s.sample.y < halfMin.y,
+            SpawnPosition.SouthWest => remFunc(s.sample) > remFunc(min) && remFunc(s.sample) < remFunc(halfMin) && s.sample.y > min.y && s.sample.y < halfMin.y,
+            SpawnPosition.Center => remFunc(s.sample) > remFunc(halfMin) && remFunc(s.sample) < remFunc(halfMax) && s.sample.y > halfMin.y && s.sample.y < halfMax.y,
             _ => true
         })).ToList();
+
+        List<Sample> samples = samplesFunc(remFunc(0));
+        samples.AddRange(samplesFunc(remFunc(1)));
+
+        return samples;
+
     }
 
-    private List<Sample> GetWallSamplesBySpawnPosition(int rem, Prop prop, Vector3 min, Vector3 max)
+    private List<Sample> GetWallSamplesBySpawnPosition(Prop prop, Vector3 min, Vector3 max)
     {
         Vector3 mid = (min + max) / 2;
         Vector3 halfMin = (min + mid) / 2;
         Vector3 halfMax = (mid + max) / 2;
 
-        List<Sample> samples = FilterWallSamples(prop.SpawnPosition, rem, min, max, mid, halfMin, halfMax);
+        List<Sample> samples = FilterWallSamples(prop.SpawnPosition, min, max, mid, halfMin, halfMax);
 
         if (samples.Count() == 0) return new List<Sample>();
 
@@ -606,117 +609,80 @@ public class MeshSampler : MonoBehaviour
     private IEnumerator SpawnFloorProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Prop, PropNeighborProperty> propNeighborSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
         int floorCount = objCount;
-        int tries = 200;
-        List<Prop> unspawnablePropsList = new();
+        int tries = 25;
 
         while (floorCount > 0 && tries--> 0)
         {
             (Prop prop, int count) = propSpawner();
             if(!prop) yield break;
         
-            List<Sample> samplesInRange = new List<Sample>(GetFloorSamplesBySpawnPosition(prop, min, max));
+            List<Sample> samplesInRange = Misc.ShuffleList(new List<Sample>(GetFloorSamplesBySpawnPosition(prop, min, max)));
             if (samplesInRange.Count == 0) yield break;
 
-            Sample sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
-            PropObject propObj = prop.SpawnFloor(sample, nodeObj, _hierarchyInfo, spawnFilterFunc);
-            propObj?.RotateTo(prop.Placement, prop.SpawnRotationType, prop.SpawnRotationAmount);
+            PropObject propObj = prop.SpawnFloor(samplesInRange, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
             yield return null;
 
-            if (propObj == null)
-            {
-                if (!Prop.Props.CanSpawnProp(_hierarchyInfo.id, prop)) unspawnablePropsList.Add(prop);
-                if (unspawnablePropsList.Count == count) yield break;
-                continue;
-            }
-            if (floorCount-- == 0) yield break;
+            if (!propObj) continue;
 
             for (int i = 0; i < _floorPropGraphLevel; i++)
             {
                 PropNeighborProperty randomPropNeighbor = propNeighborSpawner(prop);
-                if(randomPropNeighbor == null) yield break;
+                if(randomPropNeighbor == null) break;
 
                 float propMaxDistance = randomPropNeighbor.maxDistance;
-                samplesInRange = new List<Sample>((prop.SpawnInCorners && _cornerSamples.Count() > 0 ? _cornerSamples : _floorSamples).FindAll((s) => Vector3.Distance(s.sample, sample.sample) >= propMaxDistance && Vector3.Distance(s.sample, sample.sample) < propMaxDistance * 2));
-                if(samplesInRange.Count == 0) yield break;
+                Vector3 parentPos = propObj.transform.position;
+                samplesInRange = new List<Sample>((prop.SpawnInCorners && _cornerSamples.Count() > 0 ? _cornerSamples : _floorSamples).FindAll((s) => Vector3.Distance(s.sample, parentPos) >= propMaxDistance && Vector3.Distance(s.sample, parentPos) < propMaxDistance * 2));
+                if(samplesInRange.Count == 0) break;
 
-                sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
-                propObj = randomPropNeighbor.prop.SpawnFloor(sample, nodeObj, _hierarchyInfo, spawnFilterFunc);
+                propObj = randomPropNeighbor.prop.SpawnFloor(samplesInRange, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
                 yield return null;
 
-                if (propObj == null)
-                {
-                    if (!Prop.Props.CanSpawnProp(_hierarchyInfo.id, prop)) unspawnablePropsList.Add(prop);
-                    if (unspawnablePropsList.Count == count) yield break;
-                    continue;
-                }
-                if (floorCount-- == 0) yield break;
-
-                propObj?.RotateTo(randomPropNeighbor.prop.Placement, prop.SpawnRotationType, randomPropNeighbor.prop.SpawnRotationAmount);
+                if (!propObj) continue;
+                floorCount--;
             }
+
+            floorCount--;
         }
     }
 
     private IEnumerator SpawnWallProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Prop, PropNeighborProperty> propNeighborSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
-        int rem = (int)((nodeObj.transform.eulerAngles / 90.0f).y % 2);
         int wallCount = objCount;
-        int tries = 200;
-        List<Prop> unspawnablePropsList = new();
+        int tries = 25;
 
         while (wallCount > 0 && tries--> 0)
         {
             (Prop prop, int count) = propSpawner();
             if (!prop) yield break;
 
-            List<Sample> samplesInRange = new List<Sample>(GetWallSamplesBySpawnPosition(1 - rem, prop, min, max));
+            List<Sample> samplesInRange = Misc.ShuffleList(new List<Sample>(GetWallSamplesBySpawnPosition(prop, min, max)));
             if (samplesInRange.Count == 0) yield break;
 
-            Sample sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
-            Quaternion rotation = sample.triangleNormal != Vector3.zero ? Quaternion.LookRotation(sample.triangleNormal) : Quaternion.identity;
-            PropObject propObj = prop.SpawnWall(sample, rotation, nodeObj, _hierarchyInfo, spawnFilterFunc);
+            PropObject propObj = prop.SpawnWall(samplesInRange, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
             yield return null;
 
-            if (propObj == null)
-            {
-                if (!Prop.Props.CanSpawnProp(_hierarchyInfo.id, prop)) unspawnablePropsList.Add(prop);
-                if (unspawnablePropsList.Count == count) yield break;
-                continue;
-            }
-            if (wallCount-- == 0) yield break;
-
-            propObj.transform.position = sample.sample;
-            propObj.transform.forward = sample.triangleNormal;
-            propObj?.RotateTo(prop.Placement, prop.SpawnRotationType, prop.SpawnRotationAmount);
+            if (!propObj) continue;
 
             for (int i = 0; i < _wallPropGraphLevel; i++)
             {
                 PropNeighborProperty randomPropNeighbor = propNeighborSpawner(prop);
-                if(randomPropNeighbor == null) yield break;
+                if(randomPropNeighbor == null) break;
 
-                samplesInRange = new List<Sample>(GetWallSamplesBySpawnPosition(rem, randomPropNeighbor.prop, min, max));
-                if (samplesInRange.Count == 0) yield break;
+                samplesInRange = new List<Sample>(GetWallSamplesBySpawnPosition(randomPropNeighbor.prop, min, max));
+                if (samplesInRange.Count == 0) break;
 
-                sample = samplesInRange[UnityEngine.Random.Range(0, samplesInRange.Count)];
-                rotation = sample.triangleNormal != Vector3.zero ? Quaternion.LookRotation(sample.triangleNormal) : Quaternion.identity;
-                propObj = randomPropNeighbor.prop.SpawnWall(sample, rotation, nodeObj, _hierarchyInfo, spawnFilterFunc);
+                propObj = randomPropNeighbor.prop.SpawnWall(samplesInRange, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
                 yield return null;
 
-                if (propObj == null)
-                {
-                    if (!Prop.Props.CanSpawnProp(_hierarchyInfo.id, prop)) unspawnablePropsList.Add(prop);
-                    if (unspawnablePropsList.Count == count) yield break;
-                    continue;
-                }
-                if (wallCount-- == 0) yield break;
-
-                propObj.transform.position = sample.sample;
-                propObj.transform.forward = sample.triangleNormal;
-                propObj?.RotateTo(randomPropNeighbor.prop.Placement, prop.SpawnRotationType, randomPropNeighbor.prop.SpawnRotationAmount);
+                if (!propObj) continue;
+                wallCount--;
             }
+
+            wallCount--;
         }
     }
 }

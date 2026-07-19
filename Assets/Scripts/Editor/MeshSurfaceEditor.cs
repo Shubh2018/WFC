@@ -21,7 +21,7 @@ public class MeshSurfaceEditor : Editor
         Button spawnButton = rootTree.Q<Button>("_spawnObjectsButton");
         spawnButton.RegisterCallback<ClickEvent>((ClickEvent evt) => {
             Prop.Props.Clear();
-            surface.Init(new PropHierarchy.PropHierachyInfo(Guid.Empty, 99, 0));
+            surface.Init();
         });
 
         Vector3Field size = rootTree.Q<Vector3Field>("_surfaceSize");

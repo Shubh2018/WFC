@@ -42,27 +42,18 @@ public class NodeFaceVertical : NodeFace
 
 [CreateAssetMenu(fileName = "Node", menuName = "WFC/Node")]
 public class Node : ScriptableObject
-{
+{   
     [System.Flags]
     public enum NodeType
     {
-        Corner,
-        Corridor,
-        Deadend,
-        Intersection,
-        Junction,
-        Staircase
+        Corner = 1,
+        Corridor = 2,
+        Deadend = 4,
+        Intersection = 8,
+        Junction = 16,
+        Staircase = 32
     };
 
-    [System.Flags]
-    public enum EnvironmentType
-    {
-        Objective,
-        Study,
-        Cellar,
-        Garden
-    };
-    
     public GameObject Prefab;
     public int Weight;
     public bool IsStairPiece;
@@ -70,7 +61,6 @@ public class Node : ScriptableObject
     public bool IsDeadEnd = false;
     public bool AllowBeamSpawn = false;
     public NodeType nodeType;
-    public EnvironmentType environmentType;
     [HideInInspector] public int ClockwiseRotationSteps; // Set automatically as the tile is rotated
 
     public NodeFaceVertical Up;
@@ -81,12 +71,12 @@ public class Node : ScriptableObject
     public NodeFaceHorizontal Back;
 
     public List<Prop> exceptionsProps;
+    [HideInInspector] public MeshNode meshNodeRef = null;
 
     public void SetRotation(float rotation)
     {
         if(Prefab != null) Prefab.transform.rotation = Quaternion.Euler(new Vector3(0, rotation, 0));
     }
-
 
     // Check if the node can be rotated based on if it has a positive weight and are not symmetrical all the way around
     public bool ShouldRotate()
@@ -151,58 +141,6 @@ public class Node : ScriptableObject
                 Left = front;
                 break;            
         }
-    }
-
-    public (Prop, int) GetRandomPropCDF(PropPlacementType placementType)
-    {
-        List<Prop> props = new List<Prop>(AssetManager.LoadProps(placementType).Where((Prop p) => !exceptionsProps.Contains(p)));
-
-        if(props.Count <= 0) return (null, 0);
-
-        props.RemoveAll((p) => p.SpawnChance == 0.0f || 
-            !p.CompareNode(p.NodeTypeToSpawnIn, this.nodeType) || 
-            !p.CompareNode(p.EnvironmentTypeToSpawnIn, this.environmentType));
-        props.Sort((x, y) => x.SpawnChance.CompareTo(y.SpawnChance));
-
-        int count = props.Count;
-
-        if(count <= 0) 
-        {
-            Debug.Log($"Null");
-            return (null, 0);
-        }
-
-        float totalProbability = 0;
-
-        Prop[] cdf = new Prop[count];
-
-        for (int i = 0; i < count; i++)
-        {
-            totalProbability += props[i].SpawnChance;
-
-            Prop p = new Prop(props[i]);
-            cdf[i] = p;
-        }
-
-        for (int i = 0; i < count; i++)
-            cdf[i].SpawnChance /= totalProbability;
-
-        float rand = UnityEngine.Random.value;
-
-        int low = 0;
-        int high = cdf.Length - 1;
-
-        while (low < high)
-        {
-            int mid = (low + high) / 2;
-
-            if (cdf[mid].SpawnChance >= rand)
-                high = mid;
-            else 
-                low = mid + 1;
-        }
-
-        return (cdf[low], count);
     }
 }
 

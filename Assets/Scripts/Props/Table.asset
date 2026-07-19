@@ -19,11 +19,10 @@ MonoBehaviour:
   _limitType: 0
   _spawnTag: 2
   _spawnPositions: 0
+  _keywords:
+  - table
   _useStaticPositions: 0
   _spawnInCorners: 0
-  _nodeTypeToSpawnIn: -1
-  _environmentsToSpawnIn: -1
-  _structureType: []
   _neighbors:
   - prop: {fileID: 11400000, guid: a87c0d20ba356db119fd0ad4a4c0a7f7, type: 2}
     maxDistance: 1
