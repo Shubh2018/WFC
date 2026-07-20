@@ -670,7 +670,7 @@ public class WFC : MonoBehaviour
 
         PropText += $"\nAverage Qaulity Score: {qualityScore / _levelCount}";
         
-        TestData.SaveData(PropText);
+        // TestData.SaveData(PropText);
         doneFuncHook();
     }
 
