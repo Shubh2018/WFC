@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 389c89e81b1b74745824ed60d3047be3, type: 3}
+  m_Name: Cellar
+  m_EditorClassIdentifier: Assembly-CSharp::Environment
+  Name: Cellar
+  DisplayColor: {r: 0, g: 0, b: 1, a: 1}
+  SpawningEntries:
+  - keywords:
+    - barrel
+    SubElementsOnly: 0
+    required: 1
+  - keywords:
+    - pot
+    SubElementsOnly: 1
+    required: 1
+  - keywords:
+    - shelf
+    SubElementsOnly: 0
+    required: 1
+  - keywords:
+    - potion
+    SubElementsOnly: 1
+    required: 1
+  LegalNodesEntries: 1
+  IgnoreSubElements: 0

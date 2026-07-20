@@ -13,17 +13,16 @@ MonoBehaviour:
   m_Name: Pot
   m_EditorClassIdentifier: Assembly-CSharp::Prop
   _prop: {fileID: 2968984832891307277, guid: 2908a19ef1a7b3a49bfc9a55bf645e69, type: 3}
-  _spawnChance: 0
+  _spawnChance: 0.8
   _propPlacement: 0
   _propType: 0
   _limitType: 0
   _spawnTag: 0
   _spawnPositions: 0
+  _keywords:
+  - pot
   _useStaticPositions: 0
   _spawnInCorners: 0
-  _nodeTypeToSpawnIn: 3
-  _environmentsToSpawnIn: 0
-  _structureType: []
   _neighbors:
   - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
     maxDistance: 0.6

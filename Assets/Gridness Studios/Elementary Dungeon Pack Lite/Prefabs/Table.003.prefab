@@ -113,7 +113,7 @@ MonoBehaviour:
     maxFloorPropCount: 0
   _surfaceSize: {x: 1.85, y: 1, z: 1.25}
   _spawnHierarchy: 5
-  _maxPropCount: 1
+  _maxPropCount: 10
 --- !u!114 &2599429172776743582
 MonoBehaviour:
   m_ObjectHideFlags: 0

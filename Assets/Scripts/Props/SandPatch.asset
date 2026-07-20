@@ -14,18 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Prop
   _prop: {fileID: -6137245728790989520, guid: 237f7219ddf7c064e85f5158a48f6bbc, type: 3}
   _spawnChance: 1
-  _parent: {fileID: 0}
   _propPlacement: 0
   _propType: 0
   _limitType: 0
   _spawnTag: 0
   _spawnPositions: 0
+  _keywords:
+  - sand
   _useStaticPositions: 0
-  _nodeTypeToSpawnIn: 0
-  _environmentsToSpawnIn: 0
-  _structureType:
-  - structure: 0
-    spawnChance: 0
+  _spawnInCorners: 0
   _neighbors:
   - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
     maxDistance: 0.2
@@ -45,6 +42,6 @@ MonoBehaviour:
   - prop: {fileID: 11400000}
     maxDistance: 0.2
     spawnChance: 0.4
-  _checkOrentation: 0
   _limitCount: 10
-  _maxCount: 0
+  _spawnRotationType: 0
+  _spawnRotation: 0

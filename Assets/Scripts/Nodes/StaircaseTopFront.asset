@@ -15,7 +15,10 @@ MonoBehaviour:
   Prefab: {fileID: 0}
   Weight: 1
   IsStairPiece: 1
-  CantHaveObjective: 1
+  CanHaveObjective: 0
+  IsDeadEnd: 0
+  AllowBeamSpawn: 0
+  nodeType: 32
   ClockwiseRotationSteps: 0
   Up:
     name: 0
@@ -41,3 +44,5 @@ MonoBehaviour:
     name: 4
     symmetry: 1
     type: 0
+  exceptionsProps: []
+  meshNodeRef: {fileID: 0}

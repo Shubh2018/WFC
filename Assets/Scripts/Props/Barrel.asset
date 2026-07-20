@@ -19,11 +19,10 @@ MonoBehaviour:
   _limitType: 0
   _spawnTag: 2
   _spawnPositions: 6
+  _keywords:
+  - barrel
   _useStaticPositions: 0
-  _spawnInCorners: 1
-  _nodeTypeToSpawnIn: 27
-  _environmentsToSpawnIn: 4
-  _structureType: []
+  _spawnInCorners: 0
   _neighbors:
   - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
     maxDistance: 0.5
@@ -41,3 +40,5 @@ MonoBehaviour:
     maxDistance: 1
     spawnChance: 0
   _limitCount: 1
+  _spawnRotationType: 0
+  _spawnRotation: 0

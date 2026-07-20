@@ -43,6 +43,11 @@ public class PropHierarchy
         {
             return currentHierachyLevel > maxHierachyLevel;
         }
+
+        public bool IsNode()
+        {
+            return parentId == Guid.Empty;
+        }
     }
 
     // Constructor for the class, sets up an instance for a given parent
@@ -69,6 +74,9 @@ public class PropHierarchy
         if (parentId == instanceId) return;
         if (parentId == InstanceId)
         {
+            PropHierarchy child = FindEntry(instanceId);
+            if (child != null) return;
+
             children.Add(new PropHierarchy(this, instanceId, gameObj, isRoom));
             return;
         }
@@ -108,7 +116,39 @@ public class PropHierarchy
     public PropHierarchy FindParentRoomEntry()
     {
         if (IsRoom) return this;
-        return parent?.FindParentRoomEntry() ?? null;
+        if (parent == null) return null;
+        return parent.FindParentRoomEntry();
+    }
+
+    // Tries to find a room hierachy element if there is one, else null
+    public PropHierarchy FindParentRoomEntry(Guid instanceId)
+    {
+        if (IsRoom) return this;
+        return FindEntry(instanceId).FindParentRoomEntry();
+    }
+
+    // Tries to find and return the nearest room node mesh object, else null
+    public MeshNode GetParentRoomNode(Guid instanceId)
+    {
+        PropHierarchy child = FindEntry(instanceId);
+        if (child == null) return null;
+        PropHierarchy parent = child.FindParentRoomEntry();
+        if (parent == null) return null;
+        return parent.childObj.GetComponent<MeshNode>() ?? null;
+    }
+
+    // Returns the total amount for a specific prop from the current node and below
+    public int GetTotalPropSubAmount(string propName)
+    {
+        int total = GetPropValue(propName);
+        total += children.Sum((c) => c.GetTotalPropSubAmount(propName));
+        return total;
+    }
+
+    // Returns if a prop has been spawned at any point from this node and below
+    public bool HasPropSubAppeared(Guid instanceId, string propName)
+    {
+        return FindEntry(instanceId)?.GetTotalPropSubAmount(propName) > 0;
     }
 
     // Returns the value for a prop, else zero if its entry does not exist
@@ -183,16 +223,27 @@ public class PropHierarchy
         return parent.GetRoot();
     }
 
+    // Returns the amount of spawned of a prop depending on its limit type
+    public int GetSpawnedPropAmount(Guid instanceId, Prop prop)
+    {
+        return prop.LimitType switch {
+            PropLimitTypeEnum.InTotal => SumPropTotalAmount(prop.PropObject.name),
+            PropLimitTypeEnum.PerHierarchyElement => SumPropLocalHierachyAmount(instanceId, prop.PropObject.name),
+            PropLimitTypeEnum.PerRoom => SumPropRoomAmount(instanceId, prop.PropObject.name),
+            _ => 0
+        };
+    }
+
     // Returns true if a specific prop can be spawned based on its conditions, else false
     public bool CanSpawnProp(Guid instanceId, Prop prop)
     {
         bool l = prop.LimitType switch {
-            PropLimitTypeEnum.InTotal => prop.LimitCount == SumPropTotalAmount(prop.PropObject.name),
-            PropLimitTypeEnum.PerHierarchyElement => prop.LimitCount == SumPropLocalHierachyAmount(instanceId, prop.PropObject.name),
-            PropLimitTypeEnum.PerRoom => prop.LimitCount == SumPropRoomAmount(instanceId, prop.PropObject.name),
+            PropLimitTypeEnum.InTotal => prop.HigherLimitCount > SumPropTotalAmount(prop.PropObject.name),
+            PropLimitTypeEnum.PerHierarchyElement => prop.HigherLimitCount > SumPropLocalHierachyAmount(instanceId, prop.PropObject.name),
+            PropLimitTypeEnum.PerRoom => prop.HigherLimitCount > SumPropRoomAmount(instanceId, prop.PropObject.name),
             _ => false
         };
-        return !l;
+        return l;
     }
 
     // Returns the total sum scattered around for a prop with a given name from the root and down
@@ -206,10 +257,10 @@ public class PropHierarchy
     {
         PropHierarchy child = FindEntry(instanceId)?.FindParentRoomEntry();
         if (child == null) return SumPropTotalAmount(propName); // If no room exists, do total instead as a backup
-        return child.SumPropLocalAmount(propName);
+        return child.SumPropHierachyAmount(propName);
     }
 
-    // Returns the sum for a prop with a given name for the current hieachy element
+    // Returns the sum for a prop with a given name for the current hieachy element and down
     public int SumPropLocalHierachyAmount(Guid instanceId, string propName)
     {
         PropHierarchy child = GetRoot().FindEntry(instanceId);

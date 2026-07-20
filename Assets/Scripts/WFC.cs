@@ -199,6 +199,7 @@ public class WFC : MonoBehaviour
     public bool enableGizmosCoords = false;
     public bool enableGizmosFacesText = false;
     public bool enableGizmosNodeName = false;
+    public bool enableGizmosEnvironments = false;
     // -- A*
     public bool enableGizmosPath = false;
     public bool enableGizmosPathPoints = false;
@@ -284,6 +285,12 @@ public class WFC : MonoBehaviour
         }
     }
 
+    public void SaveMeshNodeSettings(bool showEnvs)
+    {
+        UnityEngine.Debug.Log($"WFC mesh node settings: {showEnvs}");
+        MeshNode.displayGizmosEnvironments = showEnvs;
+    }
+
     public void OnDrawGizmos()
     {
         Gizmos.color = new Color(1.0f, 1.0f, 1.0f, 0.1f);
@@ -354,7 +361,7 @@ public class WFC : MonoBehaviour
             }
         }
 
-        if (_grid != null && (enableGizmosFacesText || enableGizmosNodeName))
+        if (_grid != null && (enableGizmosFacesText || enableGizmosNodeName || enableGizmosEnvironments))
         {
             for (int x = 0; x < _width; x++)
             {
@@ -436,7 +443,6 @@ public class WFC : MonoBehaviour
 
                 newNode.name = currNode.name + "_" + ((j + 1) * 90);
                 newNode.ClockwiseRotationSteps = j + 1;
-                newNode.nodeType = (Node.NodeType) Random.Range(0, 3);
 
                 // Rotate the node
                 newNode.Rotate(j + 1);
@@ -450,7 +456,8 @@ public class WFC : MonoBehaviour
     public void SampleTiles(Action doneFuncHook)
     {
         doneGeneratingSamples = false;
-        MeshSampler sampler = gameObject.GetComponent<MeshSampler>();
+        MeshSampler sampler = GetComponent<MeshSampler>();
+        
         List<Node> nodes = new List<Node>(_nodes);
         nodes.AddRange(_nodesGenerated);
 
@@ -579,6 +586,8 @@ public class WFC : MonoBehaviour
                 int tileChosenIndex = CheckEntropy(tilesCount);
                 Tile tile = _nodesToCollapse[tileChosenIndex];
 
+                UnityEngine.Debug.Log($"tile: {tile.pos}, potential nodes: {tile.potentialNodes.Count}, null: {tile.potentialNodes.Count == 0 && tile.potentialNodes[0] == null}");
+
                 if(tile.potentialNodes.Count < 1)
                 {
                     _grid[tile.pos.x, tile.pos.y, tile.pos.z] = _nodes[0];
@@ -604,6 +613,8 @@ public class WFC : MonoBehaviour
                 overlaps += CollapseTile(tile);
 
                 yield return new WaitUntil(() => !CoroutineManager.HasAliveRoutinesExcept(this));
+
+                Prop.Props.PrintHierarchy();
 
                 _nodesToCollapse.RemoveAt(tileChosenIndex);
             }
@@ -644,9 +655,9 @@ public class WFC : MonoBehaviour
             
             if (totalProps != 0)
             {
-                float score = 1 - ((float)(overlaps) / (float)(totalProps));
+                float score = 1 - ((float)overlaps / (float)totalProps);
 
-                PropText += $"OverlapPercentage: {((float)(overlaps) / (float)(totalProps)) * 100f}%\n";
+                PropText += $"OverlapPercentage: {(float)overlaps / (float)totalProps * 100f}%\n";
                 PropText += $"Quality Score: {score}\n";
 
                 qualityScore += score;
@@ -668,7 +679,7 @@ public class WFC : MonoBehaviour
         double totalWeight = nodes.Sum(n => n.Weight);
 
         int i = 0;
-        nodes.ForEach(n => weights[i++] = (n.Weight / totalWeight));
+        nodes.ForEach(n => weights[i++] = n.Weight / totalWeight);
 
         return weights;
     }
@@ -770,6 +781,9 @@ public class WFC : MonoBehaviour
         obj.name = node.name; // Rename the node so we know what type has been spawned
         obj.transform.parent = gameObject.transform; // Set this object as parent for editor readability
 
+        // Set reference to mesh for node
+        node.meshNodeRef = obj.GetComponent<MeshNode>();
+
         // Spawn props on the node
         MeshNode mesh = obj.GetComponent<MeshNode>();
         mesh?.Init();
@@ -798,8 +812,8 @@ public class WFC : MonoBehaviour
             // > or one face is original and the other is flipped
             if (nodeType.name == validType.name
             && (nodeType.symmetry && validType.symmetry 
-            || (nodeType.type == NodeFaceHorizontal.Type.Flipped && validType.type == NodeFaceHorizontal.Type.Original 
-            || nodeType.type == NodeFaceHorizontal.Type.Original && validType.type == NodeFaceHorizontal.Type.Flipped)))
+            || nodeType.type == NodeFaceHorizontal.Type.Flipped && validType.type == NodeFaceHorizontal.Type.Original 
+            || nodeType.type == NodeFaceHorizontal.Type.Original && validType.type == NodeFaceHorizontal.Type.Flipped))
                 continue;
 
             potentialNodes.RemoveAt(i);

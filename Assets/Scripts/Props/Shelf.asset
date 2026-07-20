@@ -19,11 +19,10 @@ MonoBehaviour:
   _limitType: 2
   _spawnTag: 2
   _spawnPositions: 1
+  _keywords:
+  - shelf
   _useStaticPositions: 0
-  _spawnInCorners: 1
-  _nodeTypeToSpawnIn: -1
-  _environmentsToSpawnIn: -1
-  _structureType: []
+  _spawnInCorners: 0
   _neighbors: []
   _limitCount: 2
   _spawnRotationType: 0

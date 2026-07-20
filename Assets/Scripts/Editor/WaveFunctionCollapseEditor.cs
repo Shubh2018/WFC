@@ -73,6 +73,13 @@ public class WaveFunctionCollapseEditor : Editor
             SetButtonState("_collapseTiles", false);
         };
 
+        Toggle toggleWFCEnvironments = rootTree.Q<Toggle>("_toggleWFCEnvironments");
+
+        toggleWFCEnvironments.RegisterCallback((ChangeEvent<bool> evt) =>
+        {
+            WaveFunctionCollapse.SaveMeshNodeSettings(evt.newValue);
+        });
+
         // Debug Settings (A*)
         Toggle togglePathLine = rootTree.Q<Toggle>("_togglePath");
         Toggle togglePathPoints = rootTree.Q<Toggle>("_togglePathPoints");

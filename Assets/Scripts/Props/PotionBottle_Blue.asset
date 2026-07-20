@@ -19,11 +19,10 @@ MonoBehaviour:
   _limitType: 0
   _spawnTag: 0
   _spawnPositions: 0
+  _keywords:
+  - potion
   _useStaticPositions: 0
-  _spawnInCorners: 1
-  _nodeTypeToSpawnIn: 1
-  _environmentsToSpawnIn: 0
-  _structureType: []
+  _spawnInCorners: 0
   _neighbors:
   - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
     maxDistance: 0.6

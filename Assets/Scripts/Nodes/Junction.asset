@@ -17,8 +17,8 @@ MonoBehaviour:
   IsStairPiece: 0
   CanHaveObjective: 0
   IsDeadEnd: 0
+  AllowBeamSpawn: 0
   nodeType: 16
-  environmentType: 2
   ClockwiseRotationSteps: 0
   Up:
     name: 0
@@ -44,12 +44,5 @@ MonoBehaviour:
     name: 3
     symmetry: 1
     type: 0
-  validFloorProps:
-  - {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
-  - {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
-  - {fileID: 11400000, guid: d49eabf0cf4f56386a1b32d126245267, type: 2}
-  - {fileID: 11400000, guid: 1e5646d1134267c3f987db1dbe4ca19d, type: 2}
-  - {fileID: 11400000, guid: 6b2f40d067621b4edb3c9003ad17137c, type: 2}
-  validWallProps:
-  - {fileID: 11400000, guid: 845fb54e4eb479c4995477faf75926c2, type: 2}
-  - {fileID: 11400000, guid: 4272b57546d0b43548d0c767c0153e31, type: 2}
+  exceptionsProps: []
+  meshNodeRef: {fileID: 0}

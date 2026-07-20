@@ -19,11 +19,10 @@ MonoBehaviour:
   _limitType: 0
   _spawnTag: 1
   _spawnPositions: 0
+  _keywords:
+  - chair
   _useStaticPositions: 0
   _spawnInCorners: 0
-  _nodeTypeToSpawnIn: 8
-  _environmentsToSpawnIn: 2
-  _structureType: []
   _neighbors:
   - prop: {fileID: 11400000}
     maxDistance: 1
@@ -32,3 +31,5 @@ MonoBehaviour:
     maxDistance: 1
     spawnChance: 0.25
   _limitCount: 10
+  _spawnRotationType: 0
+  _spawnRotation: 0

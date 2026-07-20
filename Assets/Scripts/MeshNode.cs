@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEditor;
 
 [System.Serializable]
 public class Samples
@@ -32,8 +33,7 @@ public class MeshNode : MonoBehaviour
     [SerializeField] private PropSpawnTagEnum _spawnTypeTag;
     [SerializeField] private Spawner _gameObjectsToSpawn;
     [SerializeField] public int _spawnHierarchy = 5;
-    [SerializeField] private int _maxFloorCount = 1;
-    [SerializeField] private int _maxWallCount = 1;
+    private Environment _envObj = null;
     private PropHierarchy.PropHierachyInfo _hierarchyInfo;
 
     // Static variables
@@ -41,6 +41,31 @@ public class MeshNode : MonoBehaviour
     public static MeshSampler meshSampler = null;
     public static Spawner? spawner = null;
     public static WFC wfc = null;
+    public static bool displayGizmosEnvironments = false;
+
+    // Getters / Setters
+    public Environment GetEnvironment => _envObj;
+
+    public void OnDrawGizmos()
+    {
+        Gizmos.matrix = transform.localToWorldMatrix;
+
+        if (displayGizmosEnvironments && wfc != null)
+        {
+            Color color = Color.gray;
+            string label = "No Environment";
+
+            if (_envObj != null)
+            {
+                color = _envObj.DisplayColor;
+                label = _envObj.Name;
+            }
+
+            Gizmos.color = color;
+            Gizmos.DrawWireCube(new(0, 0.5f * wfc.TileSize.y, 0), (Vector3) wfc.TileSize * 0.95f);
+            Handles.Label(transform.position + new Vector3(0.0f, wfc.TileSize.y * 0.95f, 0.0f), label);
+        }
+    }
 
     public void Init()
     {
@@ -78,30 +103,46 @@ public class MeshNode : MonoBehaviour
         if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
 
         _nodeData = node;
+        _envObj = AssetManager.LoadRandomEnvironment(node.nodeType);
 
         SampleData sampleData = generatedSamples.Single(s => s.nodeData.name == _nodeData.name);
 
-        if (sampleData == null/* || _nodeData.IsStairPiece*/) return;
-
-        Bounds b = new Bounds(transform.position + new Vector3(0.0f, wfc.TileSize.y / 2, 0.0f), wfc.TileSize);
+        Bounds b = GetComponent<MeshCollider>().bounds;
         int randomSampleSet = UnityEngine.Random.Range(0, sampleData.samples.Count);
         List<Sample> selectedSamples = new(sampleData.samples[randomSampleSet].samples.Select((s) => new Sample()
         {
             sample = gameObject.transform.localPosition + s.sample,
             triangleNormal = s.triangleNormal
-        }).Where((s) => meshSampler.IsInsideMesh(s, b)));
-
-        SpawnSeperators();
+        }).Where((s) => !meshSampler.IsInsideMesh(s, new[] { 
+            b.center + new Vector3(wfc.TileSize.x / -2, 0, 0),
+            b.center + new Vector3(wfc.TileSize.x / 2, 0, 0),
+            b.center + new Vector3(0, 0, wfc.TileSize.z / 2),
+            b.center + new Vector3(0, 0, wfc.TileSize.z / -2),
+        })));
 
         meshSampler.SetSpawnerData(_hierarchyInfo);
         meshSampler.AddSamples(selectedSamples);
 
-        Func<(Prop, int)> propFloorSpawnerFunc = () => node.GetRandomPropCDF(PropPlacementType.Floor);
-        Func<(Prop, int)> propWallSpawnerFunc = () => node.GetRandomPropCDF(PropPlacementType.Wall);
-        Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc = (Prop prop) => prop.GetRandomProp();
-        Func<Vector3, Prop, bool> spawnFilterFunc = (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject, size);
+        if (sampleData == null || _envObj == null) return; // this node has either no samples or no environment, so nothing can spawn here
+        if (_envObj.CanSpawnSeperators) SpawnSeperators(); // Only spawn walls and beams if the environment allows it
 
-        meshSampler.SpawnProps(gameObject, _maxFloorCount, _maxWallCount, propFloorSpawnerFunc, propWallSpawnerFunc, propNeighborSpawnerFunc, spawnFilterFunc);
+        Func<(Prop, int)> propFloorSpawnerFunc = () =>
+        {
+            List<Prop> props = new List<Prop>(AssetManager.LoadProps(PropPlacementType.Floor).Where((Prop p) => !_nodeData.exceptionsProps.Contains(p)));
+            (Prop prop, int count) = Misc.GetRandomPropCDF(props, _hierarchyInfo);
+            return (prop, count);
+        };
+
+        Func<(Prop, int)> propWallSpawnerFunc = () =>
+        {
+            List<Prop> props = new List<Prop>(AssetManager.LoadProps(PropPlacementType.Wall).Where((Prop p) => !_nodeData.exceptionsProps.Contains(p)));
+            return Misc.GetRandomPropCDF(props, _hierarchyInfo);
+        };
+
+        Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc = (Prop prop) => prop.GetRandomProp();
+        Func<Vector3, Prop, bool> spawnFilterFunc = (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject, size) || _nodeData.IsStairPiece;
+
+        meshSampler.SpawnProps(gameObject, _envObj.MaxFloorCount, _envObj.MaxWallCount, propFloorSpawnerFunc, propWallSpawnerFunc, propNeighborSpawnerFunc, spawnFilterFunc);
     }
 
     // Spawns door deviders to seperate this node from other nodes

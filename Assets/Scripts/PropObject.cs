@@ -9,8 +9,9 @@ public class PropObject : MonoBehaviour
     todo:
     - [X] Add doors between room / structure types
     - [X] Fix junctions not spawning samples
-    - Add a room / structure layout planner (also make environments and prop type work again)
-    - Add a player path where props cannot spawn
+    - [X] Add min-max, required per element
+    - Add a room / structure layout planner
+    - Make Prop types work again
     - Add prop relations with rotation
     - Do cleanup to make sure every feature works
     */
