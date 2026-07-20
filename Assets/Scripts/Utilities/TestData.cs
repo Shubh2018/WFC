@@ -9,9 +9,9 @@ public static class TestData
     private static Dictionary<string, int> propCollection = new Dictionary<string, int>();
     private static string _fileName = string.Empty;
     
-    public static void SaveData()
+    public static void SaveData(Data d)
     {
-        string data = JsonConvert.SerializeObject(propCollection, Formatting.Indented);
+        string data = JsonConvert.SerializeObject(d, Formatting.Indented);
         string path = $"{Application.dataPath}/Test1.csv";
         
         // File.Open(path, FileMode.Append, FileAccess.Write);
@@ -29,6 +29,30 @@ public static class TestData
         {
             propCollection[key] += 1;
         }
+    }
+
+    public static void CalculateData()
+    {
+        int props = AssetManager.LoadProps(PropPlacementType.Floor).Count + AssetManager.LoadProps(PropPlacementType.Wall).Count;
+
+        int propCount = 0;
+        float entropy = 0;
+
+        foreach (var prop in propCollection)
+        {
+            propCount += prop.Value;
+        }
+
+        foreach (var prop in propCollection)
+        {
+            float proportion = (float)prop.Value / (float)propCount;
+            entropy += (-proportion * Mathf.Log(proportion, 2)) / (Mathf.Log(props, 2));
+        }
+        
+        Data data = new Data();
+        data.entropy = entropy;
+        
+        SaveData(data);
     }
 
     public static void ClearDict()
@@ -51,5 +75,15 @@ public static class TestData
         {
             _fileName = fileName;
         }
+    }
+}
+
+public class Data
+{
+    public float entropy;
+
+    public Data()
+    {
+        entropy = 0;
     }
 }

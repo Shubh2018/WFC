@@ -129,5 +129,3 @@ MonoBehaviour:
     maxWallPropCount: 0
     maxFloorPropCount: 0
   _spawnHierarchy: 5
-  _maxFloorCount: 1
-  _maxWallCount: 1

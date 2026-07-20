@@ -623,6 +623,9 @@ public class WFC : MonoBehaviour
         doneCollapseLabel:;
 
         st.Stop();
+        TestData.CalculateData();
+        TestData.ClearDict();
+        
         collapseExecutionTime = st.ElapsedMilliseconds;
         doneFuncHook(overlaps);
     }

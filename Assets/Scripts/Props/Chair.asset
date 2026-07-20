@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Chair
   m_EditorClassIdentifier: Assembly-CSharp::Prop
   _prop: {fileID: 8873400715260981595, guid: e0b2491dfd0bb9d4c9007eb87e252f4b, type: 3}
-  _spawnChance: 0
+  _spawnChance: 0.2
   _propPlacement: 0
   _propType: 0
   _limitType: 0
@@ -26,10 +26,9 @@ MonoBehaviour:
   _neighbors:
   - prop: {fileID: 11400000}
     maxDistance: 1
-    spawnChance: 0.75
   - prop: {fileID: 11400000, guid: d49eabf0cf4f56386a1b32d126245267, type: 2}
     maxDistance: 1
-    spawnChance: 0.25
-  _limitCount: 10
+  _lowerLimitCount: 0
+  _higherLimitCount: 10
   _spawnRotationType: 0
   _spawnRotation: 0

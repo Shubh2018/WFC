@@ -24,6 +24,7 @@ MonoBehaviour:
   _useStaticPositions: 0
   _spawnInCorners: 0
   _neighbors: []
-  _limitCount: 2
+  _lowerLimitCount: 0
+  _higherLimitCount: 4
   _spawnRotationType: 0
   _spawnRotation: 0

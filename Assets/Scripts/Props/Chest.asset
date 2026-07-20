@@ -26,19 +26,15 @@ MonoBehaviour:
   _neighbors:
   - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
     maxDistance: 0.8
-    spawnChance: 0.45
   - prop: {fileID: 11400000, guid: d49eabf0cf4f56386a1b32d126245267, type: 2}
     maxDistance: 1.5
-    spawnChance: 0.15
   - prop: {fileID: 11400000}
     maxDistance: 1
-    spawnChance: 0
   - prop: {fileID: 11400000, guid: 6b2f40d067621b4edb3c9003ad17137c, type: 2}
     maxDistance: 0.8
-    spawnChance: 0.2
   - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
     maxDistance: 1.5
-    spawnChance: 0
-  _limitCount: 10
+  _lowerLimitCount: 0
+  _higherLimitCount: 5
   _spawnRotationType: 0
   _spawnRotation: 0

@@ -26,7 +26,7 @@ MonoBehaviour:
   _neighbors:
   - prop: {fileID: 11400000, guid: a87c0d20ba356db119fd0ad4a4c0a7f7, type: 2}
     maxDistance: 1
-    spawnChance: 0.6
-  _limitCount: 1
+  _lowerLimitCount: 0
+  _higherLimitCount: 4
   _spawnRotationType: 0
   _spawnRotation: 0
