@@ -158,6 +158,14 @@ public class WFC : MonoBehaviour
     [SerializeField] private int _levelCount = 0;
 
     public string PropText { get; private set; } = "";
+    
+    private float _minSize = 2; 
+    private float _maxSize = 10;
+    private float _currentSize = 2;
+    
+    public float MinSize => _minSize;
+    public float MaxSize => _maxSize;
+    public float CurrentSize => _currentSize;
 
     // Private Variables
     Node[,,] _grid;
@@ -233,7 +241,7 @@ public class WFC : MonoBehaviour
 
     public void StartCollapse(Action<int> doneFuncHook) 
     {
-        CoroutineManager.StartCoroutine(this, "CollapseTiles", CollapseTiles(doneFuncHook));
+        CoroutineManager.StartCoroutine(this, "CollapseTiles", CollapseTiles((() => {}) ,doneFuncHook));
     }
 
     public void StopCollapse() 
@@ -513,8 +521,10 @@ public class WFC : MonoBehaviour
         UnityEngine.Debug.Log("done generating path nodes...");
     }
 
-    public IEnumerator CollapseTiles(Action<int> doneFuncHook)
+    public IEnumerator CollapseTiles(Action startFuncHook, Action<int> doneFuncHook)
     {
+        startFuncHook();
+        
         wfc = this;
         int overlaps = 0;
         ClearTiles();
@@ -632,46 +642,49 @@ public class WFC : MonoBehaviour
 
     public IEnumerator CollapseTilesTesting(Action doneFuncHook, Action<int> updateFuncHook, int levelCount)
     {
-        float qualityScore = 0;
+        // float qualityScore = 0;
         
-        for (int k = 0; k < levelCount; k++)
+        for (int k = 0; k < _maxSize; k++)
         {
-            int overlaps = 0;
-            int totalProps = 0;
-            bool roundDone = false;
-
-            CoroutineManager.StartCoroutine(this, "CollapseTiles", CollapseTiles((o) => {
-                overlaps = o;
-                roundDone = true;
-            }));
-
-            yield return new WaitUntil(() => roundDone);
-            
-            /*foreach (var prop in _meshSampler._props)
+            for (int i = 0; i < levelCount; i++)
             {
-                PropText += $"{prop.Key}: {prop.Value} \n";
-                totalProps += prop.Value;
-            }*/
+                int overlaps = 0;
+                int totalProps = 0;
+                bool roundDone = false;
+                
+                CoroutineManager.StartCoroutine(this, "CollapseTiles", CollapseTiles(() => { _length = _height = _width = (int)_currentSize; }, (o) => {
+                    overlaps = o;
+                    roundDone = true;
+                }));
 
-            PropText += $"Overlaps: {overlaps}\n";
-            PropText += $"Totalprops: {totalProps}\n\n";
+                yield return new WaitUntil(() => roundDone);
             
-            if (totalProps != 0)
-            {
-                float score = 1 - ((float)overlaps / (float)totalProps);
+                /*foreach (var prop in _meshSampler._props)
+                {
+                    PropText += $"{prop.Key}: {prop.Value} \n";
+                    totalProps += prop.Value;
+                }*/
+            
+                // if (totalProps != 0)
+                // {
+                //     float score = 1 - ((float)overlaps / (float)totalProps);
+                //
+                //     PropText += $"OverlapPercentage: {(float)overlaps / (float)totalProps * 100f}%\n";
+                //     PropText += $"Quality Score: {score}\n";
+                //
+                //     qualityScore += score;
+                // }
 
-                PropText += $"OverlapPercentage: {(float)overlaps / (float)totalProps * 100f}%\n";
-                PropText += $"Quality Score: {score}\n";
+                updateFuncHook(k);
 
-                qualityScore += score;
+                yield return null;
             }
 
-            updateFuncHook(k);
-
-            yield return null;
+            _currentSize += 1;
+            k += 1;
         }
 
-        PropText += $"\nAverage Qaulity Score: {qualityScore / _levelCount}";
+        // PropText += $"\nAverage Qaulity Score: {qualityScore / _levelCount}";
         
         // TestData.SaveData(PropText);
         doneFuncHook();

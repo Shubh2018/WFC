@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using Newtonsoft.Json;
 
@@ -8,6 +9,8 @@ public static class TestData
 {
     private static Dictionary<string, int> propCollection = new Dictionary<string, int>();
     private static string _fileName = string.Empty;
+
+    private static float _sizeNormalized;
     
     public static void SaveData(Data d)
     {
@@ -21,7 +24,7 @@ public static class TestData
         Debug.Log($"Test Data Saved to {path}");
     }
 
-    public static void AddToDict(string key)
+    public static void AddToDict(string key, float size)
     {
         if (String.IsNullOrEmpty(key)) return;
         
@@ -29,19 +32,17 @@ public static class TestData
         {
             propCollection[key] += 1;
         }
+
+        _sizeNormalized = (WFC.wfc.CurrentSize - WFC.wfc.MinSize) / (WFC.wfc.MaxSize - WFC.wfc.MinSize);
     }
 
     public static void CalculateData()
     {
         int props = AssetManager.LoadProps(PropPlacementType.Floor).Count + AssetManager.LoadProps(PropPlacementType.Wall).Count;
 
-        int propCount = 0;
         float entropy = 0;
 
-        foreach (var prop in propCollection)
-        {
-            propCount += prop.Value;
-        }
+        int propCount = propCollection.Sum(prop => prop.Value);
 
         foreach (var prop in propCollection)
         {
@@ -51,6 +52,7 @@ public static class TestData
         
         Data data = new Data();
         data.entropy = entropy;
+        data.size = _sizeNormalized;
         
         SaveData(data);
     }
@@ -81,9 +83,11 @@ public static class TestData
 public class Data
 {
     public float entropy;
+    public float size;
 
     public Data()
     {
         entropy = 0;
+        size = 0;
     }
 }
