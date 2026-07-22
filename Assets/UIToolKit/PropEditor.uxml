@@ -26,6 +26,7 @@
                 <ui:FloatField label="Amount" value="0" name="_rotationAmountField" enabled="false" max-length="360" data-source-type="Prop, Assembly-CSharp" data-source-path="_spawnRotation" binding-path="_spawnRotation"/>
             </ui:GroupBox>
             <ui:GroupBox name="_relationshipsGroup" text="Relationships" style="border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgb(29, 29, 29); border-right-color: rgb(29, 29, 29); border-top-color: rgb(29, 29, 29); border-bottom-color: rgb(29, 29, 29); padding-right: 5px; padding-left: 5px;">
+                <ui:IntegerField label="Max Neighbors" value="1" name="_neighborCount" data-source-type="Prop, Assembly-CSharp" data-source-path="_neighborCount" binding-path="_neighborcount" max-length="3"/>
                 <ui:ListView name="_neighborsListView" data-source-type="Prop, Assembly-CSharp" data-source-path="_neighbors" binding-path="_neighbors" header-title="Neighbors" show-border="true" show-add-remove-footer="true" allow-add="true" allow-remove="true" show-bound-collection-size="true" virtualization-method="DynamicHeight" show-foldout-header="true" picking-mode="Ignore" binding-source-selection-mode="Manual" horizontal-scrolling="false" reorderable="false" style="margin-left: 15px;"/>
             </ui:GroupBox>
         </ui:GroupBox>

@@ -66,27 +66,19 @@ public struct Spawner
     }
 }
 
-public enum SurfaceType
-{
-    Floor,
-    Wall,
-    Ceiling
-};
-
 public class MeshSampler : MonoBehaviour
 {
+    // Private variables
     private List<MeshFilter> _meshFilter = new List<MeshFilter>();
 
-    private float _radius;
+    private float _radius = 0.2f;
     private int _tries = 30;
+    private int _safety = 2;
 
     private List<Sample> _samplePoints = new List<Sample>();
     private readonly List<Sample> _floorSamples = new List<Sample>();
     private readonly List<Sample> _wallSamples = new List<Sample>();
     private readonly List<Sample> _cornerSamples = new List<Sample>();
-
-    private int safety = 10000;
-
     private List<List<Sample>> _floorSamplesAll = new List<List<Sample>>();
     private List<List<Sample>> _wallSamplesAll = new List<List<Sample>>();
     private List<List<Sample>> _cornerSamplesAll = new List<List<Sample>>();
@@ -96,12 +88,8 @@ public class MeshSampler : MonoBehaviour
     private Dictionary<Prop, int> _props = new Dictionary<Prop, int>();
     private Dictionary<string, int> _propCount = new Dictionary<string, int>();
 
+    // Getters and Setters
     public Dictionary<string, int> PropCount => _propCount;
-
-    private int _floorPropGraphLevel;
-    private int _wallPropGraphLevel;
-
-    public string PropText { get; private set; }
 
     // Debug Settings
     public bool enableGizmosFloorSamples = false;
@@ -110,20 +98,11 @@ public class MeshSampler : MonoBehaviour
     public bool enableGizmosSamplePoints = false;
     public float samplesRenderDistance = 20;
 
-    public void Generate(MeshFilter meshFilter)
-    {
-        if (_samplePoints.Count > 0 && _meshFilter.Count > 0)
-            Clear();
-
-        _samplePoints.AddRange(SampleMesh(meshFilter, _radius, _tries));
-    }
-
-    public void SetSamplingGraphProperties(float radius, int tries, int floorPropGraphLevel, int wallPropGraphLevel)
+    public void SetSamplingGraphProperties(float radius, int tries, int safety)
     {
         _radius = radius;
         _tries = tries;
-        _floorPropGraphLevel = floorPropGraphLevel;
-        _wallPropGraphLevel = wallPropGraphLevel;
+        _safety = safety;
     }
 
     public void SetSpawnerData(PropHierarchy.PropHierachyInfo parentHierarchy)
@@ -159,13 +138,6 @@ public class MeshSampler : MonoBehaviour
         }
     }
 
-    private bool WithinDisOfCam(Vector3 pos, float maxDistance)
-    {
-        Camera cam = Camera.current;
-        float d = Vector3.Distance(pos, cam.transform.position);
-        return d <= maxDistance;
-    }
-
     private void OnDrawGizmos()
     {
         if (enableGizmosFloorSamples) {
@@ -174,7 +146,7 @@ public class MeshSampler : MonoBehaviour
                 Gizmos.color = Color.white;
                 foreach (var floorPoint in floorList)
                 {
-                    if (!WithinDisOfCam(floorPoint.sample, samplesRenderDistance)) continue;
+                    if (!Misc.WithinDisOfCam(floorPoint.sample, samplesRenderDistance)) continue;
                     Gizmos.DrawSphere(floorPoint.sample, 0.1f);
                     Gizmos.DrawRay(floorPoint.sample, floorPoint.triangleNormal * .2f);
                 }
@@ -187,7 +159,7 @@ public class MeshSampler : MonoBehaviour
                 Gizmos.color = Color.orange;
                 foreach (var wallPoint in wallList)
                 {
-                    if (!WithinDisOfCam(wallPoint.sample, samplesRenderDistance)) continue;
+                    if (!Misc.WithinDisOfCam(wallPoint.sample, samplesRenderDistance)) continue;
                     Gizmos.DrawSphere(wallPoint.sample, 0.1f);
                     Gizmos.DrawRay(wallPoint.sample, wallPoint.triangleNormal * .2f);
                 }
@@ -201,7 +173,7 @@ public class MeshSampler : MonoBehaviour
             {
                 foreach (var cornerPoint in cornerList)
                 {
-                    if (!WithinDisOfCam(cornerPoint.sample, samplesRenderDistance)) continue;
+                    if (!Misc.WithinDisOfCam(cornerPoint.sample, samplesRenderDistance)) continue;
                     Gizmos.DrawSphere(cornerPoint.sample, 0.1f);
                     Gizmos.DrawRay(cornerPoint.sample, cornerPoint.triangleNormal * .2f);
                 }
@@ -215,7 +187,7 @@ public class MeshSampler : MonoBehaviour
             {
                 foreach (var samplePoint in sampleList)
                 {
-                    if (!WithinDisOfCam(samplePoint.sample, samplesRenderDistance)) continue;
+                    if (!Misc.WithinDisOfCam(samplePoint.sample, samplesRenderDistance)) continue;
                     Gizmos.DrawSphere(samplePoint.sample, 0.1f);
                     Gizmos.DrawRay(samplePoint.sample, samplePoint.triangleNormal * .2f);
                 }   
@@ -226,12 +198,12 @@ public class MeshSampler : MonoBehaviour
     public List<Sample> GetSamples(MeshFilter mesh)
     {
         List<Sample> samples;
-        while ((samples = SampleMesh(mesh, _radius, _tries)).Count() < 5); // Easy failsafe as sometimes only a handful of points are spawned for some reason
+        while ((samples = SampleMesh(mesh)).Count < 5); // Easy failsafe as sometimes only a handful of points are spawned for some reason
         return samples;
     }
 
     // Method to sample the meshes. Return a list of Sample
-    private List<Sample> SampleMesh(MeshFilter mesh, float radius, int tries)
+    private List<Sample> SampleMesh(MeshFilter mesh)
     {
         List<Sample> samples = new List<Sample>();
         List<int> active = new List<int>();
@@ -241,7 +213,7 @@ public class MeshSampler : MonoBehaviour
 
         float[] cdf = BuildTriangleAreaCDF(vertices, triangles);
         (Vector3 min, Vector3 max) = BuildBoundingBox(vertices);
-        (Vector3[,,] grid, float cellSize, Vector3Int gridSize) = InitializeGrid(min, max, radius);
+        (Vector3[,,] grid, float cellSize, Vector3Int gridSize) = InitializeGrid(min, max, _radius);
 
         int tryCount = 0;
 
@@ -260,7 +232,7 @@ public class MeshSampler : MonoBehaviour
                 Vector3 candidate = SamplePointInTriangle(vertices[i0], vertices[i1], vertices[i2]);
                 Vector3 normal = Vector3.Cross(vertices[i1] - vertices[i0], vertices[i2] - vertices[i0]).normalized;
 
-                if ((active.Count == 0 || IsValid(candidate, radius, grid, min, cellSize, gridSize)) && IsInside(candidate, normal, mesh.sharedMesh.bounds))
+                if ((active.Count == 0 || IsValid(candidate, _radius, grid, min, cellSize, gridSize)) && IsInside(candidate, normal, mesh.sharedMesh.bounds))
                 {
                     InsertSampleToGrid(candidate, grid, min, cellSize);
 
@@ -281,12 +253,12 @@ public class MeshSampler : MonoBehaviour
                 active.Remove(active.Count - 1);
             }
 
-        } while(tryCount++ < safety && active.Count > 0);
+        } while(tryCount++ < _safety && active.Count > 0);
 
         return samples.OrderBy(s => s.sample.y).ToList();
     }
 
-    public void SpawnProps(GameObject obj, int maxFloorObjs, int maxWallObjs, Func<(Prop, int)> propSpawnerFloorFunc, Func<(Prop, int)> propSpawnerWallFunc, Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc, Func<Vector3, Prop, bool> spawnFilterFunc = null)
+    public void SpawnProps(GameObject obj, int maxFloorObjs, int maxWallObjs, Func<(Prop, int)> propSpawnerFloorFunc, Func<(Prop, int)> propSpawnerWallFunc, Func<Vector3, Prop, bool> spawnFilterFunc = null)
     {
         (Vector3 min, Vector3 max) = BuildBoundingBox(_samplePoints.Select(v => v.sample).ToArray());
         
@@ -294,8 +266,8 @@ public class MeshSampler : MonoBehaviour
 
         spawnFilterFunc = spawnFilterFunc ?? ((Vector3 sample, Prop prop) => true);
 
-        IEnumerator spawnFloorPropsRoutine = SpawnFloorProps(obj, maxFloorObjs, min, max, propSpawnerFloorFunc, propNeighborSpawnerFunc, spawnFilterFunc);
-        IEnumerator spawnWallPropsRoutine = SpawnWallProps(obj, maxWallObjs, min, max, propSpawnerWallFunc, propNeighborSpawnerFunc, (Vector3 v, Prop p) => true);
+        IEnumerator spawnFloorPropsRoutine = SpawnFloorProps(obj, maxFloorObjs, min, max, propSpawnerFloorFunc, spawnFilterFunc);
+        IEnumerator spawnWallPropsRoutine = SpawnWallProps(obj, maxWallObjs, min, max, propSpawnerWallFunc, (Vector3 v, Prop p) => true);
 
         CoroutineManager.StartCoroutine(this, "SpawnFloorProps", spawnFloorPropsRoutine);
         CoroutineManager.StartCoroutine(this, "SpawnWallProps", spawnWallPropsRoutine);
@@ -451,7 +423,7 @@ public class MeshSampler : MonoBehaviour
         return !samplePoints.Any(pos =>
         {
             Vector3 dir = (sample.sample - pos).normalized;
-            float dis = Vector3.Distance(pos, sample.sample) - 0.01f;
+            float dis = Vector3.Distance(pos, sample.sample) - 0.1f;
             return !Physics.Raycast(pos, dir, dis);
         });
     }
@@ -606,7 +578,7 @@ public class MeshSampler : MonoBehaviour
         return samples;
     }
 
-    private IEnumerator SpawnFloorProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Prop, PropNeighborProperty> propNeighborSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
+    private IEnumerator SpawnFloorProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
         int floorCount = objCount;
         int tries = 25;
@@ -627,9 +599,9 @@ public class MeshSampler : MonoBehaviour
             
             TestData.AddToDict(propObj?.gameObject.name, (float)WFC.wfc.getLength);
 
-            for (int i = 0; i < _floorPropGraphLevel; i++)
+            for (int i = 0; i < prop.MaxNeighborCount; i++)
             {
-                PropNeighborProperty randomPropNeighbor = propNeighborSpawner(prop);
+                PropNeighborProperty randomPropNeighbor = prop.GetRandomNeighborProp();
                 if(randomPropNeighbor == null) break;
 
                 float propMaxDistance = randomPropNeighbor.maxDistance;
@@ -651,7 +623,7 @@ public class MeshSampler : MonoBehaviour
         }
     }
 
-    private IEnumerator SpawnWallProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Prop, PropNeighborProperty> propNeighborSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
+    private IEnumerator SpawnWallProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
         int wallCount = objCount;
         int tries = 25;
@@ -672,9 +644,9 @@ public class MeshSampler : MonoBehaviour
             
             TestData.AddToDict(propObj?.gameObject.name, (float)WFC.wfc.getLength);
 
-            for (int i = 0; i < _wallPropGraphLevel; i++)
+            for (int i = 0; i < prop.MaxNeighborCount; i++)
             {
-                PropNeighborProperty randomPropNeighbor = propNeighborSpawner(prop);
+                PropNeighborProperty randomPropNeighbor = prop.GetRandomNeighborProp();
                 if(randomPropNeighbor == null) break;
 
                 samplesInRange = new List<Sample>(GetWallSamplesBySpawnPosition(randomPropNeighbor.prop, min, max));
