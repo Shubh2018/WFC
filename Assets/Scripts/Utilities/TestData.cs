@@ -11,11 +11,12 @@ public static class TestData
     private static string _fileName = string.Empty;
 
     private static float _sizeNormalized;
+    private static List<Data> dataList = new List<Data>();
     
-    public static void SaveData(Data d)
+    public static void SaveData()
     {
-        string data = JsonConvert.SerializeObject(d, Formatting.Indented);
-        string path = $"{Application.dataPath}/Test1.csv";
+        string data = JsonConvert.SerializeObject(dataList, Formatting.Indented);
+        string path = $"{Application.dataPath}/Test1.json";
         
         // File.Open(path, FileMode.Append, FileAccess.Write);
         
@@ -47,19 +48,20 @@ public static class TestData
         foreach (var prop in propCollection)
         {
             float proportion = (float)prop.Value / (float)propCount;
-            entropy += (-proportion * Mathf.Log(proportion, 2)) / (Mathf.Log(props, 2));
+            entropy += (-proportion * Mathf.Log(proportion, 2)); /// (Mathf.Log(props, 2));
         }
         
-        Data data = new Data();
-        data.entropy = entropy;
-        data.size = _sizeNormalized;
+        Data d = new Data();
+        d.entropy = entropy;
+        d.size = _sizeNormalized;
         
-        SaveData(data);
+        dataList.Add(d);
     }
 
     public static void ClearDict()
     {
         propCollection.Clear();
+        dataList.Clear();
     }
 
     public static void CreateFile(string fileName)

@@ -633,8 +633,6 @@ public class WFC : MonoBehaviour
         doneCollapseLabel:;
 
         st.Stop();
-        TestData.CalculateData();
-        TestData.ClearDict();
         
         collapseExecutionTime = st.ElapsedMilliseconds;
         doneFuncHook(overlaps);
@@ -643,8 +641,11 @@ public class WFC : MonoBehaviour
     public IEnumerator CollapseTilesTesting(Action doneFuncHook, Action<int> updateFuncHook, int levelCount)
     {
         // float qualityScore = 0;
+
+        _currentSize = _minSize;
+        TestData.ClearDict();
         
-        for (int k = 0; k < _maxSize; k++)
+        for (int k = (int)_minSize; k <= _maxSize; k++)
         {
             for (int i = 0; i < levelCount; i++)
             {
@@ -676,12 +677,11 @@ public class WFC : MonoBehaviour
                 // }
 
                 updateFuncHook(k);
+                TestData.CalculateData();
+                _currentSize += 1;
 
                 yield return null;
             }
-
-            _currentSize += 1;
-            k += 1;
         }
 
         // PropText += $"\nAverage Qaulity Score: {qualityScore / _levelCount}";
