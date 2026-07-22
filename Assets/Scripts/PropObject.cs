@@ -10,8 +10,10 @@ public class PropObject : MonoBehaviour
     - [X] Add doors between room / structure types
     - [X] Fix junctions not spawning samples
     - [X] Add min-max, required per element
-    - Add a room / structure layout planner
+    - [X] Fix props spawning inside walls
+    - [X] Add an editor terminal displaying progress information
     - Make Prop types work again
+    - Add a room / structure layout planner
     - Add prop relations with rotation
     - Do cleanup to make sure every feature works
     */
@@ -26,7 +28,7 @@ public class PropObject : MonoBehaviour
 
     // Checks for overlaps in a props 360 degree circumference, in 15 degree intervals
     // Chooses and returns a random valid rotation afterwards
-    public Vector3 CheckOverlapBoxCircumference(Vector3 pos, Func<List<Collider>, IEnumerable<Collider>> func)
+    public Quaternion CheckOverlapBoxCircumference(Vector3 pos, Func<List<Collider>, IEnumerable<Collider>> func)
     {
         BoxCollider col = GetComponent<BoxCollider>();
         List<Vector3> validRotation = new();
@@ -40,7 +42,7 @@ public class PropObject : MonoBehaviour
             rotation += new Vector3(0.0f, 15.0f, 0.0f);
         }
 
-        return validRotation.Count > 0 ? validRotation[UnityEngine.Random.Range(0, validRotation.Count)] : Vector3.one;
+        return validRotation.Count > 0 ? Quaternion.Euler(validRotation[UnityEngine.Random.Range(0, validRotation.Count)]) : Quaternion.identity;
     }
 
     public void UpdateChildren(PropHierarchy.PropHierachyInfo parentHierarchy)

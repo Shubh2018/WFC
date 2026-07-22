@@ -46,7 +46,7 @@ public class MeshPoint : MonoBehaviour
 
         while (allProps.Count > 0)
         {
-            (Prop prop, int count) = Misc.GetRandomPropCDF(allProps, _hierarchyInfo);
+            (Prop prop, int count) = Misc.GetRandomProp(allProps, _hierarchyInfo);
 
             if (!prop) return;
 

@@ -81,20 +81,20 @@ public class Node : ScriptableObject
     // Check if the node can be rotated based on if it has a positive weight and are not symmetrical all the way around
     public bool ShouldRotate()
     {
-        return ((Left.type != NodeFaceHorizontal.Type.None 
+        return (Left.type != NodeFaceHorizontal.Type.None 
             || Right.type != NodeFaceHorizontal.Type.None
             || Front.type != NodeFaceHorizontal.Type.None
             || Back.type != NodeFaceHorizontal.Type.None
             || new List<NodeFace.Name>{ Back.name, Right.name, Front.name, Left.name }.Distinct().Skip(1).Any())
-            && Weight > 0);
+            && Weight > 0;
     }
 
     // Check if this node is symmetrical on two sides
     public bool IsBilateralSymmetric()
     {
-        return (Right.name == Left.name 
-             && Back.name == Front.name 
-             && Right.name != Back.name);
+        return Right.name == Left.name 
+            && Back.name == Front.name 
+            && Right.name != Back.name;
     }
 
     public void Rotate(int amount)

@@ -193,12 +193,17 @@ public class AStar : MonoBehaviour
 
     public void GeneratePath(WFC parent, List<Vector3Int> path)
     {
-        this._parent = parent;
-        this.doneFindingPath = false;
+        _parent = parent;
+        doneFindingPath = false;
+
+        parent.EditorResetProgress();
+        parent.EditorMessageSimpleProgress("Generating A* Path...");
+        parent.EditorMessageSimpleProgress($"> (1/2) Finding routes between {path.Count} points ");
 
         if (!CheckPathValidity(path))
         {
-            UnityEngine.Debug.LogWarning("Some path points are invalid...");
+            parent.EditorMessageProgress("# Cannot find route, some points are invalid...", Color.yellow);
+            parent.EditorMessageProgress("Done finding routes", Color.green);
             return;
         }
 
@@ -207,8 +212,16 @@ public class AStar : MonoBehaviour
 
     public void StopFindingPath() 
     {
+        // Editor message
+        if (!doneFindingPath)
+        {
+            _parent.EditorMessageProgress($"@ Path finding forcefully stopped by user...", Color.red);
+            _parent.EditorSetBarProgress(100);
+            _parent.EditorMessageProgress("Done finding routes", Color.green);
+        }
+
         // Stop the coroutine
-        CoroutineManager.StopCoroutine(this, "FindRoute");
+        CoroutineManager.StopAllCoroutines();
         pathRoutine = null;
         doneFindingPath = true;
 
@@ -219,6 +232,9 @@ public class AStar : MonoBehaviour
 
     public void ClearPath()
     {
+        // Editor message
+        if (!doneFindingPath) _parent.EditorMessageProgress("Clearing previous path", Color.gray);
+
         // Reset variables
         constructedPath.Clear();
         staircases.Clear();
@@ -277,6 +293,10 @@ public class AStar : MonoBehaviour
     private IEnumerator FindRoute(List<Vector3Int> points)
     {
         ClearPath(); // Clear previously generated data
+
+        _parent.EditorMessageSimpleProgress("Creating staircase sub-points ");
+
+        yield return null;
 
         // Used to reposition nodes across levels for adding stairs correctly
         for (int j = 0; j < points.Count - 1; j++)
@@ -345,12 +365,22 @@ public class AStar : MonoBehaviour
                 }
 
                 // If there cannot be generated a starcase here we have an issue
-                UnityEngine.Debug.LogWarning($"A staircase cannot be generated in this location: ({nextPoint.x}, {nextPoint.y}, {nextPoint.z})");
+                _parent.EditorMessageProgress($"@ A staircase cannot be generated at ({nextPoint.x}, {nextPoint.y}, {nextPoint.z})", Color.red);
                 goto doneLabel;
             }
 
             genStairsLoop:;
+            _parent.EditorUpdateDotMessageProgress(150.0f, j + 1, points.Count);
+            yield return null;
         }
+
+        _parent.EditorUpdateRecentMessageProgress("Done");
+        _parent.EditorIncreaseBarProgress(15);
+
+        _parent.EditorMessageProgress("Started finding routes", Color.gray);
+        _parent.EditorBeginStepCounterProgress(80.0f, points.Count);
+
+        yield return null;
 
         // Loop through all paths
         for (int j = 0; j < points.Count - 1; j++)
@@ -363,8 +393,6 @@ public class AStar : MonoBehaviour
             NodeData endNode = new NodeData(null, points[j+1]);
 
             openList.Add(startNode);
-
-            Debug.Log("Started finding route...");
 
             // Loop until the end is found
             while (openList.Count > 0)
@@ -399,7 +427,6 @@ public class AStar : MonoBehaviour
                 if (currentNode.Equals(endNode))
                 {
                     VisualisePath(tempPath);
-                    Debug.Log("Done finding route...");
                     break;
                 }
 
@@ -409,7 +436,7 @@ public class AStar : MonoBehaviour
                 foreach (Vector3Int offset in Misc.offsets3)
                 {
                     // Get node position
-                    Vector3Int nodePosition = (currentNode.position + offset);
+                    Vector3Int nodePosition = currentNode.position + offset;
 
                     // Make sure within range of the level
                     if (!Misc.CheckPosValid(nodePosition, _parent.getWidth, _parent.getHeight, _parent.getLength))
@@ -453,11 +480,12 @@ public class AStar : MonoBehaviour
                     openList.Add(childNode);
                 }
 
-                Debug.Log($"current status; open nodes: {openList.Count}, closed nodes: {closedList.Count}");
-
                 VisualisePath(tempPath);
                 yield return enableGizmosGenerationDelay ? new WaitForSeconds(0.5f) : null;
             }
+
+            // Editor progress message
+            _parent.EditorTakeStepProgress($"Route between {startNode.position} - {endNode.position} found");
 
             // Add the temporary generated path to the permanent one
             constructedPath.AddRange(tempPath);
@@ -465,10 +493,19 @@ public class AStar : MonoBehaviour
             // Reset lists
             openList.Clear();
             closedList.Clear();
+
+            yield return null;
         }
 
         doneLabel:;
         doneFindingPath = true;
+
+        // Editor progress message
+        _parent.EditorStopStepCounterProgress();
+        _parent.EditorMessageProgress($"Total routes: {points.Count - 1}", Color.gray);
+        _parent.EditorMessageProgress("Done finding routes...", Color.gray);
+
+        yield return null;
     }
 
     private void VisualisePath(List<Vector3> tempPath)

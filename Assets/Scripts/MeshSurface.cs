@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 
 public class MeshSurface : MonoBehaviour
 {
@@ -67,25 +68,28 @@ public class MeshSurface : MonoBehaviour
     {
         _meshSampler.Clear();
         _meshSampler.SetSpawnerData(_hierarchyInfo);
-        _meshSampler.SetSamplingGraphProperties(0.25f, 1, 1, 1);
-        _meshSampler.AddSamples(_meshSampler.GetSamples(_meshFilter));
+        _meshSampler.SetSamplingGraphProperties(0.25f, 1, 10000);
+
+        _meshSampler.AddSamples(new(_meshSampler.GetSamples(_meshFilter)));
 
         Spawner spawner = GetSpawner();
 
-        Func<(Prop, int)> propFloorSpawnerFunc = () => Misc.GetRandomPropCDF(spawner.FloorPrefabs, _hierarchyInfo);
-        Func<(Prop, int)> propWallSpawnerFunc = () => Misc.GetRandomPropCDF(spawner.WallPrefabs, _hierarchyInfo);
-        Func<Prop, PropNeighborProperty> propNeighborSpawnerFunc = (Prop prop) => prop.GetRandomProp();
+        Func<(Prop, int)> propFloorSpawnerFunc = () => Misc.GetRandomProp(spawner.FloorPrefabs, _hierarchyInfo);
+        Func<(Prop, int)> propWallSpawnerFunc = () => Misc.GetRandomProp(spawner.WallPrefabs, _hierarchyInfo);
         Func<Vector3, Prop, bool> spawnFilterFunc = (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject);
 
-        _meshSampler.SpawnProps(gameObject, spawner.maxFloorPropCount, spawner.maxWallPropCount, propFloorSpawnerFunc, propWallSpawnerFunc, propNeighborSpawnerFunc, spawnFilterFunc);
+        _meshSampler.SpawnProps(gameObject, spawner.maxFloorPropCount, spawner.maxWallPropCount, propFloorSpawnerFunc, propWallSpawnerFunc, spawnFilterFunc);
     }
 
     // Used to filter out props that spawn on this surface based on environmental settings
     private Spawner GetSpawner()
     {
+        int maxFloorProps = Mathf.CeilToInt(_maxPropCount / 2.0f);
+        int maxWallProps = Mathf.FloorToInt(_maxPropCount / 2.0f);
+
         MeshNode mesh = Prop.Props?.GetParentRoomNode(_hierarchyInfo.id);
         Environment env = mesh?.GetEnvironment;
-        Spawner spawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(AssetManager.LoadFilteredProps(_spawnTypeTag), Mathf.CeilToInt(_maxPropCount / 2.0f), Mathf.FloorToInt(_maxPropCount / 2.0f));
+        Spawner spawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(AssetManager.LoadFilteredProps(_spawnTypeTag), maxFloorProps, maxWallProps);
 
         if (env == null) return spawner;
 
@@ -93,8 +97,8 @@ public class MeshSurface : MonoBehaviour
         List<Prop> wallProps = spawner.WallPrefabs.FindAll(p => env.IgnoreSubElements || env.GetEntry(p.KeyWords, true) != null);
 
         spawner = new Spawner(floorProps, wallProps);
-        spawner.maxFloorPropCount = Mathf.CeilToInt(_maxPropCount / 2.0f);
-        spawner.maxWallPropCount = Mathf.FloorToInt(_maxPropCount / 2.0f);
+        spawner.maxFloorPropCount = maxFloorProps;
+        spawner.maxWallPropCount = maxWallProps;
 
         return spawner;
     }

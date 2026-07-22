@@ -68,6 +68,7 @@ public class Prop : ScriptableObject
     [SerializeField] private bool _useStaticPositions;
     [SerializeField] private bool _spawnInCorners;
     [SerializeField] private List<PropNeighborProperty> _neighbors;
+    [SerializeField] private int _neighborCount;
     [SerializeField] private int _lowerLimitCount;
     [SerializeField] private int _higherLimitCount;
     [SerializeField] private PropRotationTypeEnum _spawnRotationType;
@@ -79,6 +80,7 @@ public class Prop : ScriptableObject
     public PropType PropType => _propType;
     public SpawnPosition SpawnPosition => _spawnPositions;
     public List<PropNeighborProperty> Neighbors => _neighbors;
+    public int MaxNeighborCount => _neighborCount;
     public PropPlacementType Placement => _propPlacement;
     public float SpawnChance {set { _spawnChance = value; } get {return _spawnChance;}}
     public bool UseStaticPositions => _useStaticPositions;
@@ -90,7 +92,6 @@ public class Prop : ScriptableObject
     public PropRotationTypeEnum SpawnRotationType => _spawnRotationType;
     public float SpawnRotationAmount => _spawnRotation;
     public List<string> KeyWords => _keywords;
-
     public Vector3 GetSize => _prop.GetComponent<BoxCollider>().size;
 
     public Prop(Prop p)
@@ -100,6 +101,7 @@ public class Prop : ScriptableObject
         _propType = p._propType;
         _propPlacement = p._propPlacement;
         _neighbors = new List<PropNeighborProperty>(p._neighbors);
+        _neighborCount = p._neighborCount;
         _spawnPositions = p._spawnPositions;
         _useStaticPositions = p._useStaticPositions;
         _spawnInCorners = p.SpawnInCorners;
@@ -123,7 +125,7 @@ public class Prop : ScriptableObject
         foreach (Sample sample in samples)
         {
             Vector3 pos = sample.sample + sample.triangleNormal * 0.1f;
-            Vector3 rot = Vector3.one;
+            Quaternion rot = Quaternion.identity;
 
             Func<List<Collider>, IEnumerable<Collider>> filterFunc = (List<Collider> cols) =>
             {
@@ -133,9 +135,9 @@ public class Prop : ScriptableObject
             };
 
             if (!spawnFilterFunc(sample.sample, this)) continue;
-            if ((rot = _prop.CheckOverlapBoxCircumference(pos, filterFunc)) == Vector3.one) continue;
+            if ((rot = _prop.CheckOverlapBoxCircumference(pos, filterFunc)) == Quaternion.identity) continue;
 
-            PropObject propObj = Instantiate(_prop, sample.sample, Quaternion.Euler(rot));
+            PropObject propObj = Instantiate(_prop, sample.sample, rot);
             propObj.transform.SetParent(parent.transform);
             propObj.RotateTo(Placement, _spawnRotationType, _spawnRotation);
 
@@ -150,8 +152,6 @@ public class Prop : ScriptableObject
 
     public PropObject SpawnWall(List<Sample> samples, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
-        if (!Props.CanSpawnProp(parentHierarchy.id, this)) return null;
-
         foreach(Sample sample in samples)
         {
             BoxCollider col = _prop.GetComponent<BoxCollider>();
@@ -178,7 +178,7 @@ public class Prop : ScriptableObject
         return null;
     }
 
-    public PropNeighborProperty GetRandomProp()
+    public PropNeighborProperty GetRandomNeighborProp()
     {
         List<PropNeighborProperty> neighbors = new List<PropNeighborProperty>(_neighbors);
         neighbors.RemoveAll((n) => n.SpawnChance == 0.0f);
@@ -186,7 +186,7 @@ public class Prop : ScriptableObject
 
         if(neighbors.Count == 0) return null; 
 
-        (int low, int high) = Misc.GetRandomProp(neighbors);
+        (int low, int high) = Misc.GetSpawnChance(neighbors);
 
         return neighbors[low];
     }

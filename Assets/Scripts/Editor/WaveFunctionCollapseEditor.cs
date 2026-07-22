@@ -1,9 +1,161 @@
 using UnityEditor;
 using UnityEngine.UIElements;
 using System;
-using System.Linq;
-using System.Diagnostics;
-using UnityEditorInternal;
+using UnityEngine;
+
+public class ProgressBox
+{
+    private float stepRange = -1;
+    private int stepCount = -1;
+    private VisualElement rootTree;
+
+    public ProgressBox(VisualElement root, WFC wfc)
+    {
+        rootTree = root;
+
+        // General
+        wfc.EditorResetProgress = Reset;
+        wfc.EditorCloseProgress = Close;
+        wfc.EditorClearBarProgress = ClearBar;
+        wfc.EditorClearMessagesProgress = ClearMessages;
+
+        // Progress
+        wfc.EditorSetBarProgress = SetBar;
+        wfc.EditorSetBarMessageProgress = SetBarMessage;
+        wfc.EditorIncreaseBarProgress = IncreaseBar;
+        wfc.EditorIncreaseBarMessageProgress = IncreaseBarMessage;
+
+        // Messages
+        wfc.EditorMessageProgress = AddMessage;
+        wfc.EditorMessageSimpleProgress = AddMessage;
+        wfc.EditorAddToMessageProgress = AddToMessage;
+        wfc.EditorUpdateDotMessageProgress = UpdateDotMessage;
+        wfc.EditorUpdateRecentMessageProgress = UpdateRecentMessage;
+
+        // Step counter
+        wfc.EditorBeginStepCounterProgress = BeginStepCounter;
+        wfc.EditorTakeStepProgress = TakeStep;
+        wfc.EditorStopStepCounterProgress = StopStepCounter;
+
+        // Other
+        wfc.EditorGetMessagesCountProgress = GetMessagesCount;
+    }
+
+    private void Display(bool state)
+    {
+        GroupBox progressBox = rootTree.Q<GroupBox>("ProgressBox");
+        progressBox.style.display = state ? DisplayStyle.Flex : DisplayStyle.None;
+    }
+
+    public void Reset()
+    {
+        Display(true);
+        ClearBar();
+        ClearMessages();
+    }
+
+    public void SetBar(float progress)
+    {
+        progress = Mathf.Max(Mathf.Min(progress, 100), 0);
+
+        ProgressBar progressBar = rootTree.Q<ProgressBar>("_progressBar");
+        progressBar.title = $"{progress}%";
+        progressBar.value = progress;
+    }
+
+    public void IncreaseBar(float progress)
+    {
+        ProgressBar progressBar = rootTree.Q<ProgressBar>("_progressBar");
+        SetBar(progressBar.value + progress);
+    }
+
+    public void AddMessage(string newMessage, Color color)
+    {
+        Label label = new Label(newMessage);
+        label.style.color = new StyleColor(color);
+
+        ScrollView progressMessages = rootTree.Q<ScrollView>("_progressMessages");
+        progressMessages.Add(label);
+        progressMessages.ScrollTo(label);
+    }
+
+    public void AddMessage(string newMessage)
+    {
+        AddMessage(newMessage, Color.white);
+    }
+
+    public void SetBarMessage(float progress, string newMessage)
+    {
+        SetBar(progress);
+        AddMessage(newMessage, Color.white);
+    }
+
+    public void IncreaseBarMessage(float progress, string newMessage)
+    {
+        IncreaseBar(progress);
+        AddMessage(newMessage, Color.white);
+    }
+
+    public void AddToMessage(int index, string addedText)
+    {
+        ScrollView progressMessages = rootTree.Q<ScrollView>("_progressMessages");
+        if (index < 0 || index >= progressMessages.childCount) return;
+        Label recentLabel = (Label) progressMessages.ElementAt(index);
+        recentLabel.text += addedText;
+        progressMessages.ScrollTo(recentLabel);
+    }
+
+    public int GetMessagesCount()
+    {
+        return rootTree.Q<ScrollView>("_progressMessages").childCount;
+    }
+
+    public void UpdateDotMessage(float length, int current, int max)
+    {
+        int steps = Mathf.CeilToInt(length / max);
+        for (int i = (current - 1) * steps; i < current * steps; i++)
+            AddToMessage(GetMessagesCount() - 1, ". ");
+    }
+
+    public void UpdateRecentMessage(string additionMessage)
+    {
+        AddToMessage(GetMessagesCount() - 1, additionMessage);
+    }
+
+    public void BeginStepCounter(float range, int count)
+    {
+        stepRange = range;
+        stepCount = count;
+    }
+
+    public void TakeStep(string message)
+    {
+        if (stepRange == -1 && stepCount == -1) return;
+        IncreaseBarMessage(stepRange / stepCount, message);
+    }
+
+    public void StopStepCounter()
+    {
+        stepRange = stepCount = -1;
+    }
+
+    public void ClearBar()
+    {
+        ProgressBar progressBar = rootTree.Q<ProgressBar>("_progressBar");
+        progressBar.title = "0%";
+        progressBar.value = 0;
+    }
+
+    public void ClearMessages()
+    {
+        rootTree.Q<ScrollView>("_progressMessages").Clear();
+    }
+
+    public void Close()
+    {
+        Display(false);
+    }
+}
 
 [CustomEditor(typeof(WFC))]
 public class WaveFunctionCollapseEditor : Editor
@@ -11,8 +163,7 @@ public class WaveFunctionCollapseEditor : Editor
     public VisualTreeAsset editorVisualTree;
     private VisualElement rootTree;
     private WFC WaveFunctionCollapse;
-
-    private Label testText;
+    private ProgressBox progressBox;
     
     public override VisualElement CreateInspectorGUI()
     {
@@ -20,6 +171,8 @@ public class WaveFunctionCollapseEditor : Editor
         
         rootTree = new VisualElement();
         editorVisualTree.CloneTree(rootTree);
+
+        progressBox = new ProgressBox(rootTree, WaveFunctionCollapse);
         
         Button generateButton = rootTree.Q<Button>("_generateTiles");
         generateButton.RegisterCallback<ClickEvent>(GenerateTiles);
@@ -43,28 +196,21 @@ public class WaveFunctionCollapseEditor : Editor
         Button pauseCollapse = rootTree.Q<Button>("_pauseCollapse");
         pauseCollapse.RegisterCallback<ClickEvent>(PauseCollapseOfTiles);
 
-        Button finishCollapse = rootTree.Q<Button>("_finishCollapse");
-        finishCollapse.RegisterCallback<ClickEvent>(FinishCollapseOfTiles);
-
-        Button clearCollapsedButton = rootTree.Q<Button>("_clearCollapsed");
-        clearCollapsedButton.RegisterCallback<ClickEvent>((ClickEvent evt) => {
+        Button clearCollapsedButton = rootTree.Q<Button>("_clearCollapse");
+        clearCollapsedButton.RegisterCallback((ClickEvent evt) => {
             StopCollapseOfTiles(evt);
             WaveFunctionCollapse.ClearTiles(false);
-            SetGenLabels(0, 0.0, 0.0f);
+            SetButtonState("_clearCollapse", false);
         });
         
         Button clearButton = rootTree.Q<Button>("_clearTiles");
-        clearButton.RegisterCallback<ClickEvent>((ClickEvent evt) =>
+        clearButton.RegisterCallback((ClickEvent evt) =>
         {
             StopCollapseOfTiles(evt);
             WaveFunctionCollapse.ClearTiles(true);
-            SetGenLabels(0, 0.0, 0.0f);
             WaveFunctionCollapse.enabledCollapseButton = false;
             SetButtonState("_collapseTiles", false);
         });
-
-        Slider collapseSpeedSlider = rootTree.Q<Slider>("_collapseSpeedSlider");
-        collapseSpeedSlider.RegisterCallback<ChangeEvent<float>>(UpdateCollapseTime);
 
         RegisterIntFieldCallback("NodeSamples", 1, 10);
 
@@ -88,22 +234,22 @@ public class WaveFunctionCollapseEditor : Editor
         Toggle togglePathFinding = rootTree.Q<Toggle>("_togglePathFinding");
         Toggle togglePathDelay = rootTree.Q<Toggle>("_togglePathDelay");
         
-        togglePathLine.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+        togglePathLine.RegisterCallback((ChangeEvent<bool> evt) => 
             WaveFunctionCollapse.SavePathSettings(evt.newValue, togglePathPoints.value, togglePathStairs.value, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
         );
-        togglePathPoints.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+        togglePathPoints.RegisterCallback((ChangeEvent<bool> evt) => 
             WaveFunctionCollapse.SavePathSettings(togglePathLine.value, evt.newValue, togglePathStairs.value, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
         );
-        togglePathStairs.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+        togglePathStairs.RegisterCallback((ChangeEvent<bool> evt) => 
             WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, evt.newValue, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
         );
-        togglePathField.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+        togglePathField.RegisterCallback((ChangeEvent<bool> evt) => 
             WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, evt.newValue, togglePathFinding.value, togglePathDelay.value)
         );
-        togglePathFinding.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+        togglePathFinding.RegisterCallback((ChangeEvent<bool> evt) => 
             WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, togglePathField.value, evt.newValue, togglePathDelay.value)
         );
-        togglePathDelay.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => 
+        togglePathDelay.RegisterCallback((ChangeEvent<bool> evt) => 
             WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, togglePathField.value, togglePathFinding.value, evt.newValue)
         );
 
@@ -161,14 +307,12 @@ public class WaveFunctionCollapseEditor : Editor
         stopTestingButton.RegisterCallback<ClickEvent>(StopTesting);
         
         Button createFileButton = rootTree.Q<Button>("CreateFile");
-        createFileButton.RegisterCallback<ClickEvent>((ClickEvent evt) =>
+        createFileButton.RegisterCallback((ClickEvent evt) =>
         {
             TestData.CreateFile(textField.text);
         });
         
-        intField.RegisterCallback<ChangeEvent<int>>((ChangeEvent<int> evt) => WaveFunctionCollapse.SetLevelCount(evt.newValue));
-        
-        SetGenLabels(0, 0.0, 1.0f);
+        intField.RegisterCallback((ChangeEvent<int> evt) => WaveFunctionCollapse.SetLevelCount(evt.newValue));
         
         return rootTree;
     }
@@ -189,23 +333,9 @@ public class WaveFunctionCollapseEditor : Editor
         field.RegisterCallback((KeyDownEvent key) => field.value = minMaxFunc(field.value));
     }
 
-    private void SetGenLabels(int tiles, double time, float delay)
-    {
-        SetLabelText("_collapseSpeedLabel", $"Delay (s): {delay}");
-        SetLabelText("_tilesGeneratedLabel", $"Tiles Gen.: {tiles}");
-        SetLabelText("_generationTimeLabel", $"Gen. Time (ms): {time}");
-    }
-
-    private void UpdateCollapseTime(ChangeEvent<float> evt)
-    {
-        WaveFunctionCollapse.collapseWaitTime = evt.newValue;
-        SetLabelText("_collapseSpeedLabel", $"Delay (s): {WaveFunctionCollapse.collapseWaitTime}");
-    }
-
     private void GenerateTiles(ClickEvent evt)
     {   
-        WaveFunctionCollapse.GenerateTiles();
-        WaveFunctionCollapse.SampleTiles(() => 
+        WaveFunctionCollapse.GenerateTiles(() => 
         {
             WaveFunctionCollapse.doneGeneratingSamples = true;
             WaveFunctionCollapse.enabledCollapseButton = true;
@@ -243,7 +373,7 @@ public class WaveFunctionCollapseEditor : Editor
     {
         if (!WaveFunctionCollapse.doneGeneratingSamples)
         {
-            UnityEngine.Debug.LogWarning("Samples has not been generated!");
+            Debug.LogWarning("Samples has not been generated!");
             return;
         }
 
@@ -252,13 +382,10 @@ public class WaveFunctionCollapseEditor : Editor
             ResetControls();
         });
 
-        SetGenLabels(WaveFunctionCollapse.getTiles, WaveFunctionCollapse.getCollapseTime, WaveFunctionCollapse.collapseWaitTime);
         SetButtonState("_pauseCollapse", true);
         SetButtonState("_stopCollapse", true);
-        SetButtonState("_finishCollapse", true);
-        SetSliderState("_collapseSpeedSlider", true);
         SetButtonState("_collapseTiles", false);
-        SetLabelText("_doneLabel", "");
+        SetButtonState("_clearCollapse", false);
     }
 
     private void CollapseTilesTesting(ClickEvent evt)
@@ -313,15 +440,6 @@ public class WaveFunctionCollapseEditor : Editor
         ResetControls();
     }
 
-    private void FinishCollapseOfTiles(ClickEvent evt)
-    {
-        WaveFunctionCollapse.collapseWaitTime = 0.0f;
-        SetSliderValue("_collapseSpeedSlider", 0.0f);
-        SetLabelText("_collapseSpeedLabel", $"Delay (s): {0}");
-        ResetControls();
-        SetButtonState("_collapseTiles", false);
-    }
-
     private void ResetControls()
     {
         SetButtonText("_pauseCollapse", "Pause");
@@ -329,10 +447,10 @@ public class WaveFunctionCollapseEditor : Editor
         SetButtonState("_collapseTiles", true);
         SetButtonState("_pauseCollapse", false);
         SetButtonState("_stopCollapse", false);
-        SetButtonState("_finishCollapse", false);
-        SetSliderState("_collapseSpeedSlider", false);
+        SetButtonState("_clearCollapse", true);
     }
 
+    // Misc functions
     private void SetLabelText(string name, string value)
     {
         Label label = rootTree.Q<Label>(name);
