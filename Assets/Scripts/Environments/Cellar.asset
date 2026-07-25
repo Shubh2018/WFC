@@ -18,18 +18,21 @@ MonoBehaviour:
   - keywords:
     - barrel
     SubElementsOnly: 0
-    required: 1
+    Required: 0
   - keywords:
     - pot
     SubElementsOnly: 1
-    required: 1
+    Required: 0
   - keywords:
     - shelf
     SubElementsOnly: 0
-    required: 1
+    Required: 0
   - keywords:
     - potion
     SubElementsOnly: 1
-    required: 1
+    Required: 0
   LegalNodesEntries: 1
-  IgnoreSubElements: 0
+  IgnoreSubElements: 1
+  CanSpawnSeperators: 0
+  MaxFloorCount: 1
+  MaxWallCount: 1

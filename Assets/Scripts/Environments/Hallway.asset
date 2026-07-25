@@ -28,4 +28,7 @@ MonoBehaviour:
     SubElementsOnly: 0
     Required: 0
   LegalNodesEntries: 38
-  IgnoreSubElements: 0
+  IgnoreSubElements: 1
+  CanSpawnSeperators: 0
+  MaxFloorCount: 1
+  MaxWallCount: 1

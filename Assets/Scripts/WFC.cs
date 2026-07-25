@@ -732,7 +732,14 @@ public class WFC : MonoBehaviour
             _pathPoints = GeneratePathPoints(k);
             path.GeneratePath(this, _pathPoints);
 
-            yield return new WaitUntil(() => path.IsDoneFindingPath);
+            bool isPathGenerationDone = false;
+
+            CoroutineManager.StartCoroutine(this, "GeneratePathNodes", GeneratePathNodes(() =>
+            {
+                isPathGenerationDone = true;
+            }));
+            
+            yield return new WaitUntil(() => isPathGenerationDone);
             
             for (int i = 0; i < levelCount; i++)
             {

@@ -16,3 +16,7 @@ MonoBehaviour:
   DisplayColor: {r: 1, g: 0.642806, b: 0, a: 1}
   SpawningEntries: []
   LegalNodesEntries: 0
+  IgnoreSubElements: 1
+  CanSpawnSeperators: 0
+  MaxFloorCount: 1
+  MaxWallCount: 1

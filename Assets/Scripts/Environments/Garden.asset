@@ -18,14 +18,17 @@ MonoBehaviour:
   - keywords:
     - table
     SubElementsOnly: 0
-    required: 0
+    Required: 0
   - keywords:
     - torch
     SubElementsOnly: 0
-    required: 0
+    Required: 0
   - keywords:
     - pot
     SubElementsOnly: 1
-    required: 0
+    Required: 0
   LegalNodesEntries: 24
-  IgnoreSubElements: 0
+  IgnoreSubElements: 1
+  CanSpawnSeperators: 0
+  MaxFloorCount: 1
+  MaxWallCount: 1

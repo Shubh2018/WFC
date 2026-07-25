@@ -22,8 +22,9 @@ MonoBehaviour:
   _keywords:
   - shelf
   _useStaticPositions: 0
-  _spawnInCorners: 0
+  _spawnInCorners: 1
   _neighbors: []
+  _neighborCount: 0
   _lowerLimitCount: 0
   _higherLimitCount: 4
   _spawnRotationType: 0
