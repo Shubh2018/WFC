@@ -155,8 +155,8 @@ public class WFC : MonoBehaviour
 
     public string PropText { get; private set; } = "";
     
-    private float _minSize = 2; 
-    private float _maxSize = 10;
+    private float _minSize = 4; 
+    private float _maxSize = 6;
     private float _currentSize = 2;
     
     public float MinSize => _minSize;
@@ -723,13 +723,24 @@ public class WFC : MonoBehaviour
         
         for (int k = (int)_minSize; k <= _maxSize; k++)
         {
+            _length = _height = _width = k;
+            
+            if ((path = gameObject.GetComponent<AStar>()) && path == null) 
+                path = gameObject.AddComponent<AStar>();
+
+            path.ClearPath();
+            _pathPoints = GeneratePathPoints(k);
+            path.GeneratePath(this, _pathPoints);
+
+            yield return new WaitWhile(() => !path.IsDoneFindingPath);
+            
             for (int i = 0; i < levelCount; i++)
             {
                 int overlaps = 0;
                 int totalProps = 0;
                 bool roundDone = false;
                 
-                CoroutineManager.StartCoroutine(this, "CollapseTiles", CollapseTiles(() => { _length = _height = _width = (int)_currentSize; }, (o) => {
+                CoroutineManager.StartCoroutine(this, "CollapseTiles", CollapseTiles(() => { }, (o) => {
                     overlaps = o;
                     roundDone = true;
                 }));
@@ -754,7 +765,7 @@ public class WFC : MonoBehaviour
 
                 updateFuncHook(k);
                 TestData.CalculateData();
-                _currentSize += 1;
+                //_currentSize += 1;
 
                 yield return null;
             }
@@ -764,6 +775,28 @@ public class WFC : MonoBehaviour
         
         // TestData.SaveData(PropText);
         doneFuncHook();
+    }
+
+    public List<Vector3Int> GeneratePathPoints(int size)
+    {
+        List<Vector3Int> p = new List<Vector3Int>();
+        
+        for (int i = 0; i < size; i++)
+        {
+            if (i % 2 == 0)
+            {
+                p.Add(new Vector3Int(0, i, 0));
+                p.Add(new Vector3Int(size - 1, i, size - 1));
+            }
+
+            else
+            {
+                p.Add(new Vector3Int(size - 1, i, size - 1));
+                p.Add(new Vector3Int(0, i, 0));
+            }
+        }
+        
+        return p;
     }
 
     private double[] CalculateNodesWeights(List<Node> nodes) {

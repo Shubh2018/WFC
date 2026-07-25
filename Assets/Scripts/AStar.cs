@@ -233,7 +233,7 @@ public class AStar : MonoBehaviour
     public void ClearPath()
     {
         // Editor message
-        if (!doneFindingPath) _parent.EditorMessageProgress("Clearing previous path", Color.gray);
+        if (!doneFindingPath) _parent?.EditorMessageProgress("Clearing previous path", Color.gray);
 
         // Reset variables
         constructedPath.Clear();
