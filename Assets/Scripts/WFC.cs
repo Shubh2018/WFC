@@ -732,7 +732,7 @@ public class WFC : MonoBehaviour
             _pathPoints = GeneratePathPoints(k);
             path.GeneratePath(this, _pathPoints);
 
-            yield return new WaitWhile(() => !path.IsDoneFindingPath);
+            yield return new WaitUntil(() => path.IsDoneFindingPath);
             
             for (int i = 0; i < levelCount; i++)
             {
