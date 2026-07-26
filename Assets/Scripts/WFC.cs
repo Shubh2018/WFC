@@ -156,7 +156,7 @@ public class WFC : MonoBehaviour
     public string PropText { get; private set; } = "";
     
     private float _minSize = 4; 
-    private float _maxSize = 6;
+    private float _maxSize = 20;
     private float _currentSize = 2;
     
     public float MinSize => _minSize;
@@ -776,6 +776,8 @@ public class WFC : MonoBehaviour
 
                 yield return null;
             }
+
+            _currentSize += 1;
         }
 
         // PropText += $"\nAverage Qaulity Score: {qualityScore / _levelCount}";

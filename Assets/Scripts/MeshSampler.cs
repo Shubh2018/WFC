@@ -597,7 +597,7 @@ public class MeshSampler : MonoBehaviour
 
             if (!propObj) continue;
             
-            TestData.AddToDict(propObj?.gameObject.name, (float)WFC.wfc.getLength);
+            TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
 
             for (int i = 0; i < prop.MaxNeighborCount; i++)
             {
@@ -616,7 +616,7 @@ public class MeshSampler : MonoBehaviour
                 if (!propObj) continue;
                 floorCount--;
                 
-                TestData.AddToDict(propObj?.gameObject.name, (float)WFC.wfc.getLength);
+                TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
             }
 
             floorCount--;
@@ -642,7 +642,7 @@ public class MeshSampler : MonoBehaviour
 
             if (!propObj) continue;
             
-            TestData.AddToDict(propObj?.gameObject.name, (float)WFC.wfc.getLength);
+            TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
 
             for (int i = 0; i < prop.MaxNeighborCount; i++)
             {
@@ -659,7 +659,7 @@ public class MeshSampler : MonoBehaviour
                 if (!propObj) continue;
                 wallCount--;
                 
-                TestData.AddToDict(propObj?.gameObject.name, (float)WFC.wfc.getLength);
+                TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
             }
 
             wallCount--;
