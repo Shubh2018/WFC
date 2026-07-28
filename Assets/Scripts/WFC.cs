@@ -628,6 +628,7 @@ public class WFC : MonoBehaviour
 
         _currentSize = _minSize;
         TestData.ClearDict();
+        TestData._wfc = this;
         
         for (int k = (int)_minSize; k <= _maxSize; k++)
         {

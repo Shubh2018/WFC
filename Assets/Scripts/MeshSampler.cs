@@ -602,7 +602,7 @@ public class MeshSampler : MonoBehaviour
         if (prop.IsSpecialised()) _specialObjects.Add(propObj);
 
         WFC wfc = FindFirstObjectByType<WFC>();
-        TestData.AddToDict(wfc, propObj?.gameObject.name, wfc.getLength);
+        TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
 
         return true;
     }
