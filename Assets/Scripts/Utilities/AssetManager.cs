@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using NUnit;
 using UnityEditor;
 
 public static class AssetManager
@@ -9,19 +11,18 @@ public static class AssetManager
     private static string propsPath = $"{asssetPath}/Props/";
     private static string environmentsPath = $"{asssetPath}/Environments";
 
+    // Loads a list of all environments
+    public static List<Environment> LoadEnvironments()
+    {
+        List<string> assets = Directory.GetFiles(environmentsPath, "*.asset").ToList();
+        return assets.Select(a => AssetDatabase.LoadAssetAtPath<Environment>(a)).ToList();
+    }
+
     // Load a random environment based on which kind of nodes that they allow to use
     // If a node type has no valid environments, no props will spawn there
     public static Environment LoadRandomEnvironment(Node.NodeType nodeType)
     {
-        string[] assets = Directory.GetFiles(environmentsPath, "*.asset");
-        List<Environment> envs = new();
-
-        foreach(string env in assets)
-        {
-            Environment currEnv = AssetDatabase.LoadAssetAtPath<Environment>(env);
-            if (currEnv.LegalNodesEntries.HasFlag(nodeType)) envs.Add(currEnv);
-        }
-
+        List<Environment> envs = LoadEnvironments().Where(e => e.LegalNodesEntries.HasFlag(nodeType)).ToList();
         if (envs.Count == 0) return null;
         return envs[UnityEngine.Random.Range(0, envs.Count - 1)];
     }

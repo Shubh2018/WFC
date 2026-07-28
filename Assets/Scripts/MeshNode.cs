@@ -44,6 +44,7 @@ public class MeshNode : MonoBehaviour
 
     // Getters / Setters
     public Environment GetEnvironment => _envObj;
+    public Node NodeData => _nodeData;
 
     public void OnDrawGizmos()
     {
@@ -66,12 +67,6 @@ public class MeshNode : MonoBehaviour
         }
     }
 
-    public void Init()
-    {
-        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(Guid.Empty, 5, 0);
-        Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, gameObject, true);
-    }
-
     public static IEnumerator SampleTiles(WFC wave, Action funcDoneHook)
     {
         yield return new WaitUntil(() => wave.doneGeneratingTiles);
@@ -79,6 +74,7 @@ public class MeshNode : MonoBehaviour
         Stopwatch st = new Stopwatch();
         st.Start();
 
+        wave.doneGeneratingSamples = false;
         wave.EditorMessageSimpleProgress("> (2/2) Sampling tiles ");
         wave.EditorMessageProgress($"Radius: {wave.SamplingRadius}, tries: {wave.SamplingTries}, samples per node: {wave.SamplesPerNode}", Color.gray);
 
@@ -119,6 +115,7 @@ public class MeshNode : MonoBehaviour
 
         st.Stop();
 
+        wave.doneGeneratingSamples = true;
         wave.EditorMessageProgress($"Sampling tiles in {st.ElapsedMilliseconds} ms ({st.ElapsedMilliseconds / 1000f} s)", Color.gray);
         wave.EditorMessageProgress($"Total samples: {generatedSamples.Count}", Color.gray);
         wave.EditorStopStepCounterProgress();
@@ -131,10 +128,13 @@ public class MeshNode : MonoBehaviour
     // Chooses a random set of samples, filteres it and spawns its props
     public void Generate(Node node, Vector3 size)
     {
+        _envObj = AssetManager.LoadRandomEnvironment(node.nodeType);
+        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(Guid.Empty, _envObj.SpawnHierarchy, 0);
+        Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, gameObject, true);
+
         if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
 
         _nodeData = node;
-        _envObj = AssetManager.LoadRandomEnvironment(node.nodeType);
 
         SampleData sampleData = generatedSamples.Single(s => s.nodeData.name == _nodeData.name);
 
@@ -151,21 +151,21 @@ public class MeshNode : MonoBehaviour
         if (sampleData == null || _envObj == null) return; // this node has either no samples or no environment, so nothing can spawn here
         if (_envObj.CanSpawnSeperators) SpawnSeperators(); // Only spawn walls and beams if the environment allows it
 
-        Func<(Prop, int)> propFloorSpawnerFunc = () =>
+        meshSampler.SpawnProps(gameObject, GetSpawner(), (sample, prop) => IsPropContained(sample, prop.PropObject, size) || _nodeData.IsStairPiece);
+    }
+
+    private Spawner GetSpawner()
+    {
+        List<Prop> floorProps = new(AssetManager.LoadProps(PropPlacementType.Floor).Where(p => !_nodeData.exceptionsProps.Contains(p)));
+        List<Prop> wallProps = new(AssetManager.LoadProps(PropPlacementType.Wall).Where(p => !_nodeData.exceptionsProps.Contains(p)));
+
+        Spawner spawner = new(floorProps, wallProps)
         {
-            List<Prop> props = new List<Prop>(AssetManager.LoadProps(PropPlacementType.Floor).Where((Prop p) => !_nodeData.exceptionsProps.Contains(p)));
-            return Misc.GetRandomProp(props, _hierarchyInfo);
+            maxFloorPropCount = _envObj.MaxFloorCount,
+            maxWallPropCount = _envObj.MaxWallCount
         };
 
-        Func<(Prop, int)> propWallSpawnerFunc = () =>
-        {
-            List<Prop> props = new List<Prop>(AssetManager.LoadProps(PropPlacementType.Wall).Where((Prop p) => !_nodeData.exceptionsProps.Contains(p)));
-            return Misc.GetRandomProp(props, _hierarchyInfo);
-        };
-
-        Func<Vector3, Prop, bool> spawnFilterFunc = (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject, size) || _nodeData.IsStairPiece;
-
-        meshSampler.SpawnProps(gameObject, _envObj.MaxFloorCount, _envObj.MaxWallCount, propFloorSpawnerFunc, propWallSpawnerFunc, spawnFilterFunc);
+        return spawner;
     }
 
     // Checks according to the type of node what samples are not inside of the mesh aka. not inside a wall

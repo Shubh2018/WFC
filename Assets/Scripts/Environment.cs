@@ -1,7 +1,39 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
+
+[AttributeUsage(AttributeTargets.Field)]
+public class EnvironmentAttribute : PropertyAttribute { }
+
+[CustomPropertyDrawer(typeof(EnvironmentAttribute))]
+public class EnvironmentDrawer : PropertyDrawer
+{
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+        EditorGUI.BeginProperty(position, label, property);
+
+        List<Environment> envs = AssetManager.LoadEnvironments();
+
+        List<string> options = new List<string> { "None" };
+        List<string> ids = new List<string> { "" };
+
+        foreach (Environment env in envs)
+        {
+            options.Add(env.Name);
+            ids.Add(env.Name);
+        }
+
+        int index = ids.IndexOf(property.stringValue);
+        if (index == -1) index = 0;
+
+        index = EditorGUI.Popup(position, label.text, index, options.ToArray());
+
+        property.stringValue = ids[index];
+        EditorGUI.EndProperty();
+    }
+}
 
 [CreateAssetMenu(fileName = "Environment", menuName = "WFC/Environment")]
 public class Environment : ScriptableObject
@@ -12,6 +44,7 @@ public class Environment : ScriptableObject
     [SerializeField] public Node.NodeType LegalNodesEntries;
     [SerializeField] public bool IgnoreSubElements;
     [SerializeField] public bool CanSpawnSeperators;
+    [SerializeField] public int SpawnHierarchy = 5;
     [SerializeField] public int MaxFloorCount = 1;
     [SerializeField] public int MaxWallCount = 1;
 

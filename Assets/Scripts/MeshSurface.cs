@@ -1,8 +1,8 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
-using System.Collections;
 
+[RequireComponent(typeof(MeshSampler))]
 public class MeshSurface : MonoBehaviour
 {
     private MeshSampler _meshSampler;
@@ -55,7 +55,7 @@ public class MeshSurface : MonoBehaviour
         _meshFilter.sharedMesh = Misc.CreatePlaneMesh(_surfaceSize / 2);
         _meshRenderer.material.color = Color.grey;
 
-        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierachyInfo.id, parentHierachyInfo.maxHierachyLevel, parentHierachyInfo.currentHierachyLevel);
+        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierachyInfo, _spawnHierarchy);
 
         if (_hierarchyInfo.IsCurrentHierachyLarger()) return;
 
@@ -69,16 +69,9 @@ public class MeshSurface : MonoBehaviour
         _meshSampler.Clear();
         _meshSampler.SetSpawnerData(_hierarchyInfo);
         _meshSampler.SetSamplingGraphProperties(0.25f, 1, 10000);
-
         _meshSampler.AddSamples(new(_meshSampler.GetSamples(_meshFilter)));
 
-        Spawner spawner = GetSpawner();
-
-        Func<(Prop, int)> propFloorSpawnerFunc = () => Misc.GetRandomProp(spawner.FloorPrefabs, _hierarchyInfo);
-        Func<(Prop, int)> propWallSpawnerFunc = () => Misc.GetRandomProp(spawner.WallPrefabs, _hierarchyInfo);
-        Func<Vector3, Prop, bool> spawnFilterFunc = (Vector3 sample, Prop prop) => IsPropContained(sample, prop.PropObject);
-
-        _meshSampler.SpawnProps(gameObject, spawner.maxFloorPropCount, spawner.maxWallPropCount, propFloorSpawnerFunc, propWallSpawnerFunc, spawnFilterFunc);
+        _meshSampler.SpawnProps(gameObject, GetSpawner(), (sample, prop) => IsPropContained(sample, prop.PropObject));
     }
 
     // Used to filter out props that spawn on this surface based on environmental settings

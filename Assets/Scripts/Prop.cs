@@ -57,11 +57,16 @@ public enum PropRotationTypeEnum
 [CreateAssetMenu(fileName = "Prop", menuName = "WFC/Prop")]
 public class Prop : ScriptableObject
 {
+    // Private variables
     [SerializeField] private PropObject _prop;
     [SerializeField] [Range(0.0f, 1.0f)] private float _spawnChance = 0.0f;
     [SerializeField] private PropPlacementType _propPlacement;
     [SerializeField] private PropType _propType;
     [SerializeField] private PropLimitTypeEnum _limitType;
+    [Environment] [SerializeField] private string _environmentType;
+    [SerializeField] private Node.NodeType _nodeType;
+    [SerializeField] private bool _spacingEnabled;
+    [SerializeField] private float _spacingAmount;
     [SerializeField] private PropSpawnTagEnum _spawnTag;
     [SerializeField] private SpawnPosition _spawnPositions;
     [SerializeField] private List<string> _keywords;
@@ -74,8 +79,10 @@ public class Prop : ScriptableObject
     [SerializeField] private PropRotationTypeEnum _spawnRotationType;
     [SerializeField] private float _spawnRotation;
 
-    public static PropHierarchy Props = new PropHierarchy(null, Guid.Empty);
+    // Public variables
+    public static PropHierarchy Props = new(null, Guid.Empty);
 
+    // Getters and Setters
     public PropObject PropObject => _prop;
     public PropType PropType => _propType;
     public SpawnPosition SpawnPosition => _spawnPositions;
@@ -86,6 +93,10 @@ public class Prop : ScriptableObject
     public bool UseStaticPositions => _useStaticPositions;
     public bool SpawnInCorners => _spawnInCorners;
     public PropLimitTypeEnum LimitType => _limitType;
+    public string EnvironmentType => _environmentType;
+    public Node.NodeType NodeType => _nodeType;
+    public bool SpacingEnabled => _spacingEnabled;
+    public float SpacingAmount => _spacingAmount;
     public PropSpawnTagEnum SpawnTag => _spawnTag;
     public int LowerLimitCount => _lowerLimitCount;
     public int HigherLimitCount => _higherLimitCount;
@@ -120,25 +131,34 @@ public class Prop : ScriptableObject
         _useStaticPositions = true;
     }
 
-    public PropObject SpawnFloor(List<Sample> samples, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
+    public bool IsSpecialised()
+    {
+        return _propType != PropType.Decoration;
+    }
+
+    public PropObject SpawnFloor(List<Sample> samples, List<PropObject> propObjs, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
         foreach (Sample sample in samples)
         {
             Vector3 pos = sample.sample + sample.triangleNormal * 0.1f;
-            Quaternion rot = Quaternion.identity;
+            Quaternion rot = _prop.GetRotation(parent, Placement, _spawnRotationType, _spawnRotation);
 
-            Func<List<Collider>, IEnumerable<Collider>> filterFunc = (List<Collider> cols) =>
+            IEnumerable<Collider> filterFunc(List<Collider> cols)
             {
-                if (parent.GetComponent<MeshSurface>() != null)
-                    return cols.Where(c => c.transform.parent == parent.transform);
+                if (parent.GetComponent<MeshSurface>() || parent.GetComponent<MeshPoint>())
+                    return cols.Where(c => c.gameObject.GetInstanceID() != parent.gameObject.GetInstanceID() 
+                        && c.gameObject.GetInstanceID() != parent.transform.parent.gameObject.GetInstanceID());
                 else return cols.AsEnumerable();
-            };
+            }
 
+            if (propObjs.Any(p => !p.OutsideSpacing(this, sample.sample))) continue;
             if (!spawnFilterFunc(sample.sample, this)) continue;
-            if ((rot = _prop.CheckOverlapBoxCircumference(pos, filterFunc)) == Quaternion.identity) continue;
+            if (_spawnRotationType != PropRotationTypeEnum.Default && _prop.CheckOverlapBox(pos, rot, filterFunc)) continue;
+            else if ((rot = _prop.CheckOverlapBoxCircumference(pos, filterFunc)).Equals(Misc.quatEmpty)) continue;
 
             PropObject propObj = Instantiate(_prop, sample.sample, rot);
             propObj.transform.SetParent(parent.transform);
+            propObj.Prop = this;
             propObj.RotateTo(Placement, _spawnRotationType, _spawnRotation);
 
             Props.Increase(parentHierarchy.id, _prop.name);
@@ -150,23 +170,27 @@ public class Prop : ScriptableObject
         return null;
     }
 
-    public PropObject SpawnWall(List<Sample> samples, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
+    public PropObject SpawnWall(List<Sample> samples, List<PropObject> propObjs, GameObject parent, PropHierarchy.PropHierachyInfo parentHierarchy, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
         foreach(Sample sample in samples)
         {
             BoxCollider col = _prop.GetComponent<BoxCollider>();
             Quaternion rotation = sample.triangleNormal != Vector3.zero ? Quaternion.LookRotation(sample.triangleNormal) : Quaternion.identity;
+            Quaternion rot2 = _prop.GetRotation(parent, Placement, _spawnRotationType, _spawnRotation);
             Vector3 pos = sample.sample + sample.triangleNormal * 0.1f + rotation * col.center;
 
-            Func<List<Collider>, IEnumerable<Collider>> filterFunc = (List<Collider> cols) => cols.AsEnumerable();
+            static IEnumerable<Collider> filterFunc(List<Collider> cols) => cols.AsEnumerable();
 
+            if (propObjs.Any(p => p.Prop.SpacingEnabled && Vector3.Distance(p.transform.position, sample.sample) < p.Prop.SpacingAmount)) continue;
             if (!spawnFilterFunc(sample.sample, this)) continue;
-            if (_prop.CheckOverlapBox(pos, rotation, filterFunc)) continue;
+            if (_spawnRotationType != PropRotationTypeEnum.Default && _prop.CheckOverlapBox(pos, rot2, filterFunc)) continue;
+            else if (_prop.CheckOverlapBox(pos, rotation, filterFunc)) continue;
 
             PropObject propObj = Instantiate(_prop, sample.sample, rotation);
             propObj.transform.SetParent(parent.transform);
             propObj.transform.position = sample.sample;
             propObj.transform.forward = sample.triangleNormal;
+            propObj.Prop = this;
             propObj.RotateTo(Placement, _spawnRotationType, _spawnRotation);
 
             Props.Increase(parentHierarchy.id, _prop.name);
@@ -176,19 +200,6 @@ public class Prop : ScriptableObject
         }
 
         return null;
-    }
-
-    public PropNeighborProperty GetRandomNeighborProp()
-    {
-        List<PropNeighborProperty> neighbors = new List<PropNeighborProperty>(_neighbors);
-        neighbors.RemoveAll((n) => n.SpawnChance == 0.0f);
-        neighbors.Sort((a, b) => a.SpawnChance.CompareTo(b.SpawnChance));
-
-        if(neighbors.Count == 0) return null; 
-
-        (int low, int high) = Misc.GetSpawnChance(neighbors);
-
-        return neighbors[low];
     }
 }
 

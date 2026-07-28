@@ -1,5 +1,6 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <ui:VisualElement name="VisualElement" data-source="" style="flex-grow: 1;">
+        <ui:Button text="Spawn Object" name="_spawnObjectButton"/>
         <ui:Toggle label="Force Spawn" name="_forceSpawnToggle" data-source-type="MeshPoint, Assembly-CSharp" data-source-path="_forcedToSpawn" binding-path="_forcedToSpawn"/>
         <ui:IntegerField label="Spawn Hierarchy" value="5" name="_spawnHierarchy" data-source-type="MeshPoint, Assembly-CSharp" data-source-path="_spawnHierarchy" binding-path="_spawnHierarchy"/>
         <ui:Toggle label="Choose Objects" name="_spawnToggle" data-source-type="MeshSurface, Assembly-CSharp" data-source-path="_spawnViaSpawner" value="false" binding-path="_spawnViaSpawner"/>
