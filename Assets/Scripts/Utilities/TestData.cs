@@ -11,6 +11,9 @@ public static class TestData
     private static Dictionary<string, int> _propCollection = new Dictionary<string, int>();
     private static string _fileName = string.Empty;
 
+    private static float _levelVolume = 0;
+    private static float _gamma = 0.8929979511f;
+
     private static float _sizeNormalized;
     private static List<Data> _dataList = new List<Data>();
     private static List<Data> _dataListNotNormalized = new List<Data>();
@@ -61,6 +64,7 @@ public static class TestData
         }
 
         _sizeNormalized = (_wfc.CurrentSize - _wfc.MinSize) / (_wfc.MaxSize - _wfc.MinSize);
+        _levelVolume = (_wfc.CurrentSize * _wfc.TileSize.x) * (_wfc.CurrentSize * _wfc.TileSize.y) * (_wfc.CurrentSize * _wfc.TileSize.z);
     }
 
     public static void CalculateData()
@@ -97,10 +101,10 @@ public static class TestData
             
             sumDistance += minDistance;
         }
+
+        float normalizedNND = CalculateNormalizedNND(sumDistance, _propTestDataList.Count);
         
-        float avgNND = sumDistance / _propTestDataList.Count;
-        
-        _nearestNeighborDataList.Add(new NearestNeighborData(entropyNormalized, avgNND));
+        _nearestNeighborDataList.Add(new NearestNeighborData(entropyNormalized, normalizedNND));
         _nearestNeighborDataListNotNormalized.Add(new NearestNeighborData(entropy, sumDistance));
 
         Data d = new Data();
@@ -114,6 +118,21 @@ public static class TestData
         d2.size = _wfc.CurrentSize;
         
         _dataListNotNormalized.Add(d2);
+    }
+
+    private static float CalculateNormalizedNND(float sumDistance, int propCount)
+    {
+        float avgNND = sumDistance / propCount;
+        
+        float density = propCount / _levelVolume;
+
+        float denominator = Mathf.Pow((4 / 3) * Mathf.PI * density, (1 / 3));
+        
+        float expectedNND = _gamma / denominator;
+        
+        float normalizedNND = avgNND / expectedNND;
+
+        return normalizedNND;
     }
 
     public static void ClearDict()

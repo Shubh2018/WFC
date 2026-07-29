@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
 using Unity.Entities.UniversalDelegates;
+using Debug = UnityEngine.Debug;
 
 // Represents a tile that needs to be collapsed
 public class Tile
@@ -153,7 +154,7 @@ public class WFC : MonoBehaviour
     [SerializeField] private bool _overrideObjList = false;
 
     // Private Variables
-    float _minSize = 4; 
+    float _minSize = 6; 
     float _maxSize = 6;
     float _currentSize = 2;
     Node[,,] _grid;
@@ -478,6 +479,8 @@ public class WFC : MonoBehaviour
 
     public IEnumerator CollapseTiles(Action startFuncHook, Action<int> doneFuncHook)
     {
+        Debug.Log("Inside CollapseTiles coroutine");
+        
         startFuncHook();
         
         int overlaps = 0;
