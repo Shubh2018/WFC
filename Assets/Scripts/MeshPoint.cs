@@ -1,8 +1,6 @@
 using UnityEngine;
-using System.Collections.Generic;
-using System;
-using System.Linq;
 
+[RequireComponent(typeof(MeshSampler))]
 public class MeshPoint : MonoBehaviour
 {
     [SerializeField] private bool _forcedToSpawn = true;
@@ -23,7 +21,7 @@ public class MeshPoint : MonoBehaviour
 
     public void Init(PropHierarchy.PropHierachyInfo parentHierachyInfo)
     {
-        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierachyInfo.id, parentHierachyInfo.maxHierachyLevel, parentHierachyInfo.currentHierachyLevel);
+        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierachyInfo, _spawnHierarchy);
 
         Prop.Props.AddEntry(_hierarchyInfo.parentId, _hierarchyInfo.id, gameObject);
 
@@ -39,26 +37,22 @@ public class MeshPoint : MonoBehaviour
     {
         if(!ShouldSpawn()) return;
 
-        Spawner propSpawner = _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(AssetManager.LoadFilteredProps(_spawnTypeTag), 1, 1);
+        MeshSampler sampler = GetComponent<MeshSampler>();
 
-        List<Prop> allProps = new List<Prop>(propSpawner.WallPrefabs);
-        allProps.AddRange(propSpawner.FloorPrefabs);
+        sampler.Clear();
+        sampler.SetSpawnerData(_hierarchyInfo);
+        sampler.SetSamplingGraphProperties(0.25f, 1, 10000, _forcedToSpawn);
+        sampler.AddSamples(new() { new() {
+            sample = transform.position,
+            triangleNormal = Vector3.up,
+        }});
 
-        while (allProps.Count > 0)
-        {
-            (Prop prop, int count) = Misc.GetRandomProp(allProps, _hierarchyInfo);
+        sampler.SpawnProps(gameObject, GetSpawner());
+    }
 
-            if (!prop) return;
-
-            List<Sample> samples = new() { new() {
-                sample = transform.position,
-                triangleNormal = Vector3.up,
-            }};
-
-            PropObject propObj = prop.SpawnFloor(samples, gameObject, _hierarchyInfo, (Vector3 sample, Prop prop) => true);
-            if (propObj) return;
-            allProps.Remove(prop);
-        }
+    private Spawner GetSpawner()
+    {
+        return _spawnViaSpawner ? _gameObjectsToSpawn : new Spawner(AssetManager.LoadFilteredProps(_spawnTypeTag), 1, 1);
     }
 
     private bool ShouldSpawn()

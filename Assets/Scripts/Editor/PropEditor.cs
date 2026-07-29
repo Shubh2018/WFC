@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEngine;
 using System;
+using UnityEditor.UIElements;
 
 [CustomEditor(typeof(Prop))]
 public class PropEditor : Editor
@@ -16,6 +17,36 @@ public class PropEditor : Editor
         
         rootTree = new VisualElement();
         editorVisualTree.CloneTree(rootTree);
+
+        EnumField enumPropTypeField = rootTree.Q<EnumField>("_typeEnumField");
+        Toggle spacingToggle = rootTree.Q<Toggle>("_spacingEnabledToggle");
+
+        enumPropTypeField.RegisterCallback<ChangeEvent<Enum>>((evt) =>
+        {
+            PropType propType = (PropType) evt.newValue;
+            bool notDefault = propType != PropType.Decoration;
+
+            PropertyField environmentTypeField = rootTree.Q<PropertyField>("_environmentTypeField");
+            EnumFlagsField nodeTypeEnumField = rootTree.Q<EnumFlagsField>("_nodeTypeEnumField");
+
+            environmentTypeField.SetEnabled(notDefault);
+            nodeTypeEnumField.SetEnabled(notDefault);
+            spacingToggle.SetEnabled(notDefault);
+
+            if (!notDefault)
+            {
+                spacingToggle.value = false;
+                nodeTypeEnumField.value = null;
+            }
+        });
+
+        spacingToggle.RegisterCallback<ChangeEvent<bool>>((evt) =>
+        {
+            FloatField spacingAmountField = rootTree.Q<FloatField>("_spacingAmountField");
+
+            spacingAmountField.SetEnabled(evt.newValue);
+            if (!evt.newValue) spacingAmountField.value = 0;
+        });
 
         EnumField enumPlacementType = rootTree.Q<EnumField>("_placementEnumField");
         Toggle toggleSpawnInCorners = rootTree.Q<Toggle>("_spawnInCornersToggle");

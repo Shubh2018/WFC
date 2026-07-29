@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 using System;
+using UnityEngine.Analytics;
 
 [Serializable]
 public struct Sample
@@ -69,45 +70,47 @@ public struct Spawner
 public class MeshSampler : MonoBehaviour
 {
     // Private variables
-    private List<MeshFilter> _meshFilter = new List<MeshFilter>();
-
-    private float _radius = 0.2f;
-    private int _tries = 30;
-    private int _safety = 2;
-
-    private List<Sample> _samplePoints = new List<Sample>();
-    private readonly List<Sample> _floorSamples = new List<Sample>();
-    private readonly List<Sample> _wallSamples = new List<Sample>();
-    private readonly List<Sample> _cornerSamples = new List<Sample>();
-    private List<List<Sample>> _floorSamplesAll = new List<List<Sample>>();
-    private List<List<Sample>> _wallSamplesAll = new List<List<Sample>>();
-    private List<List<Sample>> _cornerSamplesAll = new List<List<Sample>>();
-    private List<List<Sample>> _samplePointsAll = new List<List<Sample>>();
-
-    private PropHierarchy.PropHierachyInfo _hierarchyInfo;
-    private Dictionary<Prop, int> _props = new Dictionary<Prop, int>();
-    private Dictionary<string, int> _propCount = new Dictionary<string, int>();
+    float _radius = 0.2f;
+    int _tries = 30;
+    int _safety = 2;
+    bool _forceSpawn = false;
+    List<Prop> _unspawnableProps = new();
+    List<PropObject> _specialObjects = new();
+    List<MeshFilter> _meshFilter = new();
+    List<Sample> _samplePoints = new();
+    List<Sample> _floorSamples = new();
+    List<Sample> _wallSamples = new();
+    List<Sample> _cornerSamples = new();
+    List<List<Sample>> _floorSamplesAll = new();
+    List<List<Sample>> _wallSamplesAll = new();
+    List<List<Sample>> _cornerSamplesAll = new();
+    List<List<Sample>> _samplePointsAll = new();
+    PropHierarchy.PropHierachyInfo _hierarchyInfo;
+    Dictionary<Prop, int> _props = new();
+    Dictionary<string, int> _propCount = new();
 
     // Getters and Setters
     public Dictionary<string, int> PropCount => _propCount;
 
     // Debug Settings
-    public bool enableGizmosFloorSamples = false;
-    public bool enableGizmosWallSamples = false;
-    public bool enableGizmosCornerSamples = false;
-    public bool enableGizmosSamplePoints = false;
-    public float samplesRenderDistance = 20;
+    public static bool enableGizmosFloorSamples = false;
+    public static bool enableGizmosWallSamples = false;
+    public static bool enableGizmosCornerSamples = false;
+    public static bool enableGizmosSamplePoints = false;
+    public static bool enableSpecialsSpacingRadius = false;
+    public static float samplesRenderDistance = 20;
 
-    public void SetSamplingGraphProperties(float radius, int tries, int safety)
+    public void SetSamplingGraphProperties(float radius, int tries, int safety, bool forceSpawn = false)
     {
         _radius = radius;
         _tries = tries;
         _safety = safety;
+        _forceSpawn = forceSpawn;
     }
 
     public void SetSpawnerData(PropHierarchy.PropHierachyInfo parentHierarchy)
     {
-        _hierarchyInfo = new PropHierarchy.PropHierachyInfo(parentHierarchy, 5);
+        _hierarchyInfo = parentHierarchy;
     }
 
     public void AddSamples(List<Sample> samplePoints)
@@ -128,6 +131,8 @@ public class MeshSampler : MonoBehaviour
         _cornerSamplesAll.Clear();
         _samplePointsAll.Clear();
 
+        _unspawnableProps.Clear();
+        _specialObjects.Clear();
         _meshFilter.Clear();
         _props.Clear();
 
@@ -193,6 +198,20 @@ public class MeshSampler : MonoBehaviour
                 }   
             }
         }
+
+        if (enableSpecialsSpacingRadius)
+        {
+            foreach(PropObject propObj in _specialObjects)
+            {
+                if (!propObj.Prop.SpacingEnabled) return;
+
+                Vector3 pos = propObj.transform.position + propObj.GetComponent<BoxCollider>().center;
+                float radius = propObj.Prop.SpacingAmount;
+
+                Gizmos.color = Color.black;
+                Gizmos.DrawWireSphere(pos, radius);
+            }
+        }
     }
 
     public List<Sample> GetSamples(MeshFilter mesh)
@@ -205,8 +224,8 @@ public class MeshSampler : MonoBehaviour
     // Method to sample the meshes. Return a list of Sample
     private List<Sample> SampleMesh(MeshFilter mesh)
     {
-        List<Sample> samples = new List<Sample>();
-        List<int> active = new List<int>();
+        List<Sample> samples = new();
+        List<int> active = new();
 
         int[] triangles = mesh.sharedMesh.triangles;
         Vector3[] vertices = mesh.sharedMesh.vertices;
@@ -258,19 +277,14 @@ public class MeshSampler : MonoBehaviour
         return samples.OrderBy(s => s.sample.y).ToList();
     }
 
-    public void SpawnProps(GameObject obj, int maxFloorObjs, int maxWallObjs, Func<(Prop, int)> propSpawnerFloorFunc, Func<(Prop, int)> propSpawnerWallFunc, Func<Vector3, Prop, bool> spawnFilterFunc = null)
-    {
-        (Vector3 min, Vector3 max) = BuildBoundingBox(_samplePoints.Select(v => v.sample).ToArray());
-        
+    public void SpawnProps(GameObject obj, Spawner spawner, Func<Vector3, Prop, bool> spawnFilterFunc = null)
+    {   
         SortSamplesInMesh(_samplePoints);
 
-        spawnFilterFunc = spawnFilterFunc ?? ((Vector3 sample, Prop prop) => true);
+        spawnFilterFunc ??= ((sample, prop) => true);
 
-        IEnumerator spawnFloorPropsRoutine = SpawnFloorProps(obj, maxFloorObjs, min, max, propSpawnerFloorFunc, spawnFilterFunc);
-        IEnumerator spawnWallPropsRoutine = SpawnWallProps(obj, maxWallObjs, min, max, propSpawnerWallFunc, (Vector3 v, Prop p) => true);
-
-        CoroutineManager.StartCoroutine(this, "SpawnFloorProps", spawnFloorPropsRoutine);
-        CoroutineManager.StartCoroutine(this, "SpawnWallProps", spawnWallPropsRoutine);
+        CoroutineManager.StartCoroutine(this, "SpawnFloorProps", SpawnFloorProps(obj, spawner.maxFloorPropCount, spawner.FloorPrefabs, spawnFilterFunc));
+        CoroutineManager.StartCoroutine(this, "SpawnWallProps", SpawnWallProps(obj, spawner.maxWallPropCount, spawner.WallPrefabs, (v, p) => true));
 
         _samplePoints.Clear();
     }
@@ -538,7 +552,7 @@ public class MeshSampler : MonoBehaviour
             min = Vector3.positiveInfinity;
             max = Vector3.negativeInfinity;
 
-            Sample closestSample = new Sample
+            Sample closestSample = new()
             {
                 sample = Vector3.zero,
                 triangleNormal = Vector3.zero
@@ -578,30 +592,45 @@ public class MeshSampler : MonoBehaviour
         return samples;
     }
 
-    private IEnumerator SpawnFloorProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
+    private bool CheckPropCondition(Prop prop, PropObject propObj)
     {
+        if (!propObj)
+        {
+            _unspawnableProps.Add(prop);
+            return false;
+        }
+        if (prop.IsSpecialised()) _specialObjects.Add(propObj);
+
+        WFC wfc = FindFirstObjectByType<WFC>();
+        TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
+
+        return true;
+    }
+
+    private IEnumerator SpawnFloorProps(GameObject nodeObj, int objCount, List<Prop> floorProps, Func<Vector3, Prop, bool> spawnFilterFunc)
+    {
+        (Vector3 min, Vector3 max) = BuildBoundingBox(_samplePoints.Select(v => v.sample).ToArray());
+
         int floorCount = objCount;
         int tries = 25;
 
         while (floorCount > 0 && tries--> 0)
         {
-            (Prop prop, int count) = propSpawner();
+            Prop prop = Misc.GetRandomProp(floorProps, _hierarchyInfo, _unspawnableProps, _forceSpawn);
             if(!prop) yield break;
         
             List<Sample> samplesInRange = Misc.ShuffleList(new List<Sample>(GetFloorSamplesBySpawnPosition(prop, min, max)));
             if (samplesInRange.Count == 0) yield break;
 
-            PropObject propObj = prop.SpawnFloor(samplesInRange, nodeObj, _hierarchyInfo, spawnFilterFunc);
+            PropObject propObj = prop.SpawnFloor(samplesInRange, _specialObjects, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
             yield return null;
 
-            if (!propObj) continue;
-            
-            TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
+            if (!CheckPropCondition(prop, propObj)) continue;
 
             for (int i = 0; i < prop.MaxNeighborCount; i++)
             {
-                PropNeighborProperty randomPropNeighbor = prop.GetRandomNeighborProp();
+                PropNeighborProperty randomPropNeighbor = Misc.GetRandomNeighborProp(prop, _hierarchyInfo, _unspawnableProps, _forceSpawn);
                 if(randomPropNeighbor == null) break;
 
                 float propMaxDistance = randomPropNeighbor.maxDistance;
@@ -609,57 +638,55 @@ public class MeshSampler : MonoBehaviour
                 samplesInRange = new List<Sample>((prop.SpawnInCorners && _cornerSamples.Count() > 0 ? _cornerSamples : _floorSamples).FindAll((s) => Vector3.Distance(s.sample, parentPos) >= propMaxDistance && Vector3.Distance(s.sample, parentPos) < propMaxDistance * 2));
                 if(samplesInRange.Count == 0) break;
 
-                propObj = randomPropNeighbor.prop.SpawnFloor(samplesInRange, nodeObj, _hierarchyInfo, spawnFilterFunc);
+                propObj = randomPropNeighbor.prop.SpawnFloor(samplesInRange, _specialObjects, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
                 yield return null;
 
-                if (!propObj) continue;
-                floorCount--;
+                if(!CheckPropCondition(randomPropNeighbor.prop, propObj)) continue;
                 
-                TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
+                floorCount--;
             }
 
             floorCount--;
         }
     }
 
-    private IEnumerator SpawnWallProps(GameObject nodeObj, int objCount, Vector3 min, Vector3 max, Func<(Prop, int)> propSpawner, Func<Vector3, Prop, bool> spawnFilterFunc)
+    private IEnumerator SpawnWallProps(GameObject nodeObj, int objCount, List<Prop> wallProps, Func<Vector3, Prop, bool> spawnFilterFunc)
     {
+        (Vector3 min, Vector3 max) = BuildBoundingBox(_samplePoints.Select(v => v.sample).ToArray());
+
         int wallCount = objCount;
         int tries = 25;
 
         while (wallCount > 0 && tries--> 0)
         {
-            (Prop prop, int count) = propSpawner();
+            Prop prop = Misc.GetRandomProp(wallProps, _hierarchyInfo, _unspawnableProps, _forceSpawn);
             if (!prop) yield break;
 
             List<Sample> samplesInRange = Misc.ShuffleList(new List<Sample>(GetWallSamplesBySpawnPosition(prop, min, max)));
             if (samplesInRange.Count == 0) yield break;
 
-            PropObject propObj = prop.SpawnWall(samplesInRange, nodeObj, _hierarchyInfo, spawnFilterFunc);
+            PropObject propObj = prop.SpawnWall(samplesInRange, _specialObjects, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
             yield return null;
 
-            if (!propObj) continue;
-            
-            TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
+            if (!CheckPropCondition(prop, propObj)) continue;
 
             for (int i = 0; i < prop.MaxNeighborCount; i++)
             {
-                PropNeighborProperty randomPropNeighbor = prop.GetRandomNeighborProp();
+                PropNeighborProperty randomPropNeighbor = Misc.GetRandomNeighborProp(prop, _hierarchyInfo, _unspawnableProps, _forceSpawn);
                 if(randomPropNeighbor == null) break;
 
                 samplesInRange = new List<Sample>(GetWallSamplesBySpawnPosition(randomPropNeighbor.prop, min, max));
                 if (samplesInRange.Count == 0) break;
 
-                propObj = randomPropNeighbor.prop.SpawnWall(samplesInRange, nodeObj, _hierarchyInfo, spawnFilterFunc);
+                propObj = randomPropNeighbor.prop.SpawnWall(samplesInRange, _specialObjects, nodeObj, _hierarchyInfo, spawnFilterFunc);
 
                 yield return null;
 
-                if (!propObj) continue;
-                wallCount--;
+                if(!CheckPropCondition(randomPropNeighbor.prop, propObj)) continue;
                 
-                TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
+                wallCount--;
             }
 
             wallCount--;

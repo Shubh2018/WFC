@@ -5,20 +5,24 @@ using System.Linq;
 
 public class PropObject : MonoBehaviour
 {
-    /*
-    todo:
-    - [X] Add doors between room / structure types
-    - [X] Fix junctions not spawning samples
-    - [X] Add min-max, required per element
-    - [X] Fix props spawning inside walls
-    - [X] Add an editor terminal displaying progress information
-    - Make Prop types work again
-    - Add a room / structure layout planner
-    - Add prop relations with rotation
-    - Do cleanup to make sure every feature works
-    */
-
+    private Prop _prop;
+    public Prop Prop { get { return _prop; } set { _prop = value; } }
     public Vector3 GetSize => GetComponent<BoxCollider>().size;
+    public Vector3 GetColCenterAbs => transform.position + GetComponent<BoxCollider>().center;
+
+    private Vector3 GetPointBetween(PropObject prop, Vector3 pos)
+    {
+        BoxCollider col = prop.GetComponent<BoxCollider>();
+        float colMaxSize = Mathf.Max(col.size.x, col.size.y, col.size.z) / 2.0f;
+        float distance = Vector3.Distance(transform.position + col.center, pos);
+        return Vector3.Lerp(transform.position + col.center, pos, colMaxSize / distance);
+    }
+
+    public bool OutsideSpacing(Prop prop, Vector3 pos)
+    {
+        BoxCollider col = GetComponent<BoxCollider>();
+        return _prop.SpacingEnabled && Vector3.Distance(GetPointBetween(prop.PropObject, pos), col.center + pos) > _prop.SpacingAmount;
+    }
 
     public bool CheckOverlapBox(Vector3 pos, Quaternion rot, Func<List<Collider>, IEnumerable<Collider>> func)
     {
@@ -42,7 +46,7 @@ public class PropObject : MonoBehaviour
             rotation += new Vector3(0.0f, 15.0f, 0.0f);
         }
 
-        return validRotation.Count > 0 ? Quaternion.Euler(validRotation[UnityEngine.Random.Range(0, validRotation.Count)]) : Quaternion.identity;
+        return validRotation.Count > 0 ? Quaternion.Euler(validRotation[UnityEngine.Random.Range(0, validRotation.Count)]) : Misc.quatEmpty;
     }
 
     public void UpdateChildren(PropHierarchy.PropHierachyInfo parentHierarchy)
@@ -52,6 +56,19 @@ public class PropObject : MonoBehaviour
 
         foreach (MeshPoint point in GetComponentsInChildren<MeshPoint>())
             point.Init(parentHierarchy);
+    }
+
+    public Quaternion GetRotation(GameObject parent, PropPlacementType propType, PropRotationTypeEnum rotType, float amount)
+    {
+        if (rotType == PropRotationTypeEnum.Default) return Quaternion.identity;
+
+        bool isTypeWall = propType == PropPlacementType.Wall;
+        bool isRotWorld = rotType == PropRotationTypeEnum.World;
+
+        Vector3 angles = isRotWorld ? transform.eulerAngles : transform.localEulerAngles;
+        Quaternion rot = Quaternion.Euler(isTypeWall ? new(angles.x, angles.y, amount) : new(angles.x, amount, angles.z));
+
+        return isRotWorld ? rot : parent.transform.rotation * rot;
     }
 
     public void RotateTo(PropPlacementType propType, PropRotationTypeEnum rotType, float amount)

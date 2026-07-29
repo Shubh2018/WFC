@@ -54,12 +54,22 @@ public class Node : ScriptableObject
         Staircase = 32
     };
 
+    public enum Direction // DO NOT CHANCE THE ORDER OF ELEMENTS IN THIS ENUM!
+    {
+        Front,
+        Back,
+        Right,
+        Left,
+        Up,
+        Down
+    }
+
     public GameObject Prefab;
     public int Weight;
     public bool IsStairPiece;
-    public bool CanHaveObjective = false;
-    public bool IsDeadEnd = false;
-    public bool AllowBeamSpawn = false;
+    public bool CanHaveObjective;
+    public bool IsDeadEnd;
+    public bool AllowBeamSpawn;
     public NodeType nodeType;
     [HideInInspector] public int ClockwiseRotationSteps; // Set automatically as the tile is rotated
 

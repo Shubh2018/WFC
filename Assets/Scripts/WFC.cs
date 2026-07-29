@@ -30,8 +30,8 @@ public class Tile
 
 public class PathNode
 {
-    public PathNodeData data = new PathNodeData();
-    public List<int> pathIndicies = new List<int>();
+    public PathNodeData data = new();
+    public List<int> pathIndicies = new();
     public WFC parent;
     
     public PathNode(WFC parent)
@@ -60,7 +60,7 @@ public class PathNode
 
         if (path.Count == 0 || index < 0 || index >= path.Count) return; // check if this index is invalid
 
-        Vector3 temp = new Vector3(-999, -999, -999); // temp vector to check for invalid ngihbours
+        Vector3 temp = new(-999, -999, -999); // temp vector to check for invalid ngihbours
         Vector3 currPath = path[index]; // get the current path vector
         Vector3[] relationship = new Vector3[2] { temp, temp }; // setup relationship between the previous and next path positions
 
@@ -107,7 +107,7 @@ public class PathNode
 
     public List<Node> GetPotentialNodes()
     {
-        List<Node> potentialNodes = new List<Node>(parent.getNodes);
+        List<Node> potentialNodes = new(parent.getNodes);
         potentialNodes.AddRange(parent.getNodesGen);
         
         // Check if this node is part of a staircase
@@ -142,42 +142,25 @@ public class WFC : MonoBehaviour
     [SerializeField] private int _width;
     [SerializeField] private int _length;
     [SerializeField] private int _height;
-    [SerializeField] public int _samplesPerNode;
+    [SerializeField] private int _samplesPerNode;
     [SerializeField] private Vector3Int _tileSize = Vector3Int.one;
-    [SerializeField] private List<Node> _nodes = new List<Node>();
-    [SerializeField] private List<Node> _nodesGenerated = new List<Node>();
-    [SerializeField] private List<Vector3Int> _pathPoints = new List<Vector3Int>();
+    [SerializeField] private List<Node> _nodes = new();
+    [SerializeField] private List<Node> _nodesGenerated = new();
+    [SerializeField] private List<Vector3Int> _pathPoints = new();
     [SerializeField] private float _samplingRadius = 0.5f;
     [SerializeField] private int _samplingTries = 30;
     [SerializeField] private int _samplingSafety = 10000;
     [SerializeField] private bool _overrideObjList = false;
-    [SerializeField] private int _levelCount = 0;
-
-    public string PropText { get; private set; } = "";
-    
-    private float _minSize = 4; 
-    private float _maxSize = 20;
-    private float _currentSize = 2;
-    
-    public float MinSize => _minSize;
-    public float MaxSize => _maxSize;
-    public float CurrentSize => _currentSize;
 
     // Private Variables
+    float _minSize = 4; 
+    float _maxSize = 6;
+    float _currentSize = 2;
     Node[,,] _grid;
-    List<Tile> _nodesToCollapse = new List<Tile>();
-    List<PathNode> pathNodes = new List<PathNode>();
+    List<Tile> _nodesToCollapse = new();
+    List<PathNode> pathNodes = new();
     double collapseExecutionTime = 0;
     Vector3Int activeCollapsningTile;
-    enum Direction // DO NOT CHANCE THE ORDER OF ELEMENTS IN THIS ENUM!
-    {
-        Front,
-        Back,
-        Right,
-        Left,
-        Up,
-        Down
-    }
 
     // Public Variables
     public AStar path;
@@ -185,9 +168,12 @@ public class WFC : MonoBehaviour
     public bool doneGeneratingTiles = false;
     public bool doneGeneratingSamples = false;
     public bool enabledCollapseButton = false;
-    public static WFC wfc = null;
+    public string PropText { get; private set; } = "";
     
     // Getters
+    public float MinSize => _minSize;
+    public float MaxSize => _maxSize;
+    public float CurrentSize => _currentSize;
     public int getTiles => transform.childCount;
     public double getCollapseTime => collapseExecutionTime;
     public int getWidth => _width;
@@ -200,6 +186,7 @@ public class WFC : MonoBehaviour
     public int SamplingSafety => _samplingSafety;
     public int SamplingTries => _samplingTries;
     public int SamplesPerNode => _samplesPerNode;
+    public List<Vector3Int> PathPoints => _pathPoints;
 
     // Editor variables
     public Action EditorResetProgress;
@@ -240,92 +227,7 @@ public class WFC : MonoBehaviour
     public bool enableGizmosWallSamples = false;
     public bool enableGizmosCornerSamples = false;
     public bool enableGizmosSamplePoints = false;
-
-    public void GenerateTiles(Action doneFuncHook)
-    {
-        doneGeneratingTiles = false;
-        doneGeneratingSamples = false;
-
-        CoroutineManager.StartCoroutine(this, "GenerateTiles", GenerateTiles());
-        CoroutineManager.StartCoroutine(this, "SampleTiles", MeshNode.SampleTiles(this, doneFuncHook));
-    }
-
-    public void StartFindPath(Action doneFuncHook)
-    {
-        if ((path = gameObject.GetComponent<AStar>()) && path == null) 
-            path = gameObject.AddComponent<AStar>();
-
-        path.GeneratePath(this, _pathPoints);
-
-        CoroutineManager.StartCoroutine(this, "GeneratePathNodes", GeneratePathNodes(doneFuncHook));
-    }
-
-    public void StopFindPath() => path.StopFindingPath();
-    public void ClearPath() {
-        path.StopFindingPath();
-        path.ClearPath();
-        pathNodes.Clear();
-    }
-
-    public void StartCollapse(Action<int> doneFuncHook) 
-    {
-        CoroutineManager.StartCoroutine(this, "CollapseTiles", CollapseTiles((() => {}) ,doneFuncHook));
-    }
-
-    public void StopCollapse() 
-    {
-        CoroutineManager.StopCoroutine(this, "CollapseTiles");
-        CoroutineManager.StopAllCoroutines();
-    }
-
-    public void StartCollapseTesting(Action doneFuncHook, Action<int> updateFuncHook)
-    {
-        CoroutineManager.StartCoroutine(this, "CollapseTilesTesting", CollapseTilesTesting(doneFuncHook, updateFuncHook, _levelCount));
-    }
-
-    public void StopCollapseTesting()
-    {
-        CoroutineManager.StopCoroutine(this, "CollapseTilesTesting");
-        CoroutineManager.StopAllCoroutines();
-    }
-
-    // Used with the Unity VisualElement editor to save transitive information to the AStar object
-    public void SavePathSettings(bool pathState, bool pathPointsState, bool pathStaircases, bool pathField, bool pathFinding, bool pathDelay)
-    {
-        // If the path object exist, toggle its settings
-        if (path) {
-            path.enableGizmosPathPoints = pathPointsState;
-            path.enableGizmosPathStaircases = pathStaircases;
-            path.enableGizmosPathField = pathField;
-            path.enableGizmosPathFinding = pathFinding;
-            path.enableGizmosGenerationDelay = pathDelay;
-        }
-
-        // Toggle rendering of the LineRenderer used to display the A* path
-        LineRenderer lr = gameObject.GetComponent<LineRenderer>();
-        if (lr) lr.enabled = pathState;
-    }
-
-    // Used with the Unity VisualElement editor to save transitive information to the Mesh Sampler object
-    public void SavePDSSettings(bool pdsFloorSamples, bool pdsWallSamples, bool pdsCornerSamples, bool pdsSamplePoints, float samplesRenderDistance)
-    {
-        MeshSampler sampler = gameObject.GetComponent<MeshSampler>();
-
-        // If the mesh sampler object exist, toggle its settings
-        if (sampler) {
-            sampler.enableGizmosFloorSamples = pdsFloorSamples;
-            sampler.enableGizmosWallSamples = pdsWallSamples;
-            sampler.enableGizmosCornerSamples = pdsCornerSamples;
-            sampler.enableGizmosSamplePoints = pdsSamplePoints;
-            sampler.samplesRenderDistance = samplesRenderDistance;
-        }
-    }
-
-    public void SaveMeshNodeSettings(bool showEnvs)
-    {
-        UnityEngine.Debug.Log($"WFC mesh node settings: {showEnvs}");
-        MeshNode.displayGizmosEnvironments = showEnvs;
-    }
+    public bool enableSpecialsSpacingRadius = false;
 
     public void OnDrawGizmos()
     {
@@ -427,11 +329,15 @@ public class WFC : MonoBehaviour
             }
         }
     }
-    
-    public void SetLevelCount(int count) => _levelCount = count;
+
+    public void ClearPathNodes()
+    {
+        pathNodes.Clear();
+    }
+
     public (Vector3, Vector3) GetBoundary()
     {
-        Vector3 min = new Vector3(_tileSize.x / -2, 0.0f, _tileSize.z / -2);
+        Vector3 min = new(_tileSize.x / -2, 0.0f, _tileSize.z / -2);
         Vector3 max = Vector3.Scale(_tileSize, new(_width, _height, _length)) + min;
 
         return (min, max);
@@ -459,6 +365,9 @@ public class WFC : MonoBehaviour
     // Generate new tiles by creating new ones by rotating the current ones
     public IEnumerator GenerateTiles()
     {
+        // Reset status
+        doneGeneratingTiles = false;
+
         // Editor messages
         EditorResetProgress();
         EditorMessageSimpleProgress("Generating and Sampling Tiles...");
@@ -527,7 +436,7 @@ public class WFC : MonoBehaviour
         UnityEngine.Debug.Log("Cleared Tiles...");
     }
 
-    private IEnumerator GeneratePathNodes(Action doneFuncHook)
+    public IEnumerator GeneratePathNodes(Action doneFuncHook)
     {
         yield return new WaitUntil(() => path.IsDoneFindingPath);
 
@@ -549,7 +458,7 @@ public class WFC : MonoBehaviour
 
             EditorMessageSimpleProgress($"New path node {i} at {path.CollapsedPath[i]}");
 
-            PathNode newPathNode = new PathNode(this);
+            PathNode newPathNode = new(this);
             newPathNode.AddPath(i);
             pathNodes.Add(newPathNode);
 
@@ -571,11 +480,10 @@ public class WFC : MonoBehaviour
     {
         startFuncHook();
         
-        wfc = this;
         int overlaps = 0;
         ClearTiles();
         
-        Stopwatch st = new Stopwatch();
+        Stopwatch st = new();
         st.Start();
 
         EditorResetProgress();
@@ -591,7 +499,7 @@ public class WFC : MonoBehaviour
         // Start generating tiles with their potential nodes for the path points
         if (pathNodes.Count > 0)
         {
-            List<Vector3Int> points = new List<Vector3Int>(); // Used to check for duplicates
+            List<Vector3Int> points = new(); // Used to check for duplicates
 
             for (int i = 0; i < path.CollapsedPath.Count; i++)
             {
@@ -620,7 +528,7 @@ public class WFC : MonoBehaviour
                 }
 
                 // Create a tile for the given point and filter its potential nodes
-                Tile tile = new Tile(this, point, true);
+                Tile tile = new(this, point, true);
                 tile.potentialNodes = currNode.GetPotentialNodes();
 
                 // Add the tile as one to collapse and the point as already done
@@ -719,6 +627,8 @@ public class WFC : MonoBehaviour
         // float qualityScore = 0;
 
         _currentSize = _minSize;
+        TestData.ClearDict();
+        TestData._wfc = this;
         
         for (int k = (int)_minSize; k <= _maxSize; k++)
         {
@@ -729,7 +639,7 @@ public class WFC : MonoBehaviour
 
             path.ClearPath();
             _pathPoints = GeneratePathPoints(k);
-            path.GeneratePath(this, _pathPoints);
+            path.GeneratePath(_pathPoints);
 
             bool isPathGenerationDone = false;
 
@@ -771,8 +681,6 @@ public class WFC : MonoBehaviour
 
                 updateFuncHook(k);
                 TestData.CalculateData();
-                TestData.SaveData();
-                
                 //_currentSize += 1;
 
                 yield return null;
@@ -789,7 +697,7 @@ public class WFC : MonoBehaviour
 
     public List<Vector3Int> GeneratePathPoints(int size)
     {
-        List<Vector3Int> p = new List<Vector3Int>();
+        List<Vector3Int> p = new();
         
         for (int i = 0; i < size; i++)
         {
@@ -846,25 +754,25 @@ public class WFC : MonoBehaviour
 
                 if(neighborNode)
                 {
-                    switch ((Direction) i)
+                    switch ((Node.Direction) i)
                     {
-                        case Direction.Front: 
-                            WhittleNodes(tile.potentialNodes, neighborNode.Back, Direction.Front);
+                        case Node.Direction.Front: 
+                            WhittleNodes(tile.potentialNodes, neighborNode.Back, Node.Direction.Front);
                             break;
-                        case Direction.Back: 
-                            WhittleNodes(tile.potentialNodes, neighborNode.Front, Direction.Back);
+                        case Node.Direction.Back: 
+                            WhittleNodes(tile.potentialNodes, neighborNode.Front, Node.Direction.Back);
                             break;
-                        case Direction.Right: 
-                            WhittleNodes(tile.potentialNodes, neighborNode.Left, Direction.Right);
+                        case Node.Direction.Right: 
+                            WhittleNodes(tile.potentialNodes, neighborNode.Left, Node.Direction.Right);
                             break;
-                        case Direction.Left: 
-                            WhittleNodes(tile.potentialNodes, neighborNode.Right, Direction.Left);
+                        case Node.Direction.Left: 
+                            WhittleNodes(tile.potentialNodes, neighborNode.Right, Node.Direction.Left);
                             break;
-                        case Direction.Up: 
-                            WhittleNodes(tile.potentialNodes, neighborNode.Down, Direction.Up);
+                        case Node.Direction.Up: 
+                            WhittleNodes(tile.potentialNodes, neighborNode.Down, Node.Direction.Up);
                             break;
-                        case Direction.Down: 
-                            WhittleNodes(tile.potentialNodes, neighborNode.Up, Direction.Down);
+                        case Node.Direction.Down: 
+                            WhittleNodes(tile.potentialNodes, neighborNode.Up, Node.Direction.Down);
                             break;
                     }
                 }
@@ -874,7 +782,7 @@ public class WFC : MonoBehaviour
                     if(!_nodesToCollapse.Any(n => n.pos == neighbor)) 
                     {
                         UnityEngine.Debug.Log($"creating neighbor tile...");
-                        Tile neighborTile = new Tile(this, neighbor);
+                        Tile neighborTile = new(this, neighbor);
 
                         _nodesToCollapse.Add(neighborTile);
                         tile.neighbors.Add(neighborTile);
@@ -921,7 +829,6 @@ public class WFC : MonoBehaviour
 
         // Spawn props on the node
         MeshNode mesh = obj.GetComponent<MeshNode>();
-        mesh?.Init();
         mesh?.Generate(node, TileSize);
 
         // Print a warning if this tile does not have a mesh for some reason
@@ -930,14 +837,14 @@ public class WFC : MonoBehaviour
         return 0;
     }
 
-    private void WhittleNodes(List<Node> potentialNodes, NodeFaceHorizontal validType, Direction direction)
+    private void WhittleNodes(List<Node> potentialNodes, NodeFaceHorizontal validType, Node.Direction direction)
     {
         for(int i = potentialNodes.Count - 1; i >= 0; i--)
         {
             NodeFaceHorizontal nodeType = direction switch {
-                Direction.Left => potentialNodes[i].Left,
-                Direction.Right => potentialNodes[i].Right,
-                Direction.Front => potentialNodes[i].Front,
+                Node.Direction.Left => potentialNodes[i].Left,
+                Node.Direction.Right => potentialNodes[i].Right,
+                Node.Direction.Front => potentialNodes[i].Front,
                 _ => potentialNodes[i].Back
             };
 
@@ -955,12 +862,12 @@ public class WFC : MonoBehaviour
         }
     }
 
-    private void WhittleNodes(List<Node> potentialNodes, NodeFaceVertical validType, Direction direction)
+    private void WhittleNodes(List<Node> potentialNodes, NodeFaceVertical validType, Node.Direction direction)
     {
         for(int i = potentialNodes.Count - 1; i >= 0; i--)
         {
             NodeFaceVertical nodeType = direction switch {
-                Direction.Up => potentialNodes[i].Up,
+                Node.Direction.Up => potentialNodes[i].Up,
                 _ => potentialNodes[i].Down
             };
 

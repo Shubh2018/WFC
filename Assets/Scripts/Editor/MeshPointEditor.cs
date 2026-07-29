@@ -18,8 +18,14 @@ public class MeshPointEditor : Editor
         rootTree = new VisualElement();
         editorVisualTree.CloneTree(rootTree);
 
+        Button spawnButton = rootTree.Q<Button>("_spawnObjectButton");
+        spawnButton.RegisterCallback((ClickEvent evt) => {
+            Prop.Props.Clear();
+            point.Init();
+        });
+
         Toggle spawnToggle = rootTree.Q<Toggle>("_spawnToggle");
-        spawnToggle.RegisterCallback<ChangeEvent<bool>>((ChangeEvent<bool> evt) => {
+        spawnToggle.RegisterCallback((ChangeEvent<bool> evt) => {
             EnumField spawnTypeField = rootTree.Q<EnumField>("_spawnTypeField");
             VisualElement objectsToSpawnField = rootTree.Q("_objectsToSpawn");
 

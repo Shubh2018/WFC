@@ -163,7 +163,7 @@ public class WaveFunctionCollapseEditor : Editor
     public VisualTreeAsset editorVisualTree;
     private VisualElement rootTree;
     private WFC WaveFunctionCollapse;
-    private ProgressBox progressBox;
+    private ProgressBox progress;
     
     public override VisualElement CreateInspectorGUI()
     {
@@ -172,7 +172,7 @@ public class WaveFunctionCollapseEditor : Editor
         rootTree = new VisualElement();
         editorVisualTree.CloneTree(rootTree);
 
-        progressBox = new ProgressBox(rootTree, WaveFunctionCollapse);
+        progress = new ProgressBox(rootTree, WaveFunctionCollapse);
         
         Button generateButton = rootTree.Q<Button>("_generateTiles");
         generateButton.RegisterCallback<ClickEvent>(GenerateTiles);
@@ -223,8 +223,10 @@ public class WaveFunctionCollapseEditor : Editor
 
         toggleWFCEnvironments.RegisterCallback((ChangeEvent<bool> evt) =>
         {
-            WaveFunctionCollapse.SaveMeshNodeSettings(evt.newValue);
+            SaveMeshNodeSettings(evt.newValue);
         });
+
+        SetButtonState("_collapseTiles", WaveFunctionCollapse.doneGeneratingSamples);
 
         // Debug Settings (A*)
         Toggle togglePathLine = rootTree.Q<Toggle>("_togglePath");
@@ -235,22 +237,22 @@ public class WaveFunctionCollapseEditor : Editor
         Toggle togglePathDelay = rootTree.Q<Toggle>("_togglePathDelay");
         
         togglePathLine.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePathSettings(evt.newValue, togglePathPoints.value, togglePathStairs.value, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
+            SavePathSettings(evt.newValue, togglePathPoints.value, togglePathStairs.value, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
         );
         togglePathPoints.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePathSettings(togglePathLine.value, evt.newValue, togglePathStairs.value, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
+            SavePathSettings(togglePathLine.value, evt.newValue, togglePathStairs.value, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
         );
         togglePathStairs.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, evt.newValue, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
+            SavePathSettings(togglePathLine.value, togglePathPoints.value, evt.newValue, togglePathField.value, togglePathFinding.value, togglePathDelay.value)
         );
         togglePathField.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, evt.newValue, togglePathFinding.value, togglePathDelay.value)
+            SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, evt.newValue, togglePathFinding.value, togglePathDelay.value)
         );
         togglePathFinding.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, togglePathField.value, evt.newValue, togglePathDelay.value)
+            SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, togglePathField.value, evt.newValue, togglePathDelay.value)
         );
         togglePathDelay.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, togglePathField.value, togglePathFinding.value, evt.newValue)
+            SavePathSettings(togglePathLine.value, togglePathPoints.value, togglePathStairs.value, togglePathField.value, togglePathFinding.value, evt.newValue)
         );
 
         // Debug Settings (PDS)
@@ -258,23 +260,24 @@ public class WaveFunctionCollapseEditor : Editor
         Toggle togglePDSWallSamples = rootTree.Q<Toggle>("_togglePDSWallSamples");
         Toggle togglePDSCornerSamples = rootTree.Q<Toggle>("_togglePDSCornerSamples");
         Toggle togglePDSSamplePoints = rootTree.Q<Toggle>("_togglePDSSamplePoints");
+        Toggle toggleSpecialsSpacingDistance = rootTree.Q<Toggle>("_toggleSpecialsSpacingDistance");
         Slider sliderPDSSamplesRenderDistance = rootTree.Q<Slider>("_sliderPDSSamplesRenderDistance");
         
         togglePDSFloorSamples.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePDSSettings(evt.newValue, togglePDSWallSamples.value, togglePDSCornerSamples.value, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
+            SavePDSSettings(evt.newValue, togglePDSWallSamples.value, togglePDSCornerSamples.value, togglePDSSamplePoints.value, toggleSpecialsSpacingDistance.value, sliderPDSSamplesRenderDistance.value)
         );
 
         togglePDSWallSamples.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, evt.newValue, togglePDSCornerSamples.value, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
+            SavePDSSettings(togglePDSFloorSamples.value, evt.newValue, togglePDSCornerSamples.value, togglePDSSamplePoints.value, toggleSpecialsSpacingDistance.value, sliderPDSSamplesRenderDistance.value)
         );
 
         togglePDSCornerSamples.RegisterCallback((ChangeEvent<bool> evt) => 
-            WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, evt.newValue, togglePDSSamplePoints.value, sliderPDSSamplesRenderDistance.value)
+            SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, evt.newValue, togglePDSSamplePoints.value, toggleSpecialsSpacingDistance.value, sliderPDSSamplesRenderDistance.value)
         );
 
         togglePDSSamplePoints.RegisterCallback((ChangeEvent<bool> evt) => {
             if (evt.newValue) {
-                WaveFunctionCollapse.SavePDSSettings(false, false, false, true, sliderPDSSamplesRenderDistance.value);
+                SavePDSSettings(false, false, false, true, toggleSpecialsSpacingDistance.value, sliderPDSSamplesRenderDistance.value);
                 togglePDSFloorSamples.value = false;
                 togglePDSFloorSamples.SetEnabled(false);
                 togglePDSWallSamples.value = false;
@@ -284,7 +287,7 @@ public class WaveFunctionCollapseEditor : Editor
             }
 
             else {
-                WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, togglePDSCornerSamples.value, false, sliderPDSSamplesRenderDistance.value);
+                SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, togglePDSCornerSamples.value, false, toggleSpecialsSpacingDistance.value, sliderPDSSamplesRenderDistance.value);
                 togglePDSFloorSamples.SetEnabled(true);
                 togglePDSWallSamples.SetEnabled(true);
                 togglePDSCornerSamples.SetEnabled(true);
@@ -292,7 +295,11 @@ public class WaveFunctionCollapseEditor : Editor
         });
 
         sliderPDSSamplesRenderDistance.RegisterCallback((ChangeEvent<float> evt) =>
-            WaveFunctionCollapse.SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, togglePDSCornerSamples.value, togglePDSSamplePoints.value, evt.newValue)
+            SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, togglePDSCornerSamples.value, togglePDSSamplePoints.value, toggleSpecialsSpacingDistance.value, evt.newValue)
+        );
+
+        toggleSpecialsSpacingDistance.RegisterCallback((ChangeEvent<bool> evt) => 
+            SavePDSSettings(togglePDSFloorSamples.value, togglePDSWallSamples.value, togglePDSCornerSamples.value, togglePDSSamplePoints.value, evt.newValue, sliderPDSSamplesRenderDistance.value)
         );
         
         // Testing tab
@@ -311,8 +318,6 @@ public class WaveFunctionCollapseEditor : Editor
         {
             TestData.CreateFile(textField.text);
         });
-        
-        intField.RegisterCallback((ChangeEvent<int> evt) => WaveFunctionCollapse.SetLevelCount(evt.newValue));
         
         return rootTree;
     }
@@ -335,20 +340,23 @@ public class WaveFunctionCollapseEditor : Editor
 
     private void GenerateTiles(ClickEvent evt)
     {   
-        WaveFunctionCollapse.GenerateTiles(() => 
+        CoroutineManager.StartCoroutine(WaveFunctionCollapse, "GenerateTiles", WaveFunctionCollapse.GenerateTiles());
+        CoroutineManager.StartCoroutine(WaveFunctionCollapse, "SampleTiles", MeshNode.SampleTiles(WaveFunctionCollapse, () =>
         {
-            WaveFunctionCollapse.doneGeneratingSamples = true;
-            WaveFunctionCollapse.enabledCollapseButton = true;
             SetButtonState("_collapseTiles", true);
-        });
+        }));
     }
 
     private void GeneratePath(ClickEvent evt)
     {
-        WaveFunctionCollapse.StartFindPath(() => {
+        AStar path = WaveFunctionCollapse.path = WaveFunctionCollapse.GetComponent<AStar>();
+
+        path.GeneratePath(WaveFunctionCollapse.PathPoints);
+        CoroutineManager.StartCoroutine(WaveFunctionCollapse, "GeneratePathNodes", WaveFunctionCollapse.GeneratePathNodes(() =>
+        {
             SetButtonState("_stopGeneratePath", false);
             SetButtonState("_clearPath", true);
-        });
+        }));
 
         SetButtonState("_stopGeneratePath", true);
         SetButtonState("_generatePath", false);
@@ -356,17 +364,24 @@ public class WaveFunctionCollapseEditor : Editor
 
     private void StopGeneratePath(ClickEvent evt)
     {
-        WaveFunctionCollapse.StopFindPath();
+        WaveFunctionCollapse.path.StopFindingPath();
+
         SetButtonState("_stopGeneratePath", false);
         SetButtonState("_clearPath", true);
     }
 
     private void ClearPath(ClickEvent evt)
     {
+        AStar path = WaveFunctionCollapse.path;
+        
+        WaveFunctionCollapse.ClearPathNodes();
+
+        path.StopFindingPath();
+        path.ClearPath();
+
         SetButtonState("_stopGeneratePath", false);
         SetButtonState("_clearPath", false);
         SetButtonState("_generatePath", true);
-        WaveFunctionCollapse.ClearPath();
     }
 
     private void CollapseTiles(ClickEvent evt)
@@ -378,9 +393,9 @@ public class WaveFunctionCollapseEditor : Editor
         }
 
         WaveFunctionCollapse.pauseGeneration = false;
-        WaveFunctionCollapse.StartCollapse((int overlaps) => {
+        CoroutineManager.StartCoroutine(WaveFunctionCollapse, "CollapseTiles", WaveFunctionCollapse.CollapseTiles((() => {}), (int overlaps) => {
             ResetControls();
-        });
+        }));
 
         SetButtonState("_pauseCollapse", true);
         SetButtonState("_stopCollapse", true);
@@ -390,13 +405,16 @@ public class WaveFunctionCollapseEditor : Editor
 
     private void CollapseTilesTesting(ClickEvent evt)
     {
+        int levelCount = 0;
+
         WaveFunctionCollapse.pauseGeneration = false;
-        WaveFunctionCollapse.StartCollapseTesting(() => {
+        CoroutineManager.StartCoroutine(WaveFunctionCollapse, "CollapseTilesTesting", WaveFunctionCollapse.CollapseTilesTesting(() => {
             SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
             SetButtonState("_collapseTilesTest", true);
             SetButtonState("CreateFile", true);
             SetButtonState("_stopTesting", false);
-        }, (round) => UpdateTestingLabel(round));
+            TestData.SaveData();
+        }, (round) => UpdateTestingLabel(round), levelCount));
 
         SetButtonState("_collapseTilesTest", false);
         SetButtonState("CreateFile", false);
@@ -417,7 +435,7 @@ public class WaveFunctionCollapseEditor : Editor
     private void StopTesting(ClickEvent evt)
     {
         WaveFunctionCollapse.pauseGeneration = false;
-        WaveFunctionCollapse.StopCollapseTesting();
+        CoroutineManager.StopAllCoroutines();
 
         SetButtonState("_collapseTilesTest", true);
         SetButtonState("CreateFile", true);
@@ -435,7 +453,7 @@ public class WaveFunctionCollapseEditor : Editor
     private void StopCollapseOfTiles(ClickEvent evt)
     {
         WaveFunctionCollapse.pauseGeneration = false;
-        WaveFunctionCollapse.StopCollapse();
+        CoroutineManager.StopAllCoroutines();
 
         ResetControls();
     }
@@ -448,6 +466,43 @@ public class WaveFunctionCollapseEditor : Editor
         SetButtonState("_pauseCollapse", false);
         SetButtonState("_stopCollapse", false);
         SetButtonState("_clearCollapse", true);
+    }
+
+    // Gizmos debug functions
+    // Used with the Unity VisualElement editor to save transitive information to the AStar object
+    public void SavePathSettings(bool pathState, bool pathPointsState, bool pathStaircases, bool pathField, bool pathFinding, bool pathDelay)
+    {
+        AStar path = WaveFunctionCollapse.GetComponent<AStar>();
+
+        // If the path object exist, toggle its settings
+        if (path) {
+            path.enableGizmosPathPoints = pathPointsState;
+            path.enableGizmosPathStaircases = pathStaircases;
+            path.enableGizmosPathField = pathField;
+            path.enableGizmosPathFinding = pathFinding;
+            path.enableGizmosGenerationDelay = pathDelay;
+        }
+
+        // Toggle rendering of the LineRenderer used to display the A* path
+        LineRenderer lr = WaveFunctionCollapse.GetComponent<LineRenderer>();
+        if (lr) lr.enabled = pathState;
+    }
+
+    // Used with the Unity VisualElement editor to save transitive information to the Mesh Sampler object
+    public void SavePDSSettings(bool pdsFloorSamples, bool pdsWallSamples, bool pdsCornerSamples, bool pdsSamplePoints, bool specialsSpacingRadius, float samplesRenderDistance)
+    {
+        MeshSampler.enableGizmosFloorSamples = pdsFloorSamples;
+        MeshSampler.enableGizmosWallSamples = pdsWallSamples;
+        MeshSampler.enableGizmosCornerSamples = pdsCornerSamples;
+        MeshSampler.enableGizmosSamplePoints = pdsSamplePoints;
+        MeshSampler.enableSpecialsSpacingRadius = specialsSpacingRadius;
+        MeshSampler.samplesRenderDistance = samplesRenderDistance;
+    }
+
+    public void SaveMeshNodeSettings(bool showEnvs)
+    {
+        Debug.Log($"WFC mesh node settings: {showEnvs}");
+        MeshNode.displayGizmosEnvironments = showEnvs;
     }
 
     // Misc functions
@@ -467,17 +522,5 @@ public class WaveFunctionCollapseEditor : Editor
     {
         Button button = rootTree.Q<Button>(name);
         button.SetEnabled(state);
-    }
-
-    private void SetSliderState(string name, bool state)
-    {
-        Slider slider = rootTree.Q<Slider>(name);
-        slider.SetEnabled(state);
-    }
-
-    private void SetSliderValue(string name, float value)
-    {
-        Slider slider = rootTree.Q<Slider>(name);
-        slider.value = value;
     }
 }

@@ -4,10 +4,11 @@ using System;
 using System.Reflection;
 using System.Linq;
 using Unity.Hierarchy;
+using Unity.Entities.UniversalDelegates;
 
 public static class Misc
 {
-    public static Vector3Int[] offsets = new Vector3Int[]
+    public static readonly Vector3Int[] offsets = new Vector3Int[]
     {
         Vector3Int.forward,
         Vector3Int.back,
@@ -17,7 +18,7 @@ public static class Misc
         Vector3Int.down
     };
 
-    public static Vector3Int[] offsets2 = new Vector3Int[]
+    public static readonly Vector3Int[] offsets2 = new Vector3Int[]
     {
         Vector3Int.forward,
         Vector3Int.back,
@@ -25,7 +26,7 @@ public static class Misc
         Vector3Int.left
     };
 
-    public static Vector3Int[] offsets3 = new Vector3Int[]
+    public static readonly Vector3Int[] offsets3 = new Vector3Int[]
     {
         Vector3Int.forward,
         Vector3Int.back,
@@ -43,6 +44,8 @@ public static class Misc
         Vector3Int.left + Vector3Int.down,
     };
 
+    public static Quaternion quatEmpty => new(1, 0, 1, 0);
+
     public static bool VecCmp(Vector3Int a, Vector3Int b, float distance = 1.0f)
     {
         return Vector3Int.Distance(a, b) <= distance;
@@ -50,12 +53,12 @@ public static class Misc
 
     public static bool CheckPosValid(Vector3Int pos, int width, int height, int length)
     {
-        return (pos.x < width 
+        return pos.x < width 
              && pos.x > -1
              && pos.y < height
              && pos.y > -1
              && pos.z < length
-             && pos.z > -1);
+             && pos.z > -1;
     }
 
     public static bool CheckVectorOverlap(List<Vector3Int> points, Vector3Int pos, float distance = 1.0f)
@@ -154,13 +157,13 @@ public static class Misc
         return (low, high);
     }
 
-    public static (Prop, int) GetRandomProp(List<Prop> props, PropHierarchy.PropHierachyInfo hierachyInfo)
+    public static Prop GetRandomProp(List<Prop> props, PropHierarchy.PropHierachyInfo hierachyInfo, List<Prop> exceptions, bool forceSpawn)
     {
-        if(props.Count == 0) return (null, 0);
+        if(props.Count == 0) return null;
 
         MeshNode mesh = Prop.Props?.GetParentRoomNode(hierachyInfo.id);
         Environment env = mesh?.GetEnvironment;
-        BoxCollider col = Prop.Props.FindEntry(hierachyInfo.id).childObj.GetComponent<BoxCollider>(); // MeshPoints do not have a collider, therefore it may be null
+        BoxCollider col = Prop.Props.FindEntry(hierachyInfo.id)?.childObj?.GetComponent<BoxCollider>(); // MeshPoints do not have a collider, therefore it may be null
         bool ignoreSub = env && env.IgnoreSubElements && !hierachyInfo.IsNode();
 
         // Remove props that either do not have a chance of spawning, are not allowed to spawn in this environment, has reached its max amount in this hierarchy, or is larger than the area itself
@@ -174,12 +177,15 @@ public static class Misc
             return noChance || notAllowedToSpawn || amountMax || outOfBounds;
         });
 
+        // Remove exceptions
+        props = props.Except(exceptions).ToList();
+
         // Sort the props based on chance
         props.Sort((a, b) => a.SpawnChance.CompareTo(b.SpawnChance));
 
         int count = props.Count;
 
-        if(count == 0) return (null, 0);
+        if(count == 0) return null;
 
         if (env)
         {
@@ -189,31 +195,48 @@ public static class Misc
             // Remove all props that has already reached their minimum spawned amount, or has already been spawned at least once if required to do so
             propsRequired.RemoveAll(p =>
             {
-                bool hasNotEntry = env.GetEntry(p.KeyWords) == null;
-                bool hasReachedMin = Prop.Props.GetSpawnedPropAmount(hierachyInfo.id, p) >= p.LowerLimitCount;
-                bool hasAppeared = !hasNotEntry && env.GetEntry(p.KeyWords).Required && Prop.Props.HasPropSubAppeared(hierachyInfo.id, p.PropObject.name);
+                bool isInEnv = env.GetEntry(p.KeyWords) != null;
+                bool isRequired = env.GetEntry(p.KeyWords).Required;
+                bool isSpecialised = p.PropType != PropType.Decoration;
 
-                return hasReachedMin || hasAppeared;
+                bool hasReachedMin = Prop.Props.GetSpawnedPropAmount(hierachyInfo.id, p) >= p.LowerLimitCount;
+                bool hasAppeared = Prop.Props.HasPropSubAppeared(hierachyInfo.id, p.PropObject.name);
+                bool hasSpecialEnv = env.Name == p.EnvironmentType && p.NodeType.HasFlag(mesh.NodeData.nodeType);
+
+                return isInEnv && (!isRequired && hasReachedMin || isRequired && hasAppeared && hasReachedMin) && (!isSpecialised || isSpecialised && !hasSpecialEnv);
             });
 
-            // Sort by the amount to spawn and then by its size
-            // This results in large props spawning a few times spawning first, and small props spawning many times afterwards
+            // Sort by specialisation, then node requirement, magnitude size and lastly lower amount limit
+            // This results in specialised larger required props spawning first, then decorative non-required smaller props later
             propsRequired.Sort((a, b) =>
             {
-                var ret = a.LowerLimitCount.CompareTo(b.LowerLimitCount);
+                var ret = b.NodeType.CompareTo(a.NodeType);
+                if (ret == 0) ret = env.GetEntry(a.KeyWords).Required.CompareTo(env.GetEntry(b.KeyWords).Required);
                 if (ret == 0) ret = a.GetSize.sqrMagnitude.CompareTo(b.GetSize.sqrMagnitude);
+                if (ret == 0) ret = a.LowerLimitCount.CompareTo(b.LowerLimitCount);
+                
                 return ret;
             });
 
-            // Reverse the list as it is sorted in reverse for some reason
             propsRequired.Reverse();
             
             // If the list in not empty at this point, return the most important one (first one)
-            if (propsRequired.Count > 0) return (propsRequired[0], count);
+            if (propsRequired.Count > 0) return propsRequired[0];
         }
 
         (int low, int high) = GetSpawnChance(props);
 
-        return (props[low], count);
+        //if (!forceSpawn && UnityEngine.Random.Range(0.0f, 1.0f) > props[high].SpawnChance) return null; // comment out this line to force spawning objects, making chances only relevant for choice
+
+        return props[high];
+    }
+
+    public static PropNeighborProperty GetRandomNeighborProp(Prop prop, PropHierarchy.PropHierachyInfo hierachyInfo, List<Prop> exceptions, bool forceSpawn)
+    {
+        List<PropNeighborProperty> neighbors = new(prop.Neighbors);
+
+        Prop p = GetRandomProp(neighbors.Select(p => p.prop).ToList(), hierachyInfo, exceptions, forceSpawn);
+
+        return neighbors.Find(n => n.prop.GetInstanceID() == p.GetInstanceID());
     }
 }

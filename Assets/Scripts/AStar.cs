@@ -14,13 +14,12 @@ class NodeData : IEquatable<NodeData>
     {
         this.parent = parent;
         this.position = position;
-        this.g = this.h = this.f = 0.0f;
+        g = h = f = 0.0f;
     }
 
     public bool Equals(NodeData other)
     {
-        if (this.position == null) return false;
-        return this.position.Equals(other.position);
+        return position == null ? false : position.Equals(other.position);
     }
 
     public bool IsDirTo(NodeData other)
@@ -41,13 +40,15 @@ public class StairCase
     public Vector3Int topExit;
     public int rotation;
 
+    // Creates the object and sets its values
     public StairCase(Vector3Int p1, Vector3Int p2, Vector3Int p3, Vector3Int p4)
     {
-        this.bottomEntrance = p1;
-        this.bottomStairs = p2;
-        this.topCorner = p3;
-        this.topExit = p4;
-        this.rotation = GetRotation(p1, p2);
+        bottomEntrance = p1;
+        bottomStairs = p2;
+        topCorner = p3;
+        topExit = p4;
+
+        rotation = GetRotation(p1, p2);
     }
 
     // Sets the rotation of the staircase based on the coordinates
@@ -62,10 +63,10 @@ public class StairCase
     // Used to check if this staircase piece contains a specific vector coordinate
     public bool CheckContainsPos(Vector3Int pos)
     {
-        return (Misc.VecCmp(pos, bottomEntrance, 0.5f)
+        return Misc.VecCmp(pos, bottomEntrance, 0.5f)
              || Misc.VecCmp(pos, bottomStairs, 0.5f)
              || Misc.VecCmp(pos, topCorner, 0.5f)
-             || Misc.VecCmp(pos, topExit, 0.5f));
+             || Misc.VecCmp(pos, topExit, 0.5f);
     }
 
     // Draws the gizmo box for the staircase
@@ -83,7 +84,7 @@ public class StairCase
     public void DrawGizmoPoints(WFC parent)
     {
         // Misc
-        Vector3 offset = new Vector3(0.0f, parent.TileSize.y * 0.5f, 0.0f);
+        Vector3 offset = new(0.0f, parent.TileSize.y * 0.5f, 0.0f);
         float sphereSize = (parent.TileSize.x + parent.TileSize.z) / 2 * 0.05f;
 
         // Lowest entrance point
@@ -107,21 +108,19 @@ public class StairCase
 public class AStar : MonoBehaviour
 {
     // Private Variables
-    LineRenderer lineRenderer;
-    IEnumerator pathRoutine;
-    private List<Vector3> constructedPath = new List<Vector3>();
-    private List<StairCase> staircases = new List<StairCase>();
-    private List<NodeData> openList = new List<NodeData>();
-    private List<NodeData> closedList = new List<NodeData>();
-    private bool doneFindingPath = false;
+    List<Vector3> _constructedPath = new();
+    List<StairCase> _staircases = new();
+    List<NodeData> _openList = new();
+    List<NodeData> _closedList = new();
+    bool _doneFindingPath = false;
+    WFC _parent;
 
     // Getters
-    public List<Vector3> CollapsedPath => constructedPath;
-    public List<StairCase> GetStaircases => staircases;
-    public bool IsDoneFindingPath => doneFindingPath;
+    public List<Vector3> CollapsedPath => _constructedPath;
+    public List<StairCase> GetStaircases => _staircases;
+    public bool IsDoneFindingPath => _doneFindingPath;
 
     // Debugging data for gizmos
-    private WFC _parent;
     public bool enableGizmosPathPoints = false;
     public bool enableGizmosPathStaircases = false;
     public bool enableGizmosPathField = false;
@@ -135,7 +134,7 @@ public class AStar : MonoBehaviour
         if (enableGizmosPathStaircases)
         {
             // Draw the staircases
-            foreach (StairCase staircase in staircases)
+            foreach (StairCase staircase in _staircases)
             {
                 staircase.DrawGizmoBox(_parent);
                 staircase.DrawGizmoPoints(_parent);
@@ -169,41 +168,41 @@ public class AStar : MonoBehaviour
         }
 
         // Draw the open nodes
-        if(enableGizmosPathFinding && openList.Count > 0)
+        if(enableGizmosPathFinding && _openList.Count > 0)
         {
             Gizmos.color = Color.orange;
 
-            foreach(NodeData node in openList)
+            foreach(NodeData node in _openList)
             {
                 Gizmos.DrawWireCube(_parent.TileSize * node.position, Vector3.Scale(Vector3.one, _parent.TileSize));
             }
         }
 
         // Draw the closed nodes
-        if(enableGizmosPathFinding && closedList.Count > 0)
+        if(enableGizmosPathFinding && _closedList.Count > 0)
         {
             Gizmos.color = Color.green;
 
-            foreach(NodeData node in closedList)
+            foreach(NodeData node in _closedList)
             {
                 Gizmos.DrawWireCube(_parent.TileSize * node.position, Vector3.Scale(Vector3.one, _parent.TileSize));
             }
         }
     }
 
-    public void GeneratePath(WFC parent, List<Vector3Int> path)
+    public void GeneratePath(List<Vector3Int> path)
     {
-        _parent = parent;
-        doneFindingPath = false;
+        _parent = GetComponent<WFC>();
+        _doneFindingPath = false;
 
-        parent.EditorResetProgress();
-        parent.EditorMessageSimpleProgress("Generating A* Path...");
-        parent.EditorMessageSimpleProgress($"> (1/2) Finding routes between {path.Count} points ");
+        _parent.EditorResetProgress();
+        _parent.EditorMessageSimpleProgress("Generating A* Path...");
+        _parent.EditorMessageSimpleProgress($"> (1/2) Finding routes between {path.Count} points ");
 
         if (!CheckPathValidity(path))
         {
-            parent.EditorMessageProgress("# Cannot find route, some points are invalid...", Color.yellow);
-            parent.EditorMessageProgress("Done finding routes", Color.green);
+            _parent.EditorMessageProgress("# Cannot find route, some points are invalid...", Color.yellow);
+            _parent.EditorMessageProgress("Done finding routes", Color.green);
             return;
         }
 
@@ -213,8 +212,9 @@ public class AStar : MonoBehaviour
     public void StopFindingPath() 
     {
         // Editor message
-        if (!doneFindingPath)
+        if (!_doneFindingPath)
         {
+            _parent = GetComponent<WFC>();
             _parent.EditorMessageProgress($"@ Path finding forcefully stopped by user...", Color.red);
             _parent.EditorSetBarProgress(100);
             _parent.EditorMessageProgress("Done finding routes", Color.green);
@@ -222,32 +222,31 @@ public class AStar : MonoBehaviour
 
         // Stop the coroutine
         CoroutineManager.StopAllCoroutines();
-        pathRoutine = null;
-        doneFindingPath = true;
+        _doneFindingPath = true;
 
         // Reset variables
-        openList.Clear();
-        closedList.Clear();
+        _openList.Clear();
+        _closedList.Clear();
     }
 
     public void ClearPath()
     {
         // Editor message
-        if (!doneFindingPath) _parent?.EditorMessageProgress("Clearing previous path", Color.gray);
+        if (!_doneFindingPath) _parent?.EditorMessageProgress("Clearing previous path", Color.gray);
 
         // Reset variables
-        constructedPath.Clear();
-        staircases.Clear();
-        openList.Clear();
-        closedList.Clear();
+        _constructedPath.Clear();
+        _staircases.Clear();
+        _openList.Clear();
+        _closedList.Clear();
 
         // Reset the linerenderer
-        if (lineRenderer) lineRenderer.positionCount = 0;
+        GetComponent<LineRenderer>().positionCount = 0;
     }
 
     private List<Vector3> CollapsePath(NodeData endNode)
     {
-        List<Vector3> path = new List<Vector3>();
+        List<Vector3> path = new();
         NodeData current = endNode;
 
         while (current != null)
@@ -341,7 +340,7 @@ public class AStar : MonoBehaviour
                         // Adding the points depends on if we go up or down a staircase
                         if (currPoint.y < nextPoint.y) 
                         {
-                            staircases.Add(new StairCase(p1, p2, p3, p4));
+                            _staircases.Add(new StairCase(p1, p2, p3, p4));
                             points.Insert(j + 2, p1);
                             points.Insert(j + 3, p2);
                             points.Insert(j + 4, p3);
@@ -350,7 +349,7 @@ public class AStar : MonoBehaviour
 
                         else 
                         {
-                            staircases.Add(new StairCase(p4, p3, p2, p1));
+                            _staircases.Add(new StairCase(p4, p3, p2, p1));
                             points.Insert(j + 2, p4);
                             points.Insert(j + 3, p3);
                             points.Insert(j + 4, p2);
@@ -386,24 +385,24 @@ public class AStar : MonoBehaviour
         for (int j = 0; j < points.Count - 1; j++)
         {
             // To be added to the final path once finished
-            List<Vector3> tempPath = new List<Vector3>();
+            List<Vector3> tempPath = new();
 
             // Setup data
-            NodeData startNode = new NodeData(null, points[j]);
-            NodeData endNode = new NodeData(null, points[j+1]);
+            NodeData startNode = new(null, points[j]);
+            NodeData endNode = new(null, points[j+1]);
 
-            openList.Add(startNode);
+            _openList.Add(startNode);
 
             // Loop until the end is found
-            while (openList.Count > 0)
+            while (_openList.Count > 0)
             {
                 // Get the current node
-                NodeData currentNode = openList[0];
+                NodeData currentNode = _openList[0];
                 int currentIndex = 0;
 
-                for (int i = 0; i < openList.Count; i++)
+                for (int i = 0; i < _openList.Count; i++)
                 {
-                    NodeData item = openList[i];
+                    NodeData item = _openList[i];
 
                     // The node is only acceptable if it is closer and only moves diagonal inside a staircase
                     if (item.f < currentNode.f
@@ -417,8 +416,8 @@ public class AStar : MonoBehaviour
                 }
 
                 // Pop current off open list, add to closed list
-                openList.RemoveAt(currentIndex);
-                closedList.Add(currentNode);
+                _openList.RemoveAt(currentIndex);
+                _closedList.Add(currentNode);
 
                 // Collapse the path constantly for debugging
                 tempPath = CollapsePath(currentNode);
@@ -431,7 +430,7 @@ public class AStar : MonoBehaviour
                 }
 
                 // Generate children
-                List<NodeData> children = new List<NodeData>();
+                List<NodeData> children = new();
 
                 foreach (Vector3Int offset in Misc.offsets3)
                 {
@@ -443,7 +442,7 @@ public class AStar : MonoBehaviour
                         continue;
 
                     // Create new node
-                    NodeData newNode = new NodeData(currentNode, nodePosition);
+                    NodeData newNode = new(currentNode, nodePosition);
 
                     // Append
                     children.Add(newNode);
@@ -455,7 +454,7 @@ public class AStar : MonoBehaviour
                     NodeData childNode = children[k];
 
                     // Child is on the closed list
-                    foreach (NodeData closedChild in closedList)
+                    foreach (NodeData closedChild in _closedList)
                         if (childNode.Equals(closedChild))
                             continue;
 
@@ -472,12 +471,12 @@ public class AStar : MonoBehaviour
                     childNode.f = childNode.g + childNode.h;
 
                     // Child is already in the open list
-                    foreach (NodeData openNode in openList)
+                    foreach (NodeData openNode in _openList)
                         if (childNode.Equals(openNode) && childNode.g > openNode.g)
                             continue;
                     
                     // Add the child to the open list
-                    openList.Add(childNode);
+                    _openList.Add(childNode);
                 }
 
                 VisualisePath(tempPath);
@@ -488,17 +487,17 @@ public class AStar : MonoBehaviour
             _parent.EditorTakeStepProgress($"Route between {startNode.position} - {endNode.position} found");
 
             // Add the temporary generated path to the permanent one
-            constructedPath.AddRange(tempPath);
+            _constructedPath.AddRange(tempPath);
 
             // Reset lists
-            openList.Clear();
-            closedList.Clear();
+            _openList.Clear();
+            _closedList.Clear();
 
             yield return null;
         }
 
         doneLabel:;
-        doneFindingPath = true;
+        _doneFindingPath = true;
 
         // Editor progress message
         _parent.EditorStopStepCounterProgress();
@@ -510,7 +509,9 @@ public class AStar : MonoBehaviour
 
     private void VisualisePath(List<Vector3> tempPath)
     {
-        if ((lineRenderer = gameObject.GetComponent<LineRenderer>()) && lineRenderer == null)
+        LineRenderer lineRenderer = GetComponent<LineRenderer>();
+        
+        if (lineRenderer == null)
         {
             // Create the line renderer object
             lineRenderer = gameObject.AddComponent<LineRenderer>();
@@ -525,17 +526,17 @@ public class AStar : MonoBehaviour
             lineRenderer.endWidth = 0.05f;
         }
 
-        lineRenderer.positionCount = constructedPath.Count + tempPath.Count;
-        lineRenderer.SetPositions(constructedPath.Concat(tempPath).Select(p => Vector3.Scale(p + transform.position, _parent.TileSize)).ToArray());
+        lineRenderer.positionCount = _constructedPath.Count + tempPath.Count;
+        lineRenderer.SetPositions(_constructedPath.Concat(tempPath).Select(p => Vector3.Scale(p + transform.position, _parent.TileSize)).ToArray());
     }
 
     public bool CheckStaircaseOverlap(Vector3Int pos)
     {
-        return staircases.Exists((StairCase stairs) => stairs.CheckContainsPos(pos));
+        return _staircases.Exists((StairCase stairs) => stairs.CheckContainsPos(pos));
     }
 
     public StairCase GetStaircase(int index)
     {
-        return staircases.Find((StairCase stair) => stair.CheckContainsPos(Vector3Int.FloorToInt(constructedPath[index])));
+        return _staircases.Find((StairCase stair) => stair.CheckContainsPos(Vector3Int.FloorToInt(_constructedPath[index])));
     }
 }

@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 
 public static class TestData
 {
+    public static WFC _wfc;
     private static Dictionary<string, int> _propCollection = new Dictionary<string, int>();
     private static string _fileName = string.Empty;
 
@@ -59,7 +60,7 @@ public static class TestData
             _propCollection[key] += 1;
         }
 
-        _sizeNormalized = (WFC.wfc.CurrentSize - WFC.wfc.MinSize) / (WFC.wfc.MaxSize - WFC.wfc.MinSize);
+        _sizeNormalized = (_wfc.CurrentSize - _wfc.MinSize) / (_wfc.MaxSize - _wfc.MinSize);
     }
 
     public static void CalculateData()
@@ -110,7 +111,7 @@ public static class TestData
         
         Data d2 = new Data();
         d2.entropy = entropy;
-        d2.size = WFC.wfc.CurrentSize;
+        d2.size = _wfc.CurrentSize;
         
         _dataListNotNormalized.Add(d2);
     }
