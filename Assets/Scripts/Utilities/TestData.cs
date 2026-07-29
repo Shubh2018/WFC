@@ -25,25 +25,27 @@ public static class TestData
         string path = $"{Application.dataPath}/Test_Entropy+NND.json";
         // File.Open(path, FileMode.Append, FileAccess.Write);
 
-        File.AppendAllText(path, $"{data}\n\n");
+        File.WriteAllText(path, $"{data}\n\n");
 
         data = JsonConvert.SerializeObject(_dataList, Formatting.Indented);
         path = $"{Application.dataPath}/Test_Entropy+Size.json";
         
-        File.AppendAllText(path, $"{data}\n\n");
+        File.WriteAllText(path, $"{data}\n\n");
         
         data = JsonConvert.SerializeObject(_nearestNeighborDataListNotNormalized, Formatting.Indented);
         path = $"{Application.dataPath}/Test_Entropy+NND+NotNormalized.json";
         // File.Open(path, FileMode.Append, FileAccess.Write);
 
-        File.AppendAllText(path, $"{data}\n\n");
+        File.WriteAllText(path, $"{data}\n\n");
         
         data = JsonConvert.SerializeObject(_dataListNotNormalized, Formatting.Indented);
         path = $"{Application.dataPath}/Test_Entropy+Size+NotNormalized.json";
         
-        File.AppendAllText(path, $"{data}\n\n");
+        File.WriteAllText(path, $"{data}\n\n");
         
         Debug.Log($"Test Data Saved");
+        
+        ClearDict();
     }
 
     public static void AddToDict(string key, Vector3 pos)
@@ -116,11 +118,7 @@ public static class TestData
     public static void ClearDict()
     {
         _propCollection.Clear();
-        _dataList.Clear();
-        _nearestNeighborDataList.Clear();
         _propTestDataList.Clear();
-        _nearestNeighborDataListNotNormalized.Clear();
-        _dataListNotNormalized.Clear();
     }
 
     public static void CreateFile(string fileName)

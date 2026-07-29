@@ -396,7 +396,6 @@ public class WaveFunctionCollapseEditor : Editor
             SetButtonState("_collapseTilesTest", true);
             SetButtonState("CreateFile", true);
             SetButtonState("_stopTesting", false);
-            TestData.SaveData();
         }, (round) => UpdateTestingLabel(round));
 
         SetButtonState("_collapseTilesTest", false);

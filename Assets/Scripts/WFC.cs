@@ -719,7 +719,6 @@ public class WFC : MonoBehaviour
         // float qualityScore = 0;
 
         _currentSize = _minSize;
-        TestData.ClearDict();
         
         for (int k = (int)_minSize; k <= _maxSize; k++)
         {
@@ -772,6 +771,8 @@ public class WFC : MonoBehaviour
 
                 updateFuncHook(k);
                 TestData.CalculateData();
+                TestData.SaveData();
+                
                 //_currentSize += 1;
 
                 yield return null;
