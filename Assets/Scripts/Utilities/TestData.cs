@@ -31,21 +31,21 @@ public static class TestData
 
         File.WriteAllText(path, $"{data}\n\n");
 
-        data = JsonConvert.SerializeObject(_dataList, Formatting.Indented);
-        path = $"{Application.dataPath}/Test_Entropy+Size.json";
-        
-        File.WriteAllText(path, $"{data}\n\n");
-        
-        data = JsonConvert.SerializeObject(_nearestNeighborDataListNotNormalized, Formatting.Indented);
-        path = $"{Application.dataPath}/Test_Entropy+NND+NotNormalized.json";
-        // File.Open(path, FileMode.Append, FileAccess.Write);
-
-        File.WriteAllText(path, $"{data}\n\n");
-        
-        data = JsonConvert.SerializeObject(_dataListNotNormalized, Formatting.Indented);
-        path = $"{Application.dataPath}/Test_Entropy+Size+NotNormalized.json";
-        
-        File.WriteAllText(path, $"{data}\n\n");
+        // data = JsonConvert.SerializeObject(_dataList, Formatting.Indented);
+        // path = $"{Application.dataPath}/Test_Entropy+Size.json";
+        //
+        // File.WriteAllText(path, $"{data}\n\n");
+        //
+        // data = JsonConvert.SerializeObject(_nearestNeighborDataListNotNormalized, Formatting.Indented);
+        // path = $"{Application.dataPath}/Test_Entropy+NND+NotNormalized.json";
+        // // File.Open(path, FileMode.Append, FileAccess.Write);
+        //
+        // File.WriteAllText(path, $"{data}\n\n");
+        //
+        // data = JsonConvert.SerializeObject(_dataListNotNormalized, Formatting.Indented);
+        // path = $"{Application.dataPath}/Test_Entropy+Size+NotNormalized.json";
+        //
+        // File.WriteAllText(path, $"{data}\n\n");
         
         Debug.Log($"Test Data Saved");
         
@@ -105,19 +105,19 @@ public static class TestData
         float normalizedNND = CalculateNormalizedNND(sumDistance, _propTestDataList.Count);
         
         _nearestNeighborDataList.Add(new NearestNeighborData(entropyNormalized, normalizedNND));
-        _nearestNeighborDataListNotNormalized.Add(new NearestNeighborData(entropy, sumDistance));
+        // _nearestNeighborDataListNotNormalized.Add(new NearestNeighborData(entropy, sumDistance));
 
-        Data d = new Data();
-        d.entropy = entropyNormalized;
-        d.size = _sizeNormalized;
-        
-        _dataList.Add(d);
-        
-        Data d2 = new Data();
-        d2.entropy = entropy;
-        d2.size = _wfc.CurrentSize;
-        
-        _dataListNotNormalized.Add(d2);
+        // Data d = new Data();
+        // d.entropy = entropyNormalized;
+        // d.size = _sizeNormalized;
+        //
+        // _dataList.Add(d);
+        //
+        // Data d2 = new Data();
+        // d2.entropy = entropy;
+        // d2.size = _wfc.CurrentSize;
+        //
+        // _dataListNotNormalized.Add(d2);
     }
 
     private static float CalculateNormalizedNND(float sumDistance, int propCount)
