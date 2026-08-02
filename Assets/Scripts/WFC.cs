@@ -664,7 +664,7 @@ public class WFC : MonoBehaviour
             {
                 bool samplingDone = false;
 
-                _samplingRadius = Random.Range(0.1f, 1.0f);
+                _samplingRadius = Random.Range(0.1f, 2.0f);
                 CoroutineManager.StartCoroutine(this, "GenerateTiles", GenerateTiles());
                 CoroutineManager.StartCoroutine(this, "SampleTiles", MeshNode.SampleTiles(this, () =>
                 {
