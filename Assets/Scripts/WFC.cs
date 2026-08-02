@@ -154,14 +154,20 @@ public class WFC : MonoBehaviour
     [SerializeField] private bool _overrideObjList = false;
 
     // Private Variables
-    float _minSize = 6; 
-    float _maxSize = 6;
+    float _minSize = 0; 
+    float _maxSize = 1;
     float _currentSize = 2;
     Node[,,] _grid;
     List<Tile> _nodesToCollapse = new();
     List<PathNode> pathNodes = new();
     double collapseExecutionTime = 0;
     Vector3Int activeCollapsningTile;
+
+    private int _spawnedTileCount = 0;
+    public int SpawnedTileCount => _spawnedTileCount;
+
+    [SerializeField] private int _levelCount;
+    public int LevelCount => _levelCount;
 
     // Public Variables
     public AStar path;
@@ -628,20 +634,21 @@ public class WFC : MonoBehaviour
     public IEnumerator CollapseTilesTesting(Action doneFuncHook, Action<int> updateFuncHook, int levelCount)
     {
         // float qualityScore = 0;
-
+        
         _currentSize = _minSize;
         TestData.ClearDict();
         TestData._wfc = this;
         
-        for (int k = (int)_minSize; k <= _maxSize; k++)
+        for (int k = (int)_minSize; k < _maxSize; k++)
         {
-            _length = _height = _width = k;
+            //_length = _height = _width = k;
+            Debug.Log($"{_length}: {_width}: {_height}");
             
             if ((path = gameObject.GetComponent<AStar>()) && path == null) 
                 path = gameObject.AddComponent<AStar>();
 
             path.ClearPath();
-            _pathPoints = GeneratePathPoints(k);
+            _pathPoints = GeneratePathPoints(new Vector3Int(_length, _height, _width));
             path.GeneratePath(_pathPoints);
 
             bool isPathGenerationDone = false;
@@ -655,6 +662,17 @@ public class WFC : MonoBehaviour
             
             for (int i = 0; i < levelCount; i++)
             {
+                bool samplingDone = false;
+
+                _samplingRadius = Random.Range(0.1f, 1.0f);
+                CoroutineManager.StartCoroutine(this, "GenerateTiles", GenerateTiles());
+                CoroutineManager.StartCoroutine(this, "SampleTiles", MeshNode.SampleTiles(this, () =>
+                {
+                    samplingDone = true;
+                }));
+
+                yield return new WaitUntil(() => samplingDone);
+                
                 int overlaps = 0;
                 int totalProps = 0;
                 bool roundDone = false;
@@ -713,6 +731,28 @@ public class WFC : MonoBehaviour
             else
             {
                 p.Add(new Vector3Int(size - 1, i, size - 1));
+                p.Add(new Vector3Int(0, i, 0));
+            }
+        }
+        
+        return p;
+    }
+
+    public List<Vector3Int> GeneratePathPoints(Vector3Int size)
+    {
+        List<Vector3Int> p = new();
+        
+        for (int i = 0; i < size.y; i++)
+        {
+            if (i % 2 == 0)
+            {
+                p.Add(new Vector3Int(0, i, 0));
+                p.Add(new Vector3Int(size.x - 1, i, size.z - 1));
+            }
+
+            else
+            {
+                p.Add(new Vector3Int(size.x - 1, i, size.z - 1));
                 p.Add(new Vector3Int(0, i, 0));
             }
         }
@@ -837,6 +877,7 @@ public class WFC : MonoBehaviour
         // Print a warning if this tile does not have a mesh for some reason
         if (mesh == null) UnityEngine.Debug.LogWarning($"Node Prefab '{node.Prefab.name}' does not have a MeshNode!");
 
+        _spawnedTileCount += 1;
         return 0;
     }
 

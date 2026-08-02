@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acd5196af078d4e74b8bdc1ce7cdea58, type: 3}
+  m_Name: Pot 1
+  m_EditorClassIdentifier: Assembly-CSharp::Prop
+  _prop: {fileID: -8585376493600060479, guid: f92b1134231fc274fa02c70f7081dd15, type: 3}
+  _spawnChance: 0.8
+  _propPlacement: 0
+  _propType: 0
+  _decorationType: 11
+  _limitType: 0
+  _environmentType: 
+  _nodeType: 0
+  _spacingEnabled: 0
+  _spacingAmount: 0
+  _spawnTag: 0
+  _spawnPositions: 0
+  _keywords:
+  - pot
+  _useStaticPositions: 0
+  _spawnInCorners: 0
+  _neighbors:
+  - prop: {fileID: 11400000, guid: 8d9fd6cbf83a7c61b95018e580132a49, type: 2}
+    maxDistance: 0.6
+  - prop: {fileID: 11400000, guid: d49eabf0cf4f56386a1b32d126245267, type: 2}
+    maxDistance: 0.8
+  - prop: {fileID: 11400000, guid: 1e5646d1134267c3f987db1dbe4ca19d, type: 2}
+    maxDistance: 1
+  - prop: {fileID: 11400000}
+    maxDistance: 0.6
+  - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
+    maxDistance: 0.8
+  _neighborCount: 0
+  _lowerLimitCount: 0
+  _higherLimitCount: 10
+  _spawnRotationType: 0
+  _spawnRotation: 0

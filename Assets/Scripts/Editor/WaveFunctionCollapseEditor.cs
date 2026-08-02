@@ -165,9 +165,6 @@ public class WaveFunctionCollapseEditor : Editor
     private WFC WaveFunctionCollapse;
     private ProgressBox progress;
     
-    private int _levelCount = 0;
-    
-    
     public override VisualElement CreateInspectorGUI()
     {
         WaveFunctionCollapse = (WFC) target;
@@ -309,7 +306,6 @@ public class WaveFunctionCollapseEditor : Editor
         TextField textField = rootTree.Q<TextField>("FileName");
         
         IntegerField intField = rootTree.Q<IntegerField>("LevelCount");
-        _levelCount = intField.value;
 
         Button collapseTilesTestingButton = rootTree.Q<Button>("_collapseTilesTest");
         collapseTilesTestingButton.RegisterCallback<ClickEvent>(CollapseTilesTesting);
@@ -409,7 +405,8 @@ public class WaveFunctionCollapseEditor : Editor
 
     private void CollapseTilesTesting(ClickEvent evt)
     {
-
+        int levelCount = WaveFunctionCollapse.LevelCount;
+        
         WaveFunctionCollapse.pauseGeneration = false;
         CoroutineManager.StartCoroutine(WaveFunctionCollapse, "CollapseTilesTesting", WaveFunctionCollapse.CollapseTilesTesting(() => {
             SetLabelText("TestLabel", WaveFunctionCollapse.PropText);
@@ -417,7 +414,7 @@ public class WaveFunctionCollapseEditor : Editor
             SetButtonState("CreateFile", true);
             SetButtonState("_stopTesting", false);
             TestData.SaveData();
-        }, (round) => UpdateTestingLabel(round), _levelCount));
+        }, (round) => UpdateTestingLabel(round), levelCount));
 
         SetButtonState("_collapseTilesTest", false);
         SetButtonState("CreateFile", false);
@@ -440,6 +437,8 @@ public class WaveFunctionCollapseEditor : Editor
         WaveFunctionCollapse.pauseGeneration = false;
         CoroutineManager.StopAllCoroutines();
 
+        TestData.SaveData();
+        
         SetButtonState("_collapseTilesTest", true);
         SetButtonState("CreateFile", true);
         SetButtonState("_stopTesting", false);

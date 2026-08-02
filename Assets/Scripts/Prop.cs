@@ -18,6 +18,22 @@ public enum PropType
     Enemy
 };
 
+public enum DecorationType
+{
+    None,
+    Table,
+    Chair,
+    Lamp,
+    Barrel,
+    Book,
+    Potion,
+    Cauldron,
+    Shelf,
+    Chest,
+    Flag,
+    Pot
+};
+
 public enum SpawnPosition
 {
     Random,
@@ -62,6 +78,7 @@ public class Prop : ScriptableObject
     [SerializeField] [Range(0.0f, 1.0f)] private float _spawnChance = 0.0f;
     [SerializeField] private PropPlacementType _propPlacement;
     [SerializeField] private PropType _propType;
+    [SerializeField] private DecorationType _decorationType;
     [SerializeField] private PropLimitTypeEnum _limitType;
     [Environment] [SerializeField] private string _environmentType;
     [SerializeField] private Node.NodeType _nodeType;
@@ -85,6 +102,7 @@ public class Prop : ScriptableObject
     // Getters and Setters
     public PropObject PropObject => _prop;
     public PropType PropType => _propType;
+    public DecorationType DecorationType => _decorationType;
     public SpawnPosition SpawnPosition => _spawnPositions;
     public List<PropNeighborProperty> Neighbors => _neighbors;
     public int MaxNeighborCount => _neighborCount;

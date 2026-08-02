@@ -9,88 +9,121 @@ public static class TestData
 {
     public static WFC _wfc;
     private static Dictionary<string, int> _propCollection = new Dictionary<string, int>();
-    private static string _fileName = string.Empty;
+    private static Dictionary<DecorationType, int> _propDecorationCollection = new Dictionary<DecorationType, int>();
 
-    private static float _levelVolume = 0;
-    private static float _gamma = 0.8929979511f;
-
-    private static float _sizeNormalized;
-    private static List<Data> _dataList = new List<Data>();
-    private static List<Data> _dataListNotNormalized = new List<Data>();
-
-    private static List<PropTestData> _propTestDataList = new List<PropTestData>();
-    private static List<NearestNeighborData> _nearestNeighborDataList = new List<NearestNeighborData>();
+    private static int props = 0;
     
-    private static List<NearestNeighborData> _nearestNeighborDataListNotNormalized = new List<NearestNeighborData>();
+    private static List<PropTestData> _propTestDataList = new List<PropTestData>();
+    
+    private static List<SpatialData> _spatialDataList = new List<SpatialData>();
+    private static List<DiversityData> _diversityDataList = new List<DiversityData>();
+    private static List<CombinedData> _combinedDataList = new List<CombinedData>();
 
     public static void SaveData()
     {
-        string data = JsonConvert.SerializeObject(_nearestNeighborDataList, Formatting.Indented);
-        string path = $"{Application.dataPath}/Test_Entropy+NND.json";
-        // File.Open(path, FileMode.Append, FileAccess.Write);
-
-        File.WriteAllText(path, $"{data}\n\n");
-
-        // data = JsonConvert.SerializeObject(_dataList, Formatting.Indented);
-        // path = $"{Application.dataPath}/Test_Entropy+Size.json";
-        //
-        // File.WriteAllText(path, $"{data}\n\n");
-        //
-        // data = JsonConvert.SerializeObject(_nearestNeighborDataListNotNormalized, Formatting.Indented);
-        // path = $"{Application.dataPath}/Test_Entropy+NND+NotNormalized.json";
-        // // File.Open(path, FileMode.Append, FileAccess.Write);
-        //
-        // File.WriteAllText(path, $"{data}\n\n");
-        //
-        // data = JsonConvert.SerializeObject(_dataListNotNormalized, Formatting.Indented);
-        // path = $"{Application.dataPath}/Test_Entropy+Size+NotNormalized.json";
-        //
-        // File.WriteAllText(path, $"{data}\n\n");
+        string spatialData = JsonConvert.SerializeObject(_spatialDataList, Formatting.Indented);
+        string diversityData = JsonConvert.SerializeObject(_diversityDataList, Formatting.Indented);
+        string combinedData = JsonConvert.SerializeObject(_combinedDataList, Formatting.Indented);
         
+        string spatialDataPath = $"{Application.dataPath}/spatialData.json";
+        string diversityDataPath = $"{Application.dataPath}/diversityData.json";
+        string combinedDataPath = $"{Application.dataPath}/combinedData.json";
+
+        File.WriteAllText(spatialDataPath, $"{spatialData}\n\n");
+        File.WriteAllText(diversityDataPath, $"{diversityData}\n\n");
+        File.WriteAllText(combinedDataPath, $"{combinedData}\n\n");
+
         Debug.Log($"Test Data Saved");
-        
-        ClearDict();
     }
 
-    public static void AddToDict(string key, Vector3 pos)
+    public static void AddToDict(string key, Vector3 pos, Node.NodeType nodeType)
     {
         if (String.IsNullOrEmpty(key)) return;
-        
-        _propTestDataList.Add(new PropTestData(key, pos));
+
+        _propTestDataList.Add(new PropTestData(key, pos, nodeType));
 
         if (!_propCollection.TryAdd(key, 1))
         {
             _propCollection[key] += 1;
         }
+    }
 
-        _sizeNormalized = (_wfc.CurrentSize - _wfc.MinSize) / (_wfc.MaxSize - _wfc.MinSize);
-        _levelVolume = (_wfc.CurrentSize * _wfc.TileSize.x) * (_wfc.CurrentSize * _wfc.TileSize.y) * (_wfc.CurrentSize * _wfc.TileSize.z);
+    public static void AddPropDecorationType(DecorationType decorationType)
+    {
+        if (!_propDecorationCollection.TryAdd(decorationType, 1))
+        {
+            _propDecorationCollection[decorationType] += 1;
+        }
     }
 
     public static void CalculateData()
     {
-        int props = AssetManager.LoadProps(PropPlacementType.Floor).Count +
-                    AssetManager.LoadProps(PropPlacementType.Wall).Count;
-
-        float entropy = 0;
+        props = AssetManager.LoadProps(PropPlacementType.Floor).Count;
 
         int propCount = _propCollection.Sum(prop => prop.Value);
 
-        foreach (var prop in _propCollection)
+        float entropy = CalculateEntropy(_propCollection, propCount);
+        float richness = CalculateRichness(_propDecorationCollection);
+
+        float averageNND = CalculateAverageNND(_propTestDataList, propCount);
+        float propDensity = PropDensity(propCount, _wfc.SpawnedTileCount);
+        
+        _spatialDataList.Add(new SpatialData(averageNND, propDensity));
+        _diversityDataList.Add(new DiversityData(richness, entropy));
+        _combinedDataList.Add(new CombinedData(averageNND, entropy));
+
+        ClearDict();
+    }
+
+    private static float CalculateEntropy(Dictionary<string, int> propCollection, int propCount)
+    {
+        float entropy = 0;
+
+        foreach (var prop in propCollection)
         {
             float proportion = (float)prop.Value / (float)propCount;
             entropy += (-proportion * Mathf.Log(proportion, 2));
         }
 
-        float entropyNormalized = entropy / Mathf.Log(props, 2);
-        float sumDistance = 0;
-        float nearestNeighborDistance = 0;
+        return entropy;
+    }
 
-        foreach (var p in _propTestDataList)
+    public static float CalculateRichness(Dictionary<DecorationType, int> propCollections)
+    {
+        float richness = 0;
+        
+        foreach (var prop in propCollections)
+        {
+            if (prop.Value > 0 && prop.Key != DecorationType.None)
+            {
+                richness += 1;
+            }
+        }
+
+        return richness;
+    }
+
+    private static float PropDensity(int propCount, int floorNodeCount)
+    {
+        float nodeArea = _wfc.TileSize.x * _wfc.TileSize.z;
+
+        float totalArea = floorNodeCount * nodeArea;
+
+        if (totalArea <= 0)
+            return 0.0f;
+
+        return propCount / totalArea;
+    }
+
+    private static float CalculateAverageNND(List<PropTestData> props, int propCount)
+    {
+        float sumDistance = 0;
+
+        foreach (var p in props)
         {
             float minDistance = float.PositiveInfinity;
 
-            foreach (var p1 in _propTestDataList)
+            foreach (var p1 in props)
             {
                 if (p != p1)
                 {
@@ -98,41 +131,11 @@ public static class TestData
                     minDistance = Mathf.Min(minDistance, dist);
                 }
             }
-            
+
             sumDistance += minDistance;
         }
 
-        float normalizedNND = CalculateNormalizedNND(sumDistance, _propTestDataList.Count);
-        
-        _nearestNeighborDataList.Add(new NearestNeighborData(entropyNormalized, normalizedNND));
-        // _nearestNeighborDataListNotNormalized.Add(new NearestNeighborData(entropy, sumDistance));
-
-        // Data d = new Data();
-        // d.entropy = entropyNormalized;
-        // d.size = _sizeNormalized;
-        //
-        // _dataList.Add(d);
-        //
-        // Data d2 = new Data();
-        // d2.entropy = entropy;
-        // d2.size = _wfc.CurrentSize;
-        //
-        // _dataListNotNormalized.Add(d2);
-    }
-
-    private static float CalculateNormalizedNND(float sumDistance, int propCount)
-    {
-        float avgNND = sumDistance / propCount;
-        
-        float density = propCount / _levelVolume;
-
-        float denominator = Mathf.Pow((4 / 3) * Mathf.PI * density, (1 / 3));
-        
-        float expectedNND = _gamma / denominator;
-        
-        float normalizedNND = avgNND / expectedNND;
-
-        return normalizedNND;
+        return sumDistance / propCount;
     }
 
     public static void ClearDict()
@@ -143,19 +146,19 @@ public static class TestData
 
     public static void CreateFile(string fileName)
     {
-        string path = $"{Application.dataPath}/{fileName}.txt";
-
-        if (!File.Exists(path))
-        {
-            File.Create(path);
-            _fileName = fileName;
-            Debug.Log($"Created file {path}");
-        }
-
-        else
-        {
-            _fileName = fileName;
-        }
+        // string path = $"{Application.dataPath}/{fileName}.txt";
+        //
+        // if (!File.Exists(path))
+        // {
+        //     File.Create(path);
+        //     _fileName = fileName;
+        //     Debug.Log($"Created file {path}");
+        // }
+        //
+        // else
+        // {
+        //     _fileName = fileName;
+        // }
     }
 }
 
@@ -175,11 +178,13 @@ public class PropTestData
 {
     public string name;
     public Vector3 pos;
+    public Node.NodeType nodeType;
 
-    public PropTestData(string name, Vector3 pos)
+    public PropTestData(string name, Vector3 pos, Node.NodeType nodeType)
     {
         this.name = name;
         this.pos = pos;
+        this.nodeType = nodeType;
     }
 }
 
@@ -187,6 +192,8 @@ public class NearestNeighborData
 {
     public float entropy;
     public float nearestNeighborDistance;
+    public float levelSize;
+    public float samplingRadius;
 
     public NearestNeighborData()
     {
@@ -194,9 +201,47 @@ public class NearestNeighborData
         nearestNeighborDistance = 0;
     }
 
-    public NearestNeighborData(float entropy, float nearestNeighborDistance)
+    public NearestNeighborData(float entropy, float nearestNeighborDistance, float levelSize, float samplingRadius)
     {
         this.entropy = entropy;
         this.nearestNeighborDistance = nearestNeighborDistance;
+        this.levelSize = levelSize;
+        this.samplingRadius = samplingRadius;
+    }
+}
+
+public class SpatialData
+{
+    public float AvgNearestNeighborDistance;
+    public float PropDensity;
+
+    public SpatialData(float avgNearestNeighborDistance, float propDensity)
+    {
+        this.AvgNearestNeighborDistance = avgNearestNeighborDistance;
+        this.PropDensity = propDensity;
+    }
+}
+
+public class DiversityData
+{
+    public float Richness;
+    public float Entropy;
+
+    public DiversityData(float richness, float entropy)
+    {
+        this.Richness = richness;
+        this.Entropy = entropy;
+    }
+}
+
+public class CombinedData
+{
+    public float AvgNearestNeighborDistance;
+    public float Entropy;
+
+    public CombinedData(float avgNearestNeighborDistance, float entropy)
+    {
+        this.AvgNearestNeighborDistance = avgNearestNeighborDistance;
+        this.Entropy = entropy;
     }
 }

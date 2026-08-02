@@ -13,10 +13,15 @@ MonoBehaviour:
   m_Name: Book
   m_EditorClassIdentifier: Assembly-CSharp::Prop
   _prop: {fileID: -5805111504026453631, guid: 587911d8e2e27694daaec695bc48f418, type: 3}
-  _spawnChance: 0
+  _spawnChance: 0.4
   _propPlacement: 0
   _propType: 0
+  _decorationType: 5
   _limitType: 0
+  _environmentType: 
+  _nodeType: 0
+  _spacingEnabled: 0
+  _spacingAmount: 0
   _spawnTag: 0
   _spawnPositions: 0
   _keywords:
@@ -34,6 +39,7 @@ MonoBehaviour:
     maxDistance: 0.6
   - prop: {fileID: 11400000, guid: a85d8753e7450965686f7d83e3624f3d, type: 2}
     maxDistance: 0.8
+  _neighborCount: 0
   _lowerLimitCount: 0
   _higherLimitCount: 10
   _spawnRotationType: 0

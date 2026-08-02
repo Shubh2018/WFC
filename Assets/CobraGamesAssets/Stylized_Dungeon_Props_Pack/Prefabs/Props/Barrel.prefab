@@ -49,11 +49,11 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: f6b615690f376da43b1b6e955b3aa67d, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 34e06fcfb833d54459dfd00fb05709f5, type: 2}
     - target: {fileID: -7511558181221131132, guid: f6b615690f376da43b1b6e955b3aa67d, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: e48c54710d4f3c347ba8a4042041c520, type: 2}
     - target: {fileID: 919132149155446097, guid: f6b615690f376da43b1b6e955b3aa67d, type: 3}
@@ -66,15 +66,30 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f6b615690f376da43b1b6e955b3aa67d, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4723186246041922872}
+      addedObject: {fileID: -5212565867053096899}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f6b615690f376da43b1b6e955b3aa67d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -4883069508890767815}
   m_SourcePrefab: {fileID: 100100000, guid: f6b615690f376da43b1b6e955b3aa67d, type: 3}
 --- !u!1 &589572867028395327 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f6b615690f376da43b1b6e955b3aa67d, type: 3}
   m_PrefabInstance: {fileID: 355780762661984366}
   m_PrefabAsset: {fileID: 0}
---- !u!64 &4723186246041922872
-MeshCollider:
+--- !u!114 &-5212565867053096899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 589572867028395327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc13ff8e1f46f064d9284b7143977e83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PropObject
+--- !u!65 &-4883069508890767815
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -91,7 +106,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -5577547680137458886, guid: f6b615690f376da43b1b6e955b3aa67d, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 0.7591117, y: 0.8761673, z: 0.75911164}
+  m_Center: {x: 0.0038753152, y: 0.439075, z: 0.00017616153}

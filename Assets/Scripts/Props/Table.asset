@@ -16,7 +16,12 @@ MonoBehaviour:
   _spawnChance: 0.8
   _propPlacement: 0
   _propType: 0
+  _decorationType: 1
   _limitType: 0
+  _environmentType: 
+  _nodeType: 0
+  _spacingEnabled: 0
+  _spacingAmount: 0
   _spawnTag: 2
   _spawnPositions: 0
   _keywords:
@@ -26,6 +31,7 @@ MonoBehaviour:
   _neighbors:
   - prop: {fileID: 11400000, guid: a87c0d20ba356db119fd0ad4a4c0a7f7, type: 2}
     maxDistance: 1
+  _neighborCount: 0
   _lowerLimitCount: 0
   _higherLimitCount: 4
   _spawnRotationType: 0

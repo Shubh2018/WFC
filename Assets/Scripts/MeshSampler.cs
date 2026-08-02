@@ -602,7 +602,8 @@ public class MeshSampler : MonoBehaviour
         if (prop.IsSpecialised()) _specialObjects.Add(propObj);
 
         WFC wfc = FindFirstObjectByType<WFC>();
-        TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position);
+        TestData.AddToDict(propObj?.gameObject.name, propObj.transform.position, prop.NodeType);
+        TestData.AddPropDecorationType(prop.DecorationType);
 
         return true;
     }

@@ -22,6 +22,7 @@
             </ui:GroupBox>
             <ui:GroupBox name="_typeGroup" text="Type" style="border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgb(29, 29, 29); border-right-color: rgb(29, 29, 29); border-top-color: rgb(29, 29, 29); border-bottom-color: rgb(29, 29, 29); padding-right: 5px; padding-left: 5px;">
                 <ui:EnumField label="Prop" value="Decoration" type="PropType, Assembly-CSharp" name="_typeEnumField" data-source-type="Prop, Assembly-CSharp" data-source-path="_propType" binding-path="_propType"/>
+                <ui:EnumField label="DecorationType" value="Decoration" type="PropType, Assembly-CSharp" name="_typeEnumField" data-source-type="Prop, Assembly-CSharp" data-source-path="_decorationType" binding-path="_decorationType"/>
                 <uie:PropertyField name="_environmentTypeField" data-source-type="Prop, Assembly-CSharp" data-source-path="_environmentType" binding-path="_environmentType" label="Environment" enabled="false"/>
                 <uie:EnumFlagsField label="Node" value="DynamicTransform" type="Node+NodeType, Assembly-CSharp" name="_nodeTypeEnumField" data-source-type="Prop, Assembly-CSharp" data-source-path="_nodeType" binding-path="_nodeType" enabled="false"/>
                 <ui:Toggle label="Use Spacing" name="_spacingEnabledToggle" data-source-type="Prop, Assembly-CSharp" data-source-path="_spacingEnabled" binding-path="_spacingEnabled" enabled="false"/>
