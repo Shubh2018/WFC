@@ -17,18 +17,22 @@ public static class TestData
     
     private static List<CombinedData> _anndVsEntropy = new List<CombinedData>();
     private static List<CombinedData> _propDensityVsEntropy = new List<CombinedData>();
-    private static List<CombinedData> _combinedDataList = new List<CombinedData>();
+    private static List<CombinedData> _radiiList = new List<CombinedData>();
 
     public static void SaveData()
     {
         string spatialData = JsonConvert.SerializeObject(_anndVsEntropy, Formatting.Indented);
         string diversityData = JsonConvert.SerializeObject(_propDensityVsEntropy, Formatting.Indented);
+        string radiiData = JsonConvert.SerializeObject(_radiiList, Formatting.Indented);
         
         string anndDataPath = $"{Application.dataPath}/ANNDvsEntropy.json";
         string propDensityDataPath = $"{Application.dataPath}/PropDensityVsEntropy.json";
+        string radiiDataPath = $"{Application.dataPath}/radii.json";
+        
 
         File.WriteAllText(anndDataPath, $"{spatialData}\n\n");
         File.WriteAllText(propDensityDataPath, $"{diversityData}\n\n");
+        File.WriteAllText(radiiData, $"{radiiData}\n\n");
 
         Debug.Log($"Test Data Saved");
     }
@@ -66,6 +70,7 @@ public static class TestData
         
         _anndVsEntropy.Add(new CombinedData(averageNND, entropy));
         _propDensityVsEntropy.Add(new CombinedData(propDensity, entropy));
+        _radiiList.Add(new CombinedData(_wfc.SamplingRadius, entropy));
 
         ClearDict();
     }
