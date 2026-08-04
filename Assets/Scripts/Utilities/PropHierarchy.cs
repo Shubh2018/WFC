@@ -35,7 +35,7 @@ public class PropHierarchy
         {
             id = Guid.NewGuid();
 
-            parentId = parentHierachy.parentId;
+            parentId = parentHierachy.id;
             maxHierachyLevel = Mathf.Min(parentHierachy.maxHierachyLevel, localMaxHierarchyLevel);
             currentHierachyLevel = parentHierachy.currentHierachyLevel + 1;
         }

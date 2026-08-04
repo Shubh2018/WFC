@@ -56,7 +56,7 @@ public class Environment : ScriptableObject
             if (inList && (!subElement && !entry.SubElementsOnly || subElement)) return entry;
         }
 
-        return null;
+        return new PropSpawningEntry{ keywords = new string[]{} };
     }
 }
 

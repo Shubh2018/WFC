@@ -161,7 +161,7 @@ public class MeshSampler : MonoBehaviour
         if (enableGizmosWallSamples) {
             foreach(var wallList in _wallSamplesAll)
             {
-                Gizmos.color = Color.orange;
+                Gizmos.color = Color.red;
                 foreach (var wallPoint in wallList)
                 {
                     if (!Misc.WithinDisOfCam(wallPoint.sample, samplesRenderDistance)) continue;
@@ -172,7 +172,7 @@ public class MeshSampler : MonoBehaviour
         }
 
         if (enableGizmosCornerSamples) {
-            Gizmos.color = Color.gold;
+            Gizmos.color = Color.blue;
 
             foreach(var cornerList in _cornerSamplesAll)
             {
@@ -282,6 +282,9 @@ public class MeshSampler : MonoBehaviour
         SortSamplesInMesh(_samplePoints);
 
         spawnFilterFunc ??= ((sample, prop) => true);
+
+        _specialObjects.Clear();
+        _unspawnableProps.Clear();
 
         CoroutineManager.StartCoroutine(this, "SpawnFloorProps", SpawnFloorProps(obj, spawner.maxFloorPropCount, spawner.FloorPrefabs, spawnFilterFunc));
         CoroutineManager.StartCoroutine(this, "SpawnWallProps", SpawnWallProps(obj, spawner.maxWallPropCount, spawner.WallPrefabs, (v, p) => true));
@@ -619,11 +622,15 @@ public class MeshSampler : MonoBehaviour
         {
             Prop prop = Misc.GetRandomProp(floorProps, _hierarchyInfo, _unspawnableProps, _forceSpawn);
             if(!prop) yield break;
+
+            Debug.Log($"selected prop: {prop.PropObject.name}");
         
             List<Sample> samplesInRange = Misc.ShuffleList(new List<Sample>(GetFloorSamplesBySpawnPosition(prop, min, max)));
             if (samplesInRange.Count == 0) yield break;
 
             PropObject propObj = prop.SpawnFloor(samplesInRange, _specialObjects, nodeObj, _hierarchyInfo, spawnFilterFunc);
+
+            Debug.Log($"spawnable: {propObj != null}");
 
             yield return null;
 

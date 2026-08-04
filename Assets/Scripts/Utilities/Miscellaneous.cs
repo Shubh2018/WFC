@@ -170,7 +170,7 @@ public static class Misc
         props.RemoveAll((p) =>
         {
             bool noChance = p.SpawnChance == 0.0f;
-            bool notAllowedToSpawn = !ignoreSub && env && env.GetEntry(p.KeyWords) == null;
+            bool notAllowedToSpawn = !ignoreSub && env && env.GetEntry(p.KeyWords).keywords.Length == 0;
             bool amountMax = !Prop.Props.CanSpawnProp(hierachyInfo.id, p);
             bool outOfBounds = col && !IsInBounds(col, p.PropObject.GetComponent<BoxCollider>());
 
@@ -195,7 +195,7 @@ public static class Misc
             // Remove all props that has already reached their minimum spawned amount, or has already been spawned at least once if required to do so
             propsRequired.RemoveAll(p =>
             {
-                bool isInEnv = env.GetEntry(p.KeyWords) != null;
+                bool isInEnv = env.GetEntry(p.KeyWords).keywords.Length > 0;
                 bool isRequired = env.GetEntry(p.KeyWords).Required;
                 bool isSpecialised = p.PropType != PropType.Decoration;
 

@@ -86,8 +86,8 @@ public class MeshSurface : MonoBehaviour
 
         if (env == null) return spawner;
 
-        List<Prop> floorProps = spawner.FloorPrefabs.FindAll(p => env.IgnoreSubElements || env.GetEntry(p.KeyWords, true) != null);
-        List<Prop> wallProps = spawner.WallPrefabs.FindAll(p => env.IgnoreSubElements || env.GetEntry(p.KeyWords, true) != null);
+        List<Prop> floorProps = spawner.FloorPrefabs.FindAll(p => env.IgnoreSubElements || env.GetEntry(p.KeyWords, true).keywords.Length > 0);
+        List<Prop> wallProps = spawner.WallPrefabs.FindAll(p => env.IgnoreSubElements || env.GetEntry(p.KeyWords, true).keywords.Length > 0);
 
         spawner = new Spawner(floorProps, wallProps);
         spawner.maxFloorPropCount = maxFloorProps;
