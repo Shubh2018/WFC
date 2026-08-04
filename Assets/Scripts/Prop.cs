@@ -31,7 +31,8 @@ public enum DecorationType
     Shelf,
     Chest,
     Flag,
-    Pot
+    Pot,
+    Crate
 };
 
 public enum SpawnPosition

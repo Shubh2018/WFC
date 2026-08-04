@@ -8,37 +8,34 @@ using Newtonsoft.Json;
 public static class TestData
 {
     public static WFC _wfc;
-    private static Dictionary<string, int> _propCollection = new Dictionary<string, int>();
+    private static Dictionary<Prop, int> _propCollection = new Dictionary<Prop, int>();
     private static Dictionary<DecorationType, int> _propDecorationCollection = new Dictionary<DecorationType, int>();
 
     private static int props = 0;
     
     private static List<PropTestData> _propTestDataList = new List<PropTestData>();
     
-    private static List<SpatialData> _spatialDataList = new List<SpatialData>();
-    private static List<DiversityData> _diversityDataList = new List<DiversityData>();
+    private static List<CombinedData> _anndVsEntropy = new List<CombinedData>();
+    private static List<CombinedData> _propDensityVsEntropy = new List<CombinedData>();
     private static List<CombinedData> _combinedDataList = new List<CombinedData>();
 
     public static void SaveData()
     {
-        string spatialData = JsonConvert.SerializeObject(_spatialDataList, Formatting.Indented);
-        string diversityData = JsonConvert.SerializeObject(_diversityDataList, Formatting.Indented);
-        string combinedData = JsonConvert.SerializeObject(_combinedDataList, Formatting.Indented);
+        string spatialData = JsonConvert.SerializeObject(_anndVsEntropy, Formatting.Indented);
+        string diversityData = JsonConvert.SerializeObject(_propDensityVsEntropy, Formatting.Indented);
         
-        string spatialDataPath = $"{Application.dataPath}/spatialData.json";
-        string diversityDataPath = $"{Application.dataPath}/diversityData.json";
-        string combinedDataPath = $"{Application.dataPath}/combinedData.json";
+        string anndDataPath = $"{Application.dataPath}/ANNDvsEntropy.json";
+        string propDensityDataPath = $"{Application.dataPath}/PropDensityVsEntropy.json";
 
-        File.WriteAllText(spatialDataPath, $"{spatialData}\n\n");
-        File.WriteAllText(diversityDataPath, $"{diversityData}\n\n");
-        File.WriteAllText(combinedDataPath, $"{combinedData}\n\n");
+        File.WriteAllText(anndDataPath, $"{spatialData}\n\n");
+        File.WriteAllText(propDensityDataPath, $"{diversityData}\n\n");
 
         Debug.Log($"Test Data Saved");
     }
 
-    public static void AddToDict(string key, Vector3 pos, Node.NodeType nodeType)
+    public static void AddToDict(Prop key, Vector3 pos, Node.NodeType nodeType)
     {
-        if (String.IsNullOrEmpty(key)) return;
+        if (key == null) return;
 
         _propTestDataList.Add(new PropTestData(key, pos, nodeType));
 
@@ -60,22 +57,20 @@ public static class TestData
     {
         props = AssetManager.LoadProps(PropPlacementType.Floor).Count;
 
-        int propCount = _propCollection.Sum(prop => prop.Value);
+        int propCount = _propCollection.Sum(prop=>  prop.Key.Placement != PropPlacementType.Wall ? prop.Value : 0);
 
         float entropy = CalculateEntropy(_propCollection, propCount);
-        float richness = CalculateRichness(_propDecorationCollection);
 
         float averageNND = CalculateAverageNND(_propTestDataList, propCount);
         float propDensity = PropDensity(propCount, _wfc.SpawnedTileCount);
         
-        _spatialDataList.Add(new SpatialData(averageNND, propDensity));
-        _diversityDataList.Add(new DiversityData(richness, entropy));
-        _combinedDataList.Add(new CombinedData(averageNND, entropy));
+        _anndVsEntropy.Add(new CombinedData(averageNND, entropy));
+        _propDensityVsEntropy.Add(new CombinedData(propDensity, entropy));
 
         ClearDict();
     }
 
-    private static float CalculateEntropy(Dictionary<string, int> propCollection, int propCount)
+    private static float CalculateEntropy(Dictionary<Prop, int> propCollection, int propCount)
     {
         float entropy = 0;
 
@@ -176,13 +171,13 @@ public class Data
 
 public class PropTestData
 {
-    public string name;
+    public Prop prop;
     public Vector3 pos;
     public Node.NodeType nodeType;
 
-    public PropTestData(string name, Vector3 pos, Node.NodeType nodeType)
+    public PropTestData(Prop prop, Vector3 pos, Node.NodeType nodeType)
     {
-        this.name = name;
+        this.prop = prop;
         this.pos = pos;
         this.nodeType = nodeType;
     }
@@ -236,12 +231,12 @@ public class DiversityData
 
 public class CombinedData
 {
-    public float AvgNearestNeighborDistance;
+    public float Metric;
     public float Entropy;
 
-    public CombinedData(float avgNearestNeighborDistance, float entropy)
+    public CombinedData(float metric, float entropy)
     {
-        this.AvgNearestNeighborDistance = avgNearestNeighborDistance;
+        this.Metric = metric;
         this.Entropy = entropy;
     }
 }
