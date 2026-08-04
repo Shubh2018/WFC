@@ -49,16 +49,20 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 0de72b4070f9e4549b5ea70cb6412b21, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 7cf03c6e1d416974f91f269177c0d42f, type: 2}
     - target: {fileID: -7511558181221131132, guid: 0de72b4070f9e4549b5ea70cb6412b21, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 1c1f95fc00e8cde489d357b181b74029, type: 2}
     - target: {fileID: 919132149155446097, guid: 0de72b4070f9e4549b5ea70cb6412b21, type: 3}
       propertyPath: m_Name
       value: Fire_Bin
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0de72b4070f9e4549b5ea70cb6412b21, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
